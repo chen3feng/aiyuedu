@@ -1,0 +1,69 @@
+# 词表数据（data/wordlists/）
+
+英语学习项目的词汇数据，全部为开源/免费授权。
+
+## 文件
+
+| 文件 | 说明 |
+| --- | --- |
+| `wordlist.csv` | **项目主词表**（已过滤、分带），供评测/分级/生词标注使用 |
+| `raw/ecdict.csv` | ECDICT 全量原始数据（约 76 万词条，63MB，MIT） |
+| `raw/basewrd1.txt`~`basewrd25.txt` | Paul Nation BNC/COCA 25000 基础词族表（每文件 1000 词族，CC BY-SA 4.0） |
+| `raw/basewrd31~34.txt` | Nation 附加表：专有名词 / 边缘词 / 透明复合词 / 缩写（**不参与排名**） |
+| `raw/BNC_COCA_25000.zip` | 上述 Nation 数据的官方压缩包（已校验 SHA256） |
+| `raw/lemma.en.txt` | 词形还原映射（词 → 原型），供阅读标注做词形还原（**不再用于词表生成**） |
+| `process_ecdict.py` | 从 raw 生成 wordlist.csv 的处理脚本 |
+
+## wordlist.csv 字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `lemma` | 词条（词族代表词形 = 词族头原型） |
+| `phonetic` | 音标 |
+| `pos` | 词性 |
+| `translation` | 中文释义（多义项用「；」分隔） |
+| `collins` | 柯林斯星级 1–5（越高越常用） |
+| `oxford` | 是否牛津 3000 核心词（1 = 是） |
+| `tag` | 考试标签（空格分隔）：`zk`中考 / `gk`高考 / `cet4` / `cet6` / `ky`考研 / `toefl` / `ielts` / `gre` |
+| `bnc` | BNC（英国国家语料库）词频排名，越小越常见（词形级，参考用） |
+| `frq` | 当代语料库词频排名，越小越常见（词形级，参考用） |
+| `rank` | **Nation BNC/COCA 词族排名**，1~25000，越小越常见（**评测与分带以此为准**） |
+| `freq_band` | 词频分带：`1k/2k/3k/5k/10k/15k/20k/25k` |
+
+## 频率分带规则
+
+按 `rank`（Nation 词族排名，1~25000）分带：
+
+- `1k`：≤1000；`2k`：≤2000；`3k`：≤3000；`5k`：≤5000；`10k`：≤10000；`15k`：≤15000；`20k`：≤20000；其余 `25k`
+
+## 为什么用「Nation 词族 rank」而不是 `frq`？
+
+词汇量测试（qsbdc、欧路等）用的是**词族**（word family）口径——认识一个词族就算认识一族。
+`frq` 是**词形级**排名，一个词族的每个屈折变形各占一个排名，会被重复计分。
+
+本项目采用 Paul Nation 的 **BNC/COCA 25000 基础词族表**（25×1000 词族）作为标准标度，
+与主流词汇量测试口径完全一致。它的关键特点是：
+
+- **词族覆盖派生**：able / ability / unable / inability 归为 **ABLE** 一族（而不是 4 族）；
+  environmentalism 归入 environment 一族。
+- **透明复合词不算**：wildfire、bloodline 等在「透明复合词」附加表（basewrd33），不占基础排名；
+  认识它们靠词根，不反映独立词汇量。
+- **英美拼写合一**：colour / color 归为 **COLOUR** 一族。
+
+早期版本用 `lemma.en.txt`（ECDICT 自带词形还原表）还原词族，但它把每个派生词（environmentalism）
+与透明复合词（wildfire）都当成独立词族，共 62072 族，比 Nation 密约 2.5 倍，导致高词汇量用户被
+系统性高估（实测同一用户 23280 vs 真实 12000）。故改用 Nation 25000 基础词族作 `rank`。
+
+当前规模：约 2.36 万词族（25000 中约 1389 族因 ECDICT 无词条/释义被过滤而跳过）。
+
+## 数据来源与授权
+
+- **ECDICT** — https://github.com/skywind3000/ECDICT （开源英汉双解词典，**MIT 授权**）：中文释义、音标、柯林斯/牛津分级、考试标签、BNC/当代词频。
+- **Paul Nation BNC/COCA 25000** — https://www.wgtn.ac.nz/lals/resources/paul-nations-resources/vocabulary-analysis-programs/range/BNC_COCA_25000.zip （**CC BY-SA 4.0**，使用时请署名 Paul Nation）：词族标度。
+- **lemma.en.txt** — ECDICT 附带，扫描 BNC 一亿词生成的词形还原表（供阅读标注做词形还原）。
+
+## 重新生成
+
+```bash
+uv run data/wordlists/process_ecdict.py
+```

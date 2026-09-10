@@ -1,0 +1,22 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "英语学习"
+			}
+		},
+		{
+			"path": "pages/assessment/assessment",
+			"style": {
+				"navigationBarTitleText": "词汇量评测"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "英语学习",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	}
+}

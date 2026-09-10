@@ -1,0 +1,329 @@
+"""词汇量评测：分层抽样 + 识别率×词频权重（比例累加）。
+
+把 25000 词族按词频分成若干段（band），从每段各抽若干词，每段算「认识率」，
+词汇量 = Σ 段宽 × 认识率。这是百词斩 / 欧路等词汇量测试的「识别率 × 词频权重」做法：
+
+  优点：
+    - 线性累加，每个词的贡献有界（≤ 段宽 / 该段已答数），分数天生平滑，
+      同一轮内不会「突变」，也不会因自适应走位不同导致两次结果分叉；
+    - 可无限测下去：段内样本越多，认识率越准，分数持续收敛。
+  代价：同样题量下精度略低于「自适应阶梯 + logistic」，但 50 题即可到 ±5~7%。
+"""
+import bisect
+import csv
+import json
+import random
+import re
+import time
+import uuid
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+from typing import Optional
+
+from ..config import settings
+
+# —— 分层抽样参数 ——
+# 词频分段边界（rank，半开区间 [BANDS[i], BANDS[i+1])；末段含右端点 25000）
+BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
+N_BANDS = len(BANDS) - 1                 # 10 段
+MAX_VOCAB = 25000                        # 词族上限（Nation BNC/COCA 25000 基础词族）
+ROUNDS = 5                               # 每段抽词轮数 → 总题量 = N_BANDS × ROUNDS
+MAX_QUESTIONS = N_BANDS * ROUNDS         # 50
+MIN_SAMPLES = 3                          # 至少 3 词才下发估值（前端显示「测评中…」）
+SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝「突变」
+
+RULES = (
+    "认识就选正确的中文意思；"
+    "不认识请点「不认识」；"
+    "不确定而猜错会被判为不认识。诚实作答，测评更准。"
+)
+RESULT_MESSAGE = (
+    "词汇量按「分层抽样 + 识别率×词频权重」估计：把词频分成 10 段各抽词，"
+    "用每段认识率加权累加出等效词汇量。"
+)
+
+_BRACKET = re.compile(r"\[[^\]]*\]")
+_WORD_OK = re.compile(r"^[a-z][a-z'\-]+$")
+
+
+@lru_cache(maxsize=1)
+def _load_rows() -> list:
+    with open(settings.wordlist_path, encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def gloss(translation: str) -> str:
+    """从 ECDICT 释义提取词义：保留词性前缀与多个义项，去掉 [医][计] 等领域标签。
+
+    例："n. 技巧, 技术, 方法；[化] 工艺方法" → "n. 技巧，技术，方法"
+    """
+    if not translation:
+        return ""
+    groups = []
+    for g in translation.split("；"):
+        if "[" in g or "]" in g:
+            continue  # 领域义项（如 [医]、[计]）对少儿不友好，跳过
+        g = g.strip(" ,，;；")
+        if g:
+            groups.append(g)
+    if not groups:
+        seg = _BRACKET.sub("", translation).strip(" ,，;；")
+        groups = [seg] if seg else []
+
+    # 每组最多保留前 3 个义项，最多取 2 组，避免选项过长
+    trimmed = []
+    for g in groups[:2]:
+        senses = [s.strip() for s in g.split(",") if s.strip()]
+        trimmed.append("，".join(senses[:3]))
+    out = "；".join(t for t in trimmed if t)
+    if len(out) > 32:
+        out = out[:32].rstrip(" ,，;；") + "…"
+    return out
+
+
+@lru_cache(maxsize=1)
+def _candidates() -> list:
+    """[(rank, lemma, gloss)] 按词族 rank 升序，仅保留可作题目的词。"""
+    rows = []
+    for w in _load_rows():
+        try:
+            rank = int(w.get("rank", "") or w.get("frq", ""))
+        except (TypeError, ValueError):
+            continue
+        if rank <= 0:
+            continue
+        lemma = w.get("lemma", "")
+        if not _WORD_OK.match(lemma):
+            continue
+        g = gloss(w.get("translation", ""))
+        if not g:
+            continue
+        rows.append((rank, lemma, g))
+    rows.sort(key=lambda x: x[0])
+    return rows
+
+
+def _band_width(i: int) -> int:
+    """第 i 段的词频宽度（用于加权累加）。"""
+    return BANDS[i + 1] - BANDS[i]
+
+
+def _band_of(rank: int) -> int:
+    """rank 落在哪一段（半开区间，末段含右端点）。"""
+    i = bisect.bisect_right(BANDS, rank) - 1
+    return max(0, min(N_BANDS - 1, i))
+
+
+def _make_question(target) -> dict:
+    """把候选词 target=(rank, lemma, gloss) 做成一道四选一题（干扰项取相邻频段）。"""
+    cands = _candidates()
+    frqs = [c[0] for c in cands]
+    r = target[0]
+    lo = max(1, r // 2)
+    hi = r + r // 2
+    pool = cands[bisect.bisect_left(frqs, lo): bisect.bisect_right(frqs, hi)]
+    if not pool:
+        pool = cands
+
+    distractors: list[str] = []
+    seen = {target[2]}
+    for _ in range(80):
+        if len(distractors) >= 3:
+            break
+        c = random.choice(pool)
+        if c[2] not in seen and c[1] != target[1]:
+            seen.add(c[2])
+            distractors.append(c[2])
+    while len(distractors) < 3:
+        c = random.choice(cands)
+        if c[2] not in seen:
+            seen.add(c[2])
+            distractors.append(c[2])
+
+    options = [target[2]] + distractors
+    random.shuffle(options)
+    return {
+        "word": target[1],
+        "rank": target[0],
+        "options": options,
+        "correct_index": options.index(target[2]),
+        "correct_gloss": target[2],
+    }
+
+
+def _pick_in_band(i: int, avoid: set) -> dict:
+    """在第 i 段内随机抽一道四选一题（避开最近出现过的词）。"""
+    lo = BANDS[i]
+    hi = BANDS[i + 1]
+    cands = _candidates()
+    frqs = [c[0] for c in cands]
+    a = bisect.bisect_left(frqs, lo)
+    b = bisect.bisect_right(frqs, hi) if i == N_BANDS - 1 else bisect.bisect_left(frqs, hi)
+    seg = cands[a:b]
+    if not seg:
+        seg = cands  # 空段兜底（理论上不会发生，各段都有词）
+    target = random.choice(seg)
+    for _ in range(40):
+        c = random.choice(seg)
+        if c[1] not in avoid:
+            target = c
+            break
+    return _make_question(target)
+
+
+def _estimate(sess: "TestSession") -> float:
+    """词汇量 = Σ 段宽 × 认识率（只统计已作答的段）。"""
+    vocab = 0.0
+    for i in range(N_BANDS):
+        n = sess.band_total.get(i, 0)
+        if n > 0:
+            acc = sess.band_known.get(i, 0) / n
+            vocab += _band_width(i) * acc
+    return vocab
+
+
+@dataclass
+class TestSession:
+    id: str
+    band_known: dict = field(default_factory=dict)   # 段号 -> 认识数
+    band_total: dict = field(default_factory=dict)   # 段号 -> 作答数
+    samples: list = field(default_factory=list)      # [(rank, is_known)] 供日志/调试
+    recent: list = field(default_factory=list)       # 最近出现的词，避免重复
+    current: Optional[dict] = None
+    display: Optional[float] = None                  # 平滑显示的分数（带单次变动上限）
+    total: int = 0
+    correct: int = 0
+    unknown: int = 0
+    wrong: int = 0
+    finished: bool = False
+    history: list = field(default_factory=list)      # 每次估值，供调试
+
+
+_sessions: dict[str, TestSession] = {}
+
+
+def get_session(sid: str) -> Optional[TestSession]:
+    return _sessions.get(sid)
+
+
+def _public(q: dict) -> dict:
+    """下发给前端的题目（不含正确答案）。"""
+    return {"word": q["word"], "options": q["options"]}
+
+
+def _progress(sess: TestSession, estimate: Optional[float] = None) -> dict:
+    if estimate is None:
+        estimate = _estimate(sess)
+    # 显示分：朝真实估值逼近，但单次变动不超过 SCORE_MAX_STEP，避免「突变」
+    if sess.display is None:
+        sess.display = estimate
+    else:
+        delta = estimate - sess.display
+        sess.display += max(-SCORE_MAX_STEP, min(SCORE_MAX_STEP, delta))
+    show = sess.total >= MIN_SAMPLES
+    score = int(round(sess.display)) if show else None
+    return {
+        "score": score,
+        "total": sess.total,
+        "correct": sess.correct,
+        "unknown": sess.unknown,
+        "wrong": sess.wrong,
+        "converged": sess.finished,
+    }
+
+
+def start_test() -> tuple[str, dict, dict]:
+    sid = uuid.uuid4().hex
+    sess = TestSession(id=sid)
+    _sessions[sid] = sess
+    sess.current = _pick_in_band(_next_band(sess), set())
+    return sid, _public(sess.current), _progress(sess)
+
+
+def _next_band(sess: TestSession) -> int:
+    """取「已答数最少」的段（等价于轮询，保证各段均衡覆盖）。"""
+    return min(range(N_BANDS), key=lambda i: sess.band_total.get(i, 0))
+
+
+def _log_answer(sess: TestSession, q: dict, response: str, estimate: float) -> None:
+    """追加一条评测记录（JSONL），供离线分析。日志失败不影响评测。"""
+    try:
+        path = Path(settings.vocab_log_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        rec = {
+            "ts": round(time.time(), 3),
+            "session": sess.id,
+            "n": sess.total,
+            "rank": q["rank"],
+            "band": _band_of(q["rank"]),
+            "word": q["word"],
+            "response": response,
+            "n_samples": sess.total,
+            "estimate": round(estimate, 1) if estimate else None,
+        }
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def _result(sess: TestSession) -> dict:
+    vocab = int(round(_estimate(sess) / 10) * 10)
+    return {
+        "vocab_size": vocab,
+        "score": vocab,
+        "total": sess.total,
+        "correct": sess.correct,
+        "unknown": sess.unknown,
+        "wrong": sess.wrong,
+        "message": RESULT_MESSAGE,
+    }
+
+
+def submit_answer(sess: TestSession, choice: Optional[int], unknown: bool) -> dict:
+    q = sess.current
+    sess.total += 1
+    rank = q["rank"]
+
+    if unknown:
+        sess.unknown += 1
+        response = "unknown"
+        is_known = False
+    elif choice is not None and choice == q["correct_index"]:
+        sess.correct += 1
+        response = "correct"
+        is_known = True
+    else:
+        sess.wrong += 1
+        response = "wrong"
+        is_known = False
+
+    b = _band_of(rank)
+    sess.band_total[b] = sess.band_total.get(b, 0) + 1
+    if is_known:
+        sess.band_known[b] = sess.band_known.get(b, 0) + 1
+    sess.samples.append((rank, 1.0 if is_known else 0.0))
+    sess.recent.append(q["word"])
+    if len(sess.recent) > 15:
+        sess.recent.pop(0)
+
+    estimate = _estimate(sess)
+    sess.history.append(estimate)
+    _log_answer(sess, q, response, estimate)
+
+    feedback = {"response": response, "word": q["word"], "correct_gloss": q["correct_gloss"]}
+    progress = _progress(sess, estimate)
+
+    if sess.total >= MAX_QUESTIONS:
+        sess.finished = True
+        return {"finished": True, "feedback": feedback, **progress, "result": _result(sess)}
+
+    sess.current = _pick_in_band(_next_band(sess), set(sess.recent))
+    return {"finished": False, "feedback": feedback, **progress, "question": _public(sess.current)}
+
+
+def finish_test(sess: TestSession) -> dict:
+    """用户主动结束测评，返回最终成绩（幂等，可重复调用）。"""
+    sess.finished = True
+    return _result(sess)

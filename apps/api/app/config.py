@@ -1,0 +1,19 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 项目根目录（apps/api/app/config.py → 上溯三级到 english/）
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    app_name: str = "English Learning API"
+    database_url: str = "postgresql+psycopg://english:english@localhost:5432/english"
+    redis_url: str = "redis://localhost:6379/0"
+    wordlist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "wordlist.csv")
+    vocab_log_path: str = str(PROJECT_ROOT / "data" / "logs" / "vocab_sessions.jsonl")
+
+
+settings = Settings()

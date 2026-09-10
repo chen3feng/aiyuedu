@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+unpackage/
+
+# env / secrets
+.env
+.env.local
+*.local
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# data：原始 63MB 数据不入库，仅保留处理后的词表
+data/wordlists/raw/
+# 运行时日志（测评会话记录，体积大且持续增长）
+data/logs/
+
+# 临时/逆向分析产物（含 APK、反编译文件）
+tmp/
