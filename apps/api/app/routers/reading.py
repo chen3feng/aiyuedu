@@ -62,6 +62,7 @@ def get_reading(reading_id: str, level: int = Query(reading.DEFAULT_LEVEL, ge=0)
         "new_word_rate": ann["new_word_rate"],
         "lines": ann["lines"],
         "vocabulary": ann["vocabulary"],
+        "quizzes": r.get("quizzes", []),
     }
 
 

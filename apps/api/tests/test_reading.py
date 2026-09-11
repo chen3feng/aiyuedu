@@ -244,3 +244,27 @@ def test_get_reading_returns_vocabulary_and_body():
     assert particle["word"] == "particle"   # 展示原型（屈折还原为词族头）
     assert particle["gloss"] == "微粒"
     assert particle["full_gloss"]
+
+
+# ---------- 课后小测（quiz） ----------
+
+def test_every_reading_has_three_valid_choice_quizzes():
+    # 每篇 3 题，当前只支持选择题；字段设计对判断题等未来题型保持可扩展（type 区分）
+    for r in reading.list_readings():
+        quizzes = r.get("quizzes", [])
+        assert len(quizzes) == 3, f"{r['id']} 应有 3 道题"
+        for q in quizzes:
+            assert q["type"] == "choice"
+            assert q["question"]
+            assert len(q["options"]) == 4, f"{r['id']} 选项须为 4 个"
+            assert isinstance(q["answer"], int) and 0 <= q["answer"] < 4
+            assert q["explanation_zh"]
+            assert q["explanation_en"]
+
+
+def test_get_reading_returns_quizzes():
+    from app.routers import reading as reading_router
+    resp = reading_router.get_reading("r001", 3600)
+    assert len(resp["quizzes"]) == 3
+    q = resp["quizzes"][0]
+    assert set(q) >= {"type", "question", "options", "answer", "explanation_zh", "explanation_en"}

@@ -1,20 +1,33 @@
 <template>
   <view class="home">
     <view class="hero">
-      <text class="app-name">英语学习</text>
-      <text class="slogan">从词汇量开始</text>
+      <text class="app-name">{{ t("appName") }}</text>
+      <text class="slogan">{{ t("slogan") }}</text>
     </view>
-    <button class="start-btn" @click="goAssessment">开始词汇量评测</button>
-    <button class="reading-btn" @click="goReading">分级阅读</button>
+    <button class="start-btn" @click="goAssessment">{{ t("home.start") }}</button>
+    <button class="reading-btn" @click="goReading">{{ t("home.reading") }}</button>
+    <view class="settings-link" @click="goSettings">{{ t("home.settings") }}</view>
   </view>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import { onShow } from "@dcloudio/uni-app";
+
+const { t } = useI18n();
+
+onShow(() => {
+  uni.setNavigationBarTitle({ title: t("nav.home") });
+});
+
 function goAssessment() {
   uni.navigateTo({ url: "/pages/assessment/assessment" });
 }
 function goReading() {
   uni.navigateTo({ url: "/pages/reading/list" });
+}
+function goSettings() {
+  uni.navigateTo({ url: "/pages/settings/settings" });
 }
 </script>
 
@@ -61,5 +74,10 @@ function goReading() {
   border-radius: 16rpx;
   font-size: 34rpx;
   font-weight: 600;
+}
+.settings-link {
+  margin-top: 36rpx;
+  font-size: 26rpx;
+  color: #8a94ad;
 }
 </style>

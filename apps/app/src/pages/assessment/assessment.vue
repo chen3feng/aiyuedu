@@ -3,28 +3,28 @@
     <!-- 介绍页 -->
     <view v-if="phase === 'intro'" class="intro">
       <view class="card">
-        <view class="title">词汇量评测</view>
-        <view class="subtitle">看词选义 · 实时计分 · 约 50 题</view>
+        <view class="title">{{ t("assessment.title") }}</view>
+        <view class="subtitle">{{ t("assessment.subtitle") }}</view>
         <view class="rules">
-          <view class="rule-title">怎么答？</view>
+          <view class="rule-title">{{ t("assessment.howTo") }}</view>
           <view class="rule-row">
             <text class="dot ok"></text>
-            <text class="rule-text">认识 → 选正确意思</text>
-            <text class="score plus">得分上升</text>
+            <text class="rule-text">{{ t("assessment.knowRule") }}</text>
+            <text class="score plus">{{ t("assessment.scoreUp") }}</text>
           </view>
           <view class="rule-row">
             <text class="dot neutral"></text>
-            <text class="rule-text">不认识 → 点「不认识」</text>
-            <text class="score zero">扣分较轻</text>
+            <text class="rule-text">{{ t("assessment.unknownRule") }}</text>
+            <text class="score zero">{{ t("assessment.scoreLess") }}</text>
           </view>
           <view class="rule-row">
             <text class="dot bad"></text>
-            <text class="rule-text">猜错</text>
-            <text class="score minus">额外罚分</text>
+            <text class="rule-text">{{ t("assessment.guessWrong") }}</text>
+            <text class="score minus">{{ t("assessment.extraPenalty") }}</text>
           </view>
         </view>
-        <view class="hint">诚实作答测评才准：不确定就选「不认识」，比乱猜扣得少。</view>
-        <button class="btn primary" :loading="loading" @click="start">开始测评</button>
+        <view class="hint">{{ t("assessment.honestHint") }}</view>
+        <button class="btn primary" :loading="loading" @click="start">{{ t("assessment.start") }}</button>
         <view v-if="error" class="error">{{ error }}</view>
       </view>
     </view>
@@ -33,14 +33,14 @@
     <view v-else-if="phase === 'quiz'" class="quiz">
       <view class="scorebar">
         <view class="score-main">
-          <text class="score-label">得分</text>
+          <text class="score-label">{{ t("assessment.score") }}</text>
           <text class="score-value">{{ progress.score }}</text>
         </view>
         <view class="score-stats">
-          <text class="stat">第 {{ progress.total + 1 }} 题</text>
-          <text class="stat ok">对 {{ progress.correct }}</text>
-          <text class="stat neutral">不认识 {{ progress.unknown }}</text>
-          <text class="stat bad">错 {{ progress.wrong }}</text>
+          <text class="stat">{{ t("assessment.questionN", { n: progress.total + 1 }) }}</text>
+          <text class="stat ok">{{ t("assessment.correctN", { n: progress.correct }) }}</text>
+          <text class="stat neutral">{{ t("assessment.unknownN", { n: progress.unknown }) }}</text>
+          <text class="stat bad">{{ t("assessment.wrongN", { n: progress.wrong }) }}</text>
         </view>
       </view>
 
@@ -62,13 +62,13 @@
         :class="{ active: selectedIndex === -1 }"
         @click="chooseUnknown"
       >
-        不认识这个词
+        {{ t("assessment.unknownWord") }}
       </view>
       <view v-if="progress.converged" class="converged-hint">
-        得分已稳定，可以结束查看结果
+        {{ t("assessment.converged") }}
       </view>
       <view class="finish-btn" :class="{ disabled: loading }" @click="finish">
-        结束并查看结果
+        {{ t("assessment.finish") }}
       </view>
       <view v-if="feedback" class="feedback" :class="feedback.response">
         <text class="fb-icon">{{ fbIcon }}</text>
@@ -79,13 +79,13 @@
     <!-- 结果页 -->
     <view v-else class="result">
       <view class="card">
-        <view class="big-label">你的词汇量</view>
+        <view class="big-label">{{ t("assessment.yourVocab") }}</view>
         <view class="big-number">{{ result?.vocab_size }}</view>
         <view class="score-line">
-          <text class="muted">对 {{ result?.correct }} · 不认识 {{ result?.unknown }} · 错 {{ result?.wrong }}（共 {{ result?.total }} 题）</text>
+          <text class="muted">{{ t("assessment.summary", { correct: result?.correct, unknown: result?.unknown, wrong: result?.wrong, total: result?.total }) }}</text>
         </view>
         <view class="message">{{ result?.message }}</view>
-        <button class="btn primary" @click="again">再测一次</button>
+        <button class="btn primary" @click="again">{{ t("assessment.again") }}</button>
       </view>
     </view>
   </view>
@@ -93,8 +93,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import { useI18n } from "vue-i18n";
 import { startTest, answer, finishTest } from "../../api/vocab";
 import type { Question, Feedback, Progress, Result } from "../../api/vocab";
+
+const { t } = useI18n();
 
 type Phase = "intro" | "quiz" | "result";
 
@@ -110,6 +114,10 @@ const result = ref<Result | null>(null);
 
 const letters = ["A", "B", "C", "D"];
 
+onShow(() => {
+  uni.setNavigationBarTitle({ title: t("nav.assessment") });
+});
+
 const correctIndex = computed(() =>
   feedback.value ? question.value.options.indexOf(feedback.value.correct_gloss) : -1
 );
@@ -121,9 +129,9 @@ const fbIcon = computed(() =>
 const fbText = computed(() => {
   if (!feedback.value) return "";
   const g = feedback.value.correct_gloss;
-  if (feedback.value.response === "correct") return "答对了！" + g;
-  if (feedback.value.response === "unknown") return "已标记不认识，正确答案：" + g;
-  return "猜错了，正确答案：" + g;
+  if (feedback.value.response === "correct") return t("assessment.correct") + g;
+  if (feedback.value.response === "unknown") return t("assessment.unknownMarked") + g;
+  return t("assessment.wrongAnswer") + g;
 });
 
 function optionClass(i: number): string {

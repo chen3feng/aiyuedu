@@ -2,47 +2,56 @@
   <view class="page">
     <view class="tabs">
       <view
-        v-for="t in tabs"
-        :key="t.key"
+        v-for="tab in tabs"
+        :key="tab.key"
         class="tab"
-        :class="{ active: activeTopic === t.key }"
-        @click="setTopic(t.key)"
+        :class="{ active: activeTopic === tab.key }"
+        @click="setTopic(tab.key)"
       >
-        {{ t.label }}
+        {{ t(tab.labelKey) }}
       </view>
     </view>
 
-    <view v-if="loading" class="loading">加载中…</view>
+    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
     <view v-else-if="error" class="error">{{ error }}</view>
     <view v-else class="cards">
       <view v-for="r in items" :key="r.id" class="card" @click="open(r.id)">
         <view class="card-top">
           <text class="title">{{ r.title }}</text>
-          <text class="tag">{{ r.topic_label }}</text>
+          <text class="tag">{{ topicLabel(r.topic) }}</text>
         </view>
         <view class="meta">
-          <text class="meta-item">{{ r.word_count }} 词</text>
-          <text class="meta-item">生词率 {{ (r.new_word_rate * 100).toFixed(1) }}%</text>
+          <text class="meta-item">{{ t("reading.list.wordCount", { n: r.word_count }) }}</text>
+          <text class="meta-item">{{ t("reading.list.newWordRate", { n: (r.new_word_rate * 100).toFixed(1) }) }}</text>
         </view>
       </view>
-      <view v-if="!items.length" class="empty">该主题暂无文章</view>
+      <view v-if="!items.length" class="empty">{{ t("reading.list.empty") }}</view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { onLoad } from "@dcloudio/uni-app";
+import { onLoad, onShow } from "@dcloudio/uni-app";
+import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
 import type { ReadingSummary } from "../../api/reading";
 
+const { t, te } = useI18n();
+
 const tabs = [
-  { key: "", label: "全部" },
-  { key: "science", label: "科普/科技" },
-  { key: "sports", label: "体育/游戏/汽车" },
-  { key: "history", label: "历史/名人" },
-  { key: "adventure", label: "冒险/科幻/悬疑" },
+  { key: "", labelKey: "reading.list.all" },
+  { key: "science", labelKey: "topic.science" },
+  { key: "sports", labelKey: "topic.sports" },
+  { key: "history", labelKey: "topic.history" },
+  { key: "adventure", labelKey: "topic.adventure" },
 ];
+
+// 主题名走前端 i18n（后端 topic_label 仅中文），未知主题回退原始 key
+function topicLabel(topic: string): string {
+  const key = `topic.${topic}`;
+  return te(key) ? t(key) : topic;
+}
 
 // 读者词汇量：优先用评测结果（若已存），否则默认初一估算 3600
 const level = ref<number>(Number(uni.getStorageSync("vocab_size")) || 3600);
@@ -53,6 +62,10 @@ const error = ref("");
 
 onLoad(() => {
   fetchList();
+});
+
+onShow(() => {
+  uni.setNavigationBarTitle({ title: t("nav.reading") });
 });
 
 async function fetchList() {

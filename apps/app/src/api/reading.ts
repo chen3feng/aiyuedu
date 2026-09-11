@@ -50,7 +50,31 @@ export interface ReadingDetail {
   new_word_rate: number;
   lines: ReadingLine[];
   vocabulary: VocabItem[];
+  quizzes: Quiz[];
 }
+
+// 课后小测题目。当前只渲染 `choice`；`type` 字段为未来题型（如判断题 `truefalse`）预留，
+// 不同题型用不同字段：choice 用 options + answer(下标)，truefalse 用 answer(布尔)。
+export type QuizType = "choice" | "truefalse";
+
+export interface ChoiceQuiz {
+  type: "choice";
+  question: string;
+  options: string[]; // 固定 4 项（A/B/C/D）
+  answer: number; // 正确选项下标 0-3
+  explanation_en: string; // 英文解答（默认展示）
+  explanation_zh: string; // 中文解答（UI 为中文时额外展示）
+}
+
+export interface TrueFalseQuiz {
+  type: "truefalse";
+  question: string;
+  answer: boolean;
+  explanation_en: string;
+  explanation_zh: string;
+}
+
+export type Quiz = ChoiceQuiz | TrueFalseQuiz;
 
 export interface RecordPayload {
   level: number;

@@ -11,7 +11,48 @@
       "twinkle": "闪烁"
     },
     "target_level": 4000,
-    "body": "Have you ever looked up on a sunny day and wondered why the sky is blue? Sunlight looks white, but it is really made of many colors. When sunlight enters our air, it hits tiny particles and gas molecules. Blue light travels in short waves, so it bounces around more than the other colors. This scattering spreads blue light all over the sky. That is why we see a blue sky in the day. In the evening, the light has to travel a longer path through the air. Most of the blue light scatters away before it reaches your eyes, so the sky turns orange and red. After a rain, you may see a rainbow. Every drop of water works like a tiny prism, bending the light into a bright arc of colors. The same trick works with water. A deep ocean looks blue for the same reason. At night, the stars seem to twinkle because their light crosses moving air. Next time you see a clear sky, remember that the color comes from light dancing through the air."
+    "body": "Have you ever looked up on a sunny day and wondered why the sky is blue? Sunlight looks white, but it is really made of many colors. When sunlight enters our air, it hits tiny particles and gas molecules. Blue light travels in short waves, so it bounces around more than the other colors. This scattering spreads blue light all over the sky. That is why we see a blue sky in the day. In the evening, the light has to travel a longer path through the air. Most of the blue light scatters away before it reaches your eyes, so the sky turns orange and red. After a rain, you may see a rainbow. Every drop of water works like a tiny prism, bending the light into a bright arc of colors. The same trick works with water. A deep ocean looks blue for the same reason. At night, the stars seem to twinkle because their light crosses moving air. Next time you see a clear sky, remember that the color comes from light dancing through the air.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "Why does the sky look blue during the day?",
+        "options": [
+          "The sea reflects blue light into the sky",
+          "Blue light bounces around more than other colors",
+          "The Sun only sends out blue light",
+          "Clouds are made of blue water"
+        ],
+        "answer": 1,
+        "explanation_zh": "阳光进入空气后，蓝光波长最短、散射最强，四处弹开铺满天空，所以白天看天是蓝的。",
+        "explanation_en": "Sunlight entering the air scatters most strongly in short blue waves, spreading across the sky — so it looks blue by day."
+      },
+      {
+        "type": "choice",
+        "question": "Why does the sky turn orange and red in the evening?",
+        "options": [
+          "The Sun becomes red at night",
+          "Blue light scatters away before reaching our eyes",
+          "Clouds change color in the evening",
+          "There is more blue light in the evening"
+        ],
+        "answer": 1,
+        "explanation_zh": "傍晚阳光要穿过更长的空气路程，蓝光大多在到达眼前之前就散掉了，剩下橙红色的光。",
+        "explanation_en": "In the evening sunlight travels a longer path, and most blue light scatters away before reaching our eyes, leaving orange and red."
+      },
+      {
+        "type": "choice",
+        "question": "Why do stars seem to twinkle?",
+        "options": [
+          "Their light crosses moving air",
+          "They move very fast in the sky",
+          "They are very close to the Earth",
+          "The Moon hides them at night"
+        ],
+        "answer": 0,
+        "explanation_zh": "星光穿过流动的空气时被不断折射，所以看起来一闪一闪。",
+        "explanation_en": "Starlight keeps being bent as it passes through moving air, which makes the stars twinkle."
+      }
+    ]
   },
   {
     "id": "r002",
@@ -24,7 +65,48 @@
       "orbit": "绕…运行"
     },
     "target_level": 4600,
-    "body": "Mia, a young astronaut, put on her heavy suit and stepped out of the ship. The ground under her boots was gray and covered with fine dust. Around her, the sky was completely black, even though the Sun was shining brightly. There was no wind, and no sound at all. Every step she took made a small cloud of dust that drifted slowly back to the ground. She picked up a rock and held it in her thick glove. It was cold and lighter than she expected. Nearby, the gray ground was marked with deep craters and low hills. The fine dust sparkled in the bright sunlight. In the distance she could see the Earth, a blue and white ball hanging in the dark sky. A line of tracks stretched from the ship to her feet. She smiled inside her helmet. People had dreamed about this place for thousands of years, and now she was walking on it. The ship would orbit the Moon once before heading home. This was the quietest and most wonderful place she had ever seen."
+    "body": "Mia, a young astronaut, put on her heavy suit and stepped out of the ship. The ground under her boots was gray and covered with fine dust. Around her, the sky was completely black, even though the Sun was shining brightly. There was no wind, and no sound at all. Every step she took made a small cloud of dust that drifted slowly back to the ground. She picked up a rock and held it in her thick glove. It was cold and lighter than she expected. Nearby, the gray ground was marked with deep craters and low hills. The fine dust sparkled in the bright sunlight. In the distance she could see the Earth, a blue and white ball hanging in the dark sky. A line of tracks stretched from the ship to her feet. She smiled inside her helmet. People had dreamed about this place for thousands of years, and now she was walking on it. The ship would orbit the Moon once before heading home. This was the quietest and most wonderful place she had ever seen.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "Why is the sky completely black on the Moon even in daytime?",
+        "options": [
+          "The Moon is far from the Sun",
+          "There is no air to scatter sunlight",
+          "The Moon has no sky at all",
+          "The Sun is too small there"
+        ],
+        "answer": 1,
+        "explanation_zh": "月球没有大气，阳光无法被散射，所以白天天空也是黑的。",
+        "explanation_en": "The Moon has no atmosphere, so sunlight is not scattered and the sky stays black even in daytime."
+      },
+      {
+        "type": "choice",
+        "question": "What happened to the dust when Mia took a step?",
+        "options": [
+          "It turned into water",
+          "It drifted slowly back to the ground",
+          "It flew away into space",
+          "It stuck to her boots"
+        ],
+        "answer": 1,
+        "explanation_zh": "月球引力小、又没有风，扬起的尘土会慢慢飘回地面。",
+        "explanation_en": "Because the Moon's gravity is weak and there is no wind, the dust drifts slowly back to the ground."
+      },
+      {
+        "type": "choice",
+        "question": "What would the ship do before heading home?",
+        "options": [
+          "Land on the Earth",
+          "Orbit the Moon once",
+          "Visit the stars",
+          "Fly to the Sun"
+        ],
+        "answer": 1,
+        "explanation_zh": "飞船回地球前会绕月球飞行一圈。",
+        "explanation_en": "Before returning home, the ship would orbit the Moon once."
+      }
+    ]
   },
   {
     "id": "r003",
@@ -36,7 +118,48 @@
       "dribble": "带球"
     },
     "target_level": 4000,
-    "body": "It was Leo's first football match, and his hands were shaking. He sat on the bench with the other boys and watched the first half from the side. The score was still zero to zero, and the referee's whistle had just blown for the start. The stadium was full of cheering fans. In the second half, the coach called his name. Leo ran onto the field, and his heart beat very fast. The grass was wet, and the ball moved quickly. A player passed the ball to him. Leo dribbled the ball past one defender and began to run. Another defender came close, but Leo kicked the ball to the side and went past him. He looked up and saw the goal. He shot, and the ball flew into the corner of the net. The crowd cheered, and his friends ran to him with big smiles. They won the match by one goal. On the way home, Leo could not stop smiling. He had been afraid, but he tried his best, and that was enough."
+    "body": "It was Leo's first football match, and his hands were shaking. He sat on the bench with the other boys and watched the first half from the side. The score was still zero to zero, and the referee's whistle had just blown for the start. The stadium was full of cheering fans. In the second half, the coach called his name. Leo ran onto the field, and his heart beat very fast. The grass was wet, and the ball moved quickly. A player passed the ball to him. Leo dribbled the ball past one defender and began to run. Another defender came close, but Leo kicked the ball to the side and went past him. He looked up and saw the goal. He shot, and the ball flew into the corner of the net. The crowd cheered, and his friends ran to him with big smiles. They won the match by one goal. On the way home, Leo could not stop smiling. He had been afraid, but he tried his best, and that was enough.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "What did Leo do at the start of the match?",
+        "options": [
+          "He played in the first half",
+          "He sat on the bench and watched",
+          "He scored the first goal",
+          "He was the coach"
+        ],
+        "answer": 1,
+        "explanation_zh": "开场时 Leo 坐在替补席上看着上半场比赛。",
+        "explanation_en": "At the start Leo sat on the bench and watched the first half."
+      },
+      {
+        "type": "choice",
+        "question": "How did Leo score the goal?",
+        "options": [
+          "He headed the ball into the net",
+          "He passed the ball to a teammate",
+          "He dribbled past defenders and shot into the corner",
+          "The referee gave him a penalty"
+        ],
+        "answer": 2,
+        "explanation_zh": "Leo 带球过掉防守队员，一脚把球射进球门角落。",
+        "explanation_en": "Leo dribbled past the defenders and shot the ball into the corner of the goal."
+      },
+      {
+        "type": "choice",
+        "question": "What does the story mainly teach us?",
+        "options": [
+          "Winning is the only thing that matters",
+          "Being afraid is wrong",
+          "Trying your best is what matters",
+          "Watching from the bench is safest"
+        ],
+        "answer": 2,
+        "explanation_zh": "故事强调 Leo 虽然害怕，但尽了全力，这就足够了。",
+        "explanation_en": "The story shows that although Leo was afraid, he tried his best — and that was enough."
+      }
+    ]
   },
   {
     "id": "r004",
@@ -54,7 +177,48 @@
       "sprint": { "word": "sprinter", "phonetic": "ˈsprɪntə" }
     },
     "target_level": 4800,
-    "body": "Usain Bolt was born in a small town in Jamaica. As a child, he loved to run and play cricket. When he grew older, his speed became famous. As a young sprinter, he learned to start fast and hold his speed to the line. His long legs seemed to soar over the track as he ran. He trained hard every day and learned to use his long legs and tall body. In 2009, he ran one hundred meters in only 9.58 seconds, faster than any human before him. At the Olympic Games, he won gold medals again and again. People called him the fastest man on Earth. But Bolt was not only fast. He also loved to make people laugh and dance before a race. His joyful style made millions of fans around the world. He showed that hard work and a happy heart can go together. After he stopped racing, he still encouraged young athletes to dream big. His story teaches us that a strong body and a warm smile can both lead to great things."
+    "body": "Usain Bolt was born in a small town in Jamaica. As a child, he loved to run and play cricket. When he grew older, his speed became famous. As a young sprinter, he learned to start fast and hold his speed to the line. His long legs seemed to soar over the track as he ran. He trained hard every day and learned to use his long legs and tall body. In 2009, he ran one hundred meters in only 9.58 seconds, faster than any human before him. At the Olympic Games, he won gold medals again and again. People called him the fastest man on Earth. But Bolt was not only fast. He also loved to make people laugh and dance before a race. His joyful style made millions of fans around the world. He showed that hard work and a happy heart can go together. After he stopped racing, he still encouraged young athletes to dream big. His story teaches us that a strong body and a warm smile can both lead to great things.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "What sport did Usain Bolt love as a child?",
+        "options": [
+          "Football",
+          "Cricket",
+          "Tennis",
+          "Swimming"
+        ],
+        "answer": 1,
+        "explanation_zh": "文中说 Bolt 小时候喜欢跑步和打板球（cricket）。",
+        "explanation_en": "The text says Bolt loved running and playing cricket as a child."
+      },
+      {
+        "type": "choice",
+        "question": "How fast did Bolt run 100 meters in 2009?",
+        "options": [
+          "9.58 seconds",
+          "10.58 seconds",
+          "8.58 seconds",
+          "9.85 seconds"
+        ],
+        "answer": 0,
+        "explanation_zh": "2009 年 Bolt 用 9.58 秒跑完 100 米。",
+        "explanation_en": "In 2009 Bolt ran 100 meters in 9.58 seconds."
+      },
+      {
+        "type": "choice",
+        "question": "Besides being fast, what did Bolt love to do?",
+        "options": [
+          "Play cricket in the Olympics",
+          "Make people laugh and dance",
+          "Teach young runners math",
+          "Build bicycles"
+        ],
+        "answer": 1,
+        "explanation_zh": "文中提到 Bolt 喜欢在赛前逗人笑、跳舞，给人带来快乐。",
+        "explanation_en": "The text says Bolt liked to make people laugh and dance before races, bringing joy to everyone."
+      }
+    ]
   },
   {
     "id": "r005",
@@ -74,7 +238,48 @@
       "propel": { "word": "propeller", "phonetic": "prəˈpelə" }
     },
     "target_level": 5000,
-    "body": "Over a hundred years ago, two brothers owned a small bicycle shop. Wilbur and Orville Wright loved machines and spent their free time studying how birds fly. They watched how a bird tilts its wings to turn, and they decided to build a flying machine of their own. They fixed a small propeller to the front of the machine and laid a long wooden runway on the sand. They tested many models on the beach, where the wind was strong and steady. Each test taught them something new, and they often failed before they succeeded. On a cold December morning in 1903, their plane was ready. Orville lay on the lower wing while Wilbur ran beside it. The engine started, and the plane climbed to a low altitude above the waves. A sudden gust of wind pushed against the wings, but the plane held steady. It stayed up for only twelve seconds and traveled about forty meters. But those twelve seconds changed the world. Today, huge planes carry people across oceans, and it all began with two careful brothers and a wooden machine on a windy beach."
+    "body": "Over a hundred years ago, two brothers owned a small bicycle shop. Wilbur and Orville Wright loved machines and spent their free time studying how birds fly. They watched how a bird tilts its wings to turn, and they decided to build a flying machine of their own. They fixed a small propeller to the front of the machine and laid a long wooden runway on the sand. They tested many models on the beach, where the wind was strong and steady. Each test taught them something new, and they often failed before they succeeded. On a cold December morning in 1903, their plane was ready. Orville lay on the lower wing while Wilbur ran beside it. The engine started, and the plane climbed to a low altitude above the waves. A sudden gust of wind pushed against the wings, but the plane held steady. It stayed up for only twelve seconds and traveled about forty meters. But those twelve seconds changed the world. Today, huge planes carry people across oceans, and it all began with two careful brothers and a wooden machine on a windy beach.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "What did the Wright brothers own before building planes?",
+        "options": [
+          "A bicycle shop",
+          "A car factory",
+          "A shipyard",
+          "A farm"
+        ],
+        "answer": 0,
+        "explanation_zh": "莱特兄弟原来开着一家自行车店。",
+        "explanation_en": "The Wright brothers owned a bicycle shop before building planes."
+      },
+      {
+        "type": "choice",
+        "question": "What helped them learn how birds turn?",
+        "options": [
+          "Reading books about birds",
+          "Watching a bird tilt its wings",
+          "Asking a scientist for help",
+          "Flying kites on the beach"
+        ],
+        "answer": 1,
+        "explanation_zh": "他们观察鸟如何倾斜翅膀来转弯，从中得到灵感。",
+        "explanation_en": "They watched a bird tilt its wings to turn, which gave them the idea."
+      },
+      {
+        "type": "choice",
+        "question": "How long was the first successful flight?",
+        "options": [
+          "About twelve seconds",
+          "About twelve minutes",
+          "About one hour",
+          "About twelve days"
+        ],
+        "answer": 0,
+        "explanation_zh": "首次飞行只持续了约 12 秒、飞了约 40 米，却改变了世界。",
+        "explanation_en": "The first flight lasted only about twelve seconds and covered about 40 meters, yet it changed the world."
+      }
+    ]
   },
   {
     "id": "r006",
@@ -86,7 +291,48 @@
       "rag": "破布"
     },
     "target_level": 4300,
-    "body": "A long time ago, people wrote on bamboo, silk, and animal skin. These materials were heavy or very expensive. Around two thousand years ago, a man named Cai Lun wanted to make a lighter and cheaper writing surface. He watched how cloth makers pressed wet fibers into thin sheets. He tried many things, such as tree bark, old cloth, and fishing nets. He broke these materials into tiny pieces and soaked them in water. Then he pressed the wet mixture into flat sheets and left them to dry. The result was light, smooth, and easy to write on. Paper had arrived. Soon people used it everywhere, and the knowledge spread to many countries. Paper made books lighter and learning easier. The next time you turn a page, remember the patient man who turned old rags and bark into something the whole world still uses every day."
+    "body": "A long time ago, people wrote on bamboo, silk, and animal skin. These materials were heavy or very expensive. Around two thousand years ago, a man named Cai Lun wanted to make a lighter and cheaper writing surface. He watched how cloth makers pressed wet fibers into thin sheets. He tried many things, such as tree bark, old cloth, and fishing nets. He broke these materials into tiny pieces and soaked them in water. Then he pressed the wet mixture into flat sheets and left them to dry. The result was light, smooth, and easy to write on. Paper had arrived. Soon people used it everywhere, and the knowledge spread to many countries. Paper made books lighter and learning easier. The next time you turn a page, remember the patient man who turned old rags and bark into something the whole world still uses every day.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "What did people write on before paper?",
+        "options": [
+          "Glass and stone",
+          "Bamboo, silk, and animal skin",
+          "Paper and leaves",
+          "Iron and wood"
+        ],
+        "answer": 1,
+        "explanation_zh": "纸发明前，人们写在竹简、丝绸和兽皮上，又重又贵。",
+        "explanation_en": "Before paper, people wrote on bamboo, silk, and animal skin — heavy and expensive."
+      },
+      {
+        "type": "choice",
+        "question": "Who wanted to make a lighter, cheaper writing surface?",
+        "options": [
+          "A man named Cai Lun",
+          "A king",
+          "A cloth maker",
+          "A farmer"
+        ],
+        "answer": 0,
+        "explanation_zh": "约两千年前，一个叫蔡伦的人想做出更轻更便宜的书写材料。",
+        "explanation_en": "About two thousand years ago, a man named Cai Lun wanted a lighter and cheaper writing surface."
+      },
+      {
+        "type": "choice",
+        "question": "Which of these did Cai Lun use to make paper?",
+        "options": [
+          "Glass and sand",
+          "Tree bark, old cloth, and fishing nets",
+          "Silk and gold",
+          "Stone and metal"
+        ],
+        "answer": 1,
+        "explanation_zh": "蔡伦尝试用树皮、旧布、渔网等材料造纸。",
+        "explanation_en": "Cai Lun made paper from tree bark, old cloth, and fishing nets."
+      }
+    ]
   },
   {
     "id": "r007",
@@ -103,7 +349,48 @@
       "rust": { "word": "rusty", "phonetic": "ˈrʌsti" }
     },
     "target_level": 4600,
-    "body": "One rainy afternoon, Sam found a folded paper inside an old book in the attic. When he opened it, he saw a hand-drawn map with a red X near a small lake. The map looked very old, and its edges were torn. Sam showed it to his sister Emma. They decided to follow the map the next day. Early in the morning, they put sandwiches, a flashlight, and an old lantern into a bag, and Emma packed a compass to find their way back. They walked into the forest behind their house. The path was narrow and quiet. They crossed a small stream, climbed over some fallen trees, and counted their steps carefully. At last they reached the lake. Near the X they found a rusty metal box half-buried in the ground. Their hands shook as they opened it. Inside was not gold, but a bundle of letters and a black-and-white photo. The letters told the story of their grandfather's first adventure. To Sam and Emma, that treasure was worth more than any gold."
+    "body": "One rainy afternoon, Sam found a folded paper inside an old book in the attic. When he opened it, he saw a hand-drawn map with a red X near a small lake. The map looked very old, and its edges were torn. Sam showed it to his sister Emma. They decided to follow the map the next day. Early in the morning, they put sandwiches, a flashlight, and an old lantern into a bag, and Emma packed a compass to find their way back. They walked into the forest behind their house. The path was narrow and quiet. They crossed a small stream, climbed over some fallen trees, and counted their steps carefully. At last they reached the lake. Near the X they found a rusty metal box half-buried in the ground. Their hands shook as they opened it. Inside was not gold, but a bundle of letters and a black-and-white photo. The letters told the story of their grandfather's first adventure. To Sam and Emma, that treasure was worth more than any gold.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "Where did Sam find the map?",
+        "options": [
+          "In a book in the attic",
+          "Under a rock by the lake",
+          "In his school bag",
+          "On the beach"
+        ],
+        "answer": 0,
+        "explanation_zh": "Sam 在阁楼一本旧书里发现了折好的地图。",
+        "explanation_en": "Sam found the folded map inside an old book in the attic."
+      },
+      {
+        "type": "choice",
+        "question": "What did Emma pack to find their way back?",
+        "options": [
+          "A flashlight",
+          "A compass",
+          "A map",
+          "A phone"
+        ],
+        "answer": 1,
+        "explanation_zh": "Emma 带上指南针（compass）以防迷路。",
+        "explanation_en": "Emma packed a compass so they could find their way back."
+      },
+      {
+        "type": "choice",
+        "question": "What was inside the rusty box?",
+        "options": [
+          "Gold and money",
+          "Letters and a photo",
+          "A treasure map",
+          "Nothing"
+        ],
+        "answer": 1,
+        "explanation_zh": "盒子里不是金子，而是一捆信和一张黑白照片，讲述了爷爷的第一次冒险。",
+        "explanation_en": "Inside the box were not gold but letters and a photo telling the story of their grandfather's first adventure."
+      }
+    ]
   },
   {
     "id": "r008",
@@ -118,6 +405,47 @@
       "spark": "电火花"
     },
     "target_level": 5000,
-    "body": "Late one night, Ben heard a strange, muffled sound coming from the attic. He climbed the stairs and pushed the door open slowly. In the corner, under a dusty sheet, something was glowing with a faint blue light. Ben pulled the sheet away and found a small robot about the size of a cat. Its antenna twitched and its eyes blinked as it turned to look at him. A small spark jumped from a loose wire near its chest. The robot spoke in a soft voice. It said that it had run out of power and landed here by accident. Ben brought it food and helped it charge from the lamp in his room. The little robot could not remember its home, so Ben promised to help it search. Every night they worked together, scanning the sky for a signal. The robot taught Ben about the stars, and Ben taught the robot about jokes and sandwiches. One evening, a bright light appeared above the roof. The robot's family had found it at last. Ben felt proud and a little sad as he waved goodbye to his strange new friend."
+    "body": "Late one night, Ben heard a strange, muffled sound coming from the attic. He climbed the stairs and pushed the door open slowly. In the corner, under a dusty sheet, something was glowing with a faint blue light. Ben pulled the sheet away and found a small robot about the size of a cat. Its antenna twitched and its eyes blinked as it turned to look at him. A small spark jumped from a loose wire near its chest. The robot spoke in a soft voice. It said that it had run out of power and landed here by accident. Ben brought it food and helped it charge from the lamp in his room. The little robot could not remember its home, so Ben promised to help it search. Every night they worked together, scanning the sky for a signal. The robot taught Ben about the stars, and Ben taught the robot about jokes and sandwiches. One evening, a bright light appeared above the roof. The robot's family had found it at last. Ben felt proud and a little sad as he waved goodbye to his strange new friend.",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "What did Ben find under the dusty sheet?",
+        "options": [
+          "A small robot",
+          "A cat",
+          "A box of food",
+          "A lamp"
+        ],
+        "answer": 0,
+        "explanation_zh": "掀开布满灰尘的布，Ben 发现一只小猫大小的机器人。",
+        "explanation_en": "Under the dusty sheet Ben found a small robot the size of a cat."
+      },
+      {
+        "type": "choice",
+        "question": "Why did the robot land here?",
+        "options": [
+          "It was looking for food",
+          "It had run out of power and landed by accident",
+          "It wanted to play with Ben",
+          "It was hiding from its family"
+        ],
+        "answer": 1,
+        "explanation_zh": "机器人说自己没电了，意外降落在这里。",
+        "explanation_en": "The robot said it had run out of power and landed here by accident."
+      },
+      {
+        "type": "choice",
+        "question": "How did Ben feel at the end?",
+        "options": [
+          "Only happy",
+          "Angry",
+          "Proud and a little sad",
+          "Scared"
+        ],
+        "answer": 2,
+        "explanation_zh": "机器人被家人找到后，Ben 既为它高兴又有点舍不得，感到骄傲又有一丝难过。",
+        "explanation_en": "When the robot's family found it, Ben felt proud and a little sad to say goodbye."
+      }
+    ]
   }
 ]

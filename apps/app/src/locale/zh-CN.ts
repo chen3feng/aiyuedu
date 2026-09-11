@@ -1,0 +1,99 @@
+// 简体中文 UI 文案。键结构与 en.ts 一一对应。
+export default {
+  appName: "英语学习",
+  slogan: "从词汇量开始",
+
+  nav: {
+    home: "英语学习",
+    assessment: "词汇量评测",
+    reading: "分级阅读",
+    reader: "阅读",
+    settings: "设置",
+  },
+
+  common: {
+    loading: "加载中…",
+    error: "网络错误",
+  },
+
+  home: {
+    start: "开始词汇量评测",
+    reading: "分级阅读",
+    settings: "设置",
+  },
+
+  topic: {
+    science: "科普/科技",
+    sports: "体育/游戏/汽车",
+    history: "历史/名人",
+    adventure: "冒险/科幻/悬疑",
+  },
+
+  assessment: {
+    title: "词汇量评测",
+    subtitle: "看词选义 · 实时计分 · 约 50 题",
+    howTo: "怎么答？",
+    knowRule: "认识 → 选正确意思",
+    scoreUp: "得分上升",
+    unknownRule: "不认识 → 点「不认识」",
+    scoreLess: "扣分较轻",
+    guessWrong: "猜错",
+    extraPenalty: "额外罚分",
+    honestHint: "诚实作答测评才准：不确定就选「不认识」，比乱猜扣得少。",
+    start: "开始测评",
+    score: "得分",
+    questionN: "第 {n} 题",
+    correctN: "对 {n}",
+    unknownN: "不认识 {n}",
+    wrongN: "错 {n}",
+    unknownWord: "不认识这个词",
+    converged: "得分已稳定，可以结束查看结果",
+    finish: "结束并查看结果",
+    correct: "答对了！",
+    unknownMarked: "已标记不认识，正确答案：",
+    wrongAnswer: "猜错了，正确答案：",
+    yourVocab: "你的词汇量",
+    summary: "对 {correct} · 不认识 {unknown} · 错 {wrong}（共 {total} 题）",
+    again: "再测一次",
+  },
+
+  reading: {
+    list: {
+      all: "全部",
+      empty: "该主题暂无文章",
+      wordCount: "{n} 词",
+      newWordRate: "生词率 {n}%",
+    },
+    reader: {
+      words: "{n} 词",
+      newWords: "生词 {n} 个",
+      newWordRate: "生词率 {n}%",
+      rubyMode: "生词标注",
+      originalMode: "原文",
+      speakAll: "全文朗读",
+      stopSpeak: "停止朗读",
+      vocabList: "生词表（{n} 个）",
+      noGloss: "（暂无释义）",
+      lemma: "原形：",
+      speak: "发音",
+      addNotebook: "加入生词本",
+      addedNotebook: "已加入生词本",
+      quizTitle: "课后小测（{n} 题）",
+      correct: "回答正确",
+      wrong: "回答错误",
+      showZh: "查看中文",
+      hideZh: "收起中文",
+      finish: "完成阅读",
+      finishRemain: "完成阅读（还剩 {n} 题）",
+      finished: "已完成阅读",
+    },
+  },
+
+  settings: {
+    title: "设置",
+    language: "语言",
+    followSystem: "跟随系统",
+    chinese: "中文",
+    english: "English",
+  },
+};

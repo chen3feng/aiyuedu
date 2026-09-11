@@ -4,29 +4,29 @@
     <view v-if="detail" class="header">
       <view class="head-top">
         <text class="title">{{ detail.title }}</text>
-        <text class="tag">{{ detail.topic_label }}</text>
+        <text class="tag">{{ topicLabel(detail.topic) }}</text>
       </view>
       <view class="meta">
-        <text class="meta-item">{{ detail.word_count }} 词</text>
-        <text class="meta-item">生词 {{ detail.new_word_count }} 个</text>
-        <text class="meta-item">生词率 {{ (detail.new_word_rate * 100).toFixed(1) }}%</text>
+        <text class="meta-item">{{ t("reading.reader.words", { n: detail.word_count }) }}</text>
+        <text class="meta-item">{{ t("reading.reader.newWords", { n: detail.new_word_count }) }}</text>
+        <text class="meta-item">{{ t("reading.reader.newWordRate", { n: (detail.new_word_rate * 100).toFixed(1) }) }}</text>
       </view>
       <view class="toolbar">
         <view class="mode-switch">
           <view class="mode" :class="{ active: mode === 'ruby' }" @click="mode = 'ruby'">
-            生词标注
+            {{ t("reading.reader.rubyMode") }}
           </view>
           <view class="mode" :class="{ active: mode === 'original' }" @click="mode = 'original'">
-            原文
+            {{ t("reading.reader.originalMode") }}
           </view>
         </view>
         <view class="speak-all" :class="{ playing }" @click="toggleSpeakAll">
-          {{ playing ? "停止朗读" : "全文朗读" }}
+          {{ playing ? t("reading.reader.stopSpeak") : t("reading.reader.speakAll") }}
         </view>
       </view>
     </view>
 
-    <view v-if="loading" class="loading">加载中…</view>
+    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
     <view v-else-if="error" class="error">{{ error }}</view>
 
     <!-- 正文 -->
@@ -54,7 +54,7 @@
 
       <!-- 文末生词表 -->
       <view v-if="detail.vocabulary.length" class="vocab">
-        <view class="vocab-title">生词表（{{ detail.vocabulary.length }} 个）</view>
+        <view class="vocab-title">{{ t("reading.reader.vocabList", { n: detail.vocabulary.length }) }}</view>
         <view v-for="(v, i) in detail.vocabulary" :key="i" class="vocab-item" @click="onVocab(v)">
           <view class="v-row">
             <text class="v-word">{{ v.word }}</text>
@@ -66,7 +66,44 @@
         </view>
       </view>
 
-      <button class="finish-btn" @click="finish">完成阅读</button>
+      <!-- 课后小测：答完所有选择题后才能「完成」 -->
+      <view v-if="choiceQuizzes.length" class="quiz">
+        <view class="quiz-title">{{ t("reading.reader.quizTitle", { n: choiceQuizzes.length }) }}</view>
+        <view v-for="item in choiceQuizzes" :key="item.i" class="quiz-item">
+          <view class="q-question">{{ item.i + 1 }}. {{ item.q.question }}</view>
+          <view
+            v-for="(opt, oi) in item.q.options"
+            :key="oi"
+            class="q-opt"
+            :class="optClass(item.q, item.i, oi)"
+            @click="chooseQuiz(item.i, oi)"
+          >
+            <text class="q-letter">{{ LETTERS[oi] }}</text>
+            <text class="q-opt-text">{{ opt }}</text>
+          </view>
+          <view
+            v-if="answers[item.i] >= 0"
+            class="q-explain"
+            :class="answers[item.i] === item.q.answer ? 'right' : 'wrong'"
+          >
+            <text class="q-result">{{ answers[item.i] === item.q.answer ? "✅ " + t("reading.reader.correct") : "❌ " + t("reading.reader.wrong") }}</text>
+            <view class="q-explanation" @click="toggleZh(item.i)">
+              <text class="q-explanation-text">{{ item.q.explanation_en }}</text>
+              <text class="q-explanation-hint">{{ zhShown[item.i] ? t("reading.reader.hideZh") : t("reading.reader.showZh") }}</text>
+            </view>
+            <text v-if="zhShown[item.i]" class="q-explanation-zh">{{ item.q.explanation_zh }}</text>
+          </view>
+        </view>
+      </view>
+
+      <button
+        class="finish-btn"
+        :class="{ disabled: !allAnswered }"
+        :disabled="!allAnswered"
+        @click="finish"
+      >
+        {{ allAnswered ? t("reading.reader.finish") : t("reading.reader.finishRemain", { n: remaining }) }}
+      </button>
     </view>
 
     <!-- 生词弹窗 -->
@@ -74,16 +111,16 @@
       <view class="popup" @click.stop>
         <view class="popup-word">{{ activeWord.w }}</view>
         <view v-if="activeWord.lemma && activeWord.lemma !== activeWord.w.toLowerCase()" class="popup-lemma">
-          原形：{{ activeWord.lemma }}
+          {{ t("reading.reader.lemma") }}{{ activeWord.lemma }}
         </view>
         <view v-if="activeWord.phonetic" class="popup-phonetic">{{ activeWord.phonetic }}</view>
-        <view class="popup-gloss">{{ activeWord.gloss || "（暂无释义）" }}</view>
+        <view class="popup-gloss">{{ activeWord.gloss || t("reading.reader.noGloss") }}</view>
         <view v-if="activeWord.full_gloss && activeWord.full_gloss !== activeWord.gloss" class="popup-full">
           {{ activeWord.full_gloss }}
         </view>
         <view class="popup-actions">
-          <button class="act speak" @click="speakWord">发音</button>
-          <button class="act save" @click="addToNotebook">加入生词本</button>
+          <button class="act speak" @click="speakWord">{{ t("reading.reader.speak") }}</button>
+          <button class="act save" @click="addToNotebook">{{ t("reading.reader.addNotebook") }}</button>
         </view>
       </view>
     </view>
@@ -91,11 +128,26 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, nextTick, ref } from "vue";
-import { onLoad } from "@dcloudio/uni-app";
+import { computed, getCurrentInstance, nextTick, ref } from "vue";
+import { onLoad, onShow } from "@dcloudio/uni-app";
+import { useI18n } from "vue-i18n";
 import { getReading, recordReading } from "../../api/reading";
-import type { ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
+import type { ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
+
+const { t, te } = useI18n();
+
+// 主题名走前端 i18n（后端 topic_label 仅中文），未知主题回退原始 key
+function topicLabel(topic: string): string {
+  const key = `topic.${topic}`;
+  return te(key) ? t(key) : topic;
+}
+
+// 课后小测解答：默认只出英文，点击英文解答后额外展示中文（与 UI 语言无关）
+const zhShown = ref<Record<number, boolean>>({});
+function toggleZh(qi: number) {
+  zhShown.value[qi] = !zhShown.value[qi];
+}
 
 interface ActiveWord {
   w: string;
@@ -119,10 +171,40 @@ const instance = getCurrentInstance();
 const startTs = Date.now();
 const clickedLemmas = new Set<string>();
 
+// 课后小测：answers[i] = 所选项下标（-1 未作答），与 detail.quizzes 下标对齐
+const answers = ref<number[]>([]);
+const LETTERS = ["A", "B", "C", "D"];
+
+// 只渲染选择题；`type` 字段为判断题等未来题型预留（暂不渲染）
+const choiceQuizzes = computed(() =>
+  (detail.value?.quizzes || [])
+    .map((q, i) => ({ q, i }))
+    .filter((x): x is { q: ChoiceQuiz; i: number } => x.q.type === "choice"),
+);
+const remaining = computed(() => choiceQuizzes.value.filter((x) => answers.value[x.i] < 0).length);
+const allAnswered = computed(() => choiceQuizzes.value.length > 0 && remaining.value === 0);
+
+function chooseQuiz(qi: number, oi: number) {
+  if (answers.value[qi] >= 0) return; // 已作答，锁定不再改
+  answers.value[qi] = oi;
+}
+
+function optClass(q: ChoiceQuiz, qi: number, oi: number): string {
+  const chosen = answers.value[qi];
+  if (chosen < 0) return "";
+  if (oi === q.answer) return "opt-correct";
+  if (oi === chosen) return "opt-wrong";
+  return "opt-dim";
+}
+
 onLoad((query) => {
   id.value = (query?.id as string) || "";
   level.value = Number((query?.level as string) || 3600) || 3600;
   fetchDetail();
+});
+
+onShow(() => {
+  uni.setNavigationBarTitle({ title: t("nav.reader") });
 });
 
 async function fetchDetail() {
@@ -130,6 +212,7 @@ async function fetchDetail() {
   error.value = "";
   try {
     detail.value = await getReading(id.value, level.value);
+    answers.value = (detail.value.quizzes || []).map(() => -1);
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -247,12 +330,13 @@ function addToNotebook() {
     list.push({ word, gloss: w.gloss || "", phonetic: w.phonetic, ts: Date.now() });
     uni.setStorageSync("notebook", list);
   }
-  uni.showToast({ title: "已加入生词本", icon: "success" });
+  uni.showToast({ title: t("reading.reader.addedNotebook"), icon: "success" });
   closePopup();
 }
 
 function finish() {
   if (!detail.value) return;
+  if (!allAnswered.value) return; // 未答完全部题目，不能完成
   const seconds = Math.round((Date.now() - startTs) / 1000);
   recordReading(id.value, {
     level: level.value,
@@ -262,7 +346,7 @@ function finish() {
   }).catch(() => {
     /* 记录失败不打断阅读 */
   });
-  uni.showToast({ title: "已完成阅读", icon: "success" });
+  uni.showToast({ title: t("reading.reader.finished"), icon: "success" });
 }
 </script>
 
@@ -453,6 +537,123 @@ function finish() {
   border-radius: 16rpx;
   font-size: 32rpx;
   font-weight: 600;
+}
+.finish-btn.disabled {
+  background: #c3cbe0;
+  color: #fff;
+}
+.quiz {
+  margin-top: 32rpx;
+  border-top: 2rpx solid #eef0f6;
+  padding-top: 24rpx;
+}
+.quiz-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2d50;
+  margin-bottom: 16rpx;
+}
+.quiz-item {
+  padding: 20rpx 16rpx;
+  border-radius: 12rpx;
+  background: #fafbfe;
+  margin-bottom: 16rpx;
+}
+.q-question {
+  font-size: 30rpx;
+  color: #33405f;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+.q-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 10rpx;
+  background: #fff;
+  border: 2rpx solid #eef0f6;
+  margin-bottom: 12rpx;
+}
+.q-letter {
+  flex-shrink: 0;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #4f7cff;
+  background: #eef2fb;
+  border-radius: 8rpx;
+}
+.q-opt-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #33405f;
+  line-height: 1.5;
+}
+.q-opt.opt-correct {
+  border-color: #07c160;
+  background: #f0faf3;
+}
+.q-opt.opt-correct .q-letter {
+  background: #07c160;
+  color: #fff;
+}
+.q-opt.opt-wrong {
+  border-color: #fa5151;
+  background: #fdecec;
+}
+.q-opt.opt-wrong .q-letter {
+  background: #fa5151;
+  color: #fff;
+}
+.q-opt.opt-dim {
+  opacity: 0.55;
+}
+.q-explain {
+  margin-top: 8rpx;
+  padding: 16rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+.q-explain.right {
+  background: #f0faf3;
+  color: #1a7a3d;
+}
+.q-explain.wrong {
+  background: #fdecec;
+  color: #c0392b;
+}
+.q-result {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4rpx;
+}
+.q-explanation {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+.q-explanation-text {
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+.q-explanation-hint {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: #4f7cff;
+  border-bottom: 2rpx dashed #4f7cff;
+}
+.q-explanation-zh {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #6a7591;
 }
 .mask {
   position: fixed;

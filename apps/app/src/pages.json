@@ -23,6 +23,12 @@
 			"style": {
 				"navigationBarTitleText": "阅读"
 			}
+		},
+		{
+			"path": "pages/settings/settings",
+			"style": {
+				"navigationBarTitleText": "设置"
+			}
 		}
 	],
 	"globalStyle": {
