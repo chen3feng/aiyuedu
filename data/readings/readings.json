@@ -1,0 +1,123 @@
+[
+  {
+    "id": "r001",
+    "title": "Why Is the Sky Blue?",
+    "topic": "science",
+    "glosses": {
+      "particle": "微粒",
+      "rainbow": "彩虹",
+      "prism": "棱镜",
+      "arc": "弧形",
+      "twinkle": "闪烁"
+    },
+    "target_level": 4000,
+    "body": "Have you ever looked up on a sunny day and wondered why the sky is blue? Sunlight looks white, but it is really made of many colors. When sunlight enters our air, it hits tiny particles and gas molecules. Blue light travels in short waves, so it bounces around more than the other colors. This scattering spreads blue light all over the sky. That is why we see a blue sky in the day. In the evening, the light has to travel a longer path through the air. Most of the blue light scatters away before it reaches your eyes, so the sky turns orange and red. After a rain, you may see a rainbow. Every drop of water works like a tiny prism, bending the light into a bright arc of colors. The same trick works with water. A deep ocean looks blue for the same reason. At night, the stars seem to twinkle because their light crosses moving air. Next time you see a clear sky, remember that the color comes from light dancing through the air."
+  },
+  {
+    "id": "r002",
+    "title": "A Visit to the Moon",
+    "topic": "science",
+    "glosses": {
+      "astronaut": "宇航员",
+      "crater": "环形山",
+      "sparkle": "闪闪发光",
+      "orbit": "绕…运行"
+    },
+    "target_level": 4600,
+    "body": "Mia, a young astronaut, put on her heavy suit and stepped out of the ship. The ground under her boots was gray and covered with fine dust. Around her, the sky was completely black, even though the Sun was shining brightly. There was no wind, and no sound at all. Every step she took made a small cloud of dust that drifted slowly back to the ground. She picked up a rock and held it in her thick glove. It was cold and lighter than she expected. Nearby, the gray ground was marked with deep craters and low hills. The fine dust sparkled in the bright sunlight. In the distance she could see the Earth, a blue and white ball hanging in the dark sky. A line of tracks stretched from the ship to her feet. She smiled inside her helmet. People had dreamed about this place for thousands of years, and now she was walking on it. The ship would orbit the Moon once before heading home. This was the quietest and most wonderful place she had ever seen."
+  },
+  {
+    "id": "r003",
+    "title": "The First Football Match",
+    "topic": "sports",
+    "glosses": {
+      "referee": "裁判",
+      "stadium": "体育场",
+      "dribble": "带球"
+    },
+    "target_level": 4000,
+    "body": "It was Leo's first football match, and his hands were shaking. He sat on the bench with the other boys and watched the first half from the side. The score was still zero to zero, and the referee's whistle had just blown for the start. The stadium was full of cheering fans. In the second half, the coach called his name. Leo ran onto the field, and his heart beat very fast. The grass was wet, and the ball moved quickly. A player passed the ball to him. Leo dribbled the ball past one defender and began to run. Another defender came close, but Leo kicked the ball to the side and went past him. He looked up and saw the goal. He shot, and the ball flew into the corner of the net. The crowd cheered, and his friends ran to him with big smiles. They won the match by one goal. On the way home, Leo could not stop smiling. He had been afraid, but he tried his best, and that was enough."
+  },
+  {
+    "id": "r004",
+    "title": "The Fastest Man on Earth",
+    "topic": "sports",
+    "glosses": {
+      "cricket": "板球",
+      "sprint": "短跑运动员",
+      "soar": "飞驰"
+    },
+    "full_glosses": {
+      "sprint": "n. 短跑运动员；v. 短距离冲刺，疾跑"
+    },
+    "headwords": {
+      "sprint": { "word": "sprinter", "phonetic": "ˈsprɪntə" }
+    },
+    "target_level": 4800,
+    "body": "Usain Bolt was born in a small town in Jamaica. As a child, he loved to run and play cricket. When he grew older, his speed became famous. As a young sprinter, he learned to start fast and hold his speed to the line. His long legs seemed to soar over the track as he ran. He trained hard every day and learned to use his long legs and tall body. In 2009, he ran one hundred meters in only 9.58 seconds, faster than any human before him. At the Olympic Games, he won gold medals again and again. People called him the fastest man on Earth. But Bolt was not only fast. He also loved to make people laugh and dance before a race. His joyful style made millions of fans around the world. He showed that hard work and a happy heart can go together. After he stopped racing, he still encouraged young athletes to dream big. His story teaches us that a strong body and a warm smile can both lead to great things."
+  },
+  {
+    "id": "r005",
+    "title": "The Wright Brothers and the First Flight",
+    "topic": "history",
+    "glosses": {
+      "tilt": "倾斜",
+      "propel": "螺旋桨",
+      "runway": "跑道",
+      "altitude": "高度",
+      "gust": "一阵（风）"
+    },
+    "full_glosses": {
+      "propel": "n. 螺旋桨，推进器"
+    },
+    "headwords": {
+      "propel": { "word": "propeller", "phonetic": "prəˈpelə" }
+    },
+    "target_level": 5000,
+    "body": "Over a hundred years ago, two brothers owned a small bicycle shop. Wilbur and Orville Wright loved machines and spent their free time studying how birds fly. They watched how a bird tilts its wings to turn, and they decided to build a flying machine of their own. They fixed a small propeller to the front of the machine and laid a long wooden runway on the sand. They tested many models on the beach, where the wind was strong and steady. Each test taught them something new, and they often failed before they succeeded. On a cold December morning in 1903, their plane was ready. Orville lay on the lower wing while Wilbur ran beside it. The engine started, and the plane climbed to a low altitude above the waves. A sudden gust of wind pushed against the wings, but the plane held steady. It stayed up for only twelve seconds and traveled about forty meters. But those twelve seconds changed the world. Today, huge planes carry people across oceans, and it all began with two careful brothers and a wooden machine on a windy beach."
+  },
+  {
+    "id": "r006",
+    "title": "How Paper Was Invented",
+    "topic": "history",
+    "glosses": {
+      "bamboo": "竹子",
+      "soak": "浸泡",
+      "rag": "破布"
+    },
+    "target_level": 4300,
+    "body": "A long time ago, people wrote on bamboo, silk, and animal skin. These materials were heavy or very expensive. Around two thousand years ago, a man named Cai Lun wanted to make a lighter and cheaper writing surface. He watched how cloth makers pressed wet fibers into thin sheets. He tried many things, such as tree bark, old cloth, and fishing nets. He broke these materials into tiny pieces and soaked them in water. Then he pressed the wet mixture into flat sheets and left them to dry. The result was light, smooth, and easy to write on. Paper had arrived. Soon people used it everywhere, and the knowledge spread to many countries. Paper made books lighter and learning easier. The next time you turn a page, remember the patient man who turned old rags and bark into something the whole world still uses every day."
+  },
+  {
+    "id": "r007",
+    "title": "The Secret of the Old Map",
+    "topic": "adventure",
+    "glosses": {
+      "attic": "阁楼",
+      "flashlight": "手电筒",
+      "lantern": "提灯",
+      "compass": "指南针",
+      "rust": "生锈的"
+    },
+    "headwords": {
+      "rust": { "word": "rusty", "phonetic": "ˈrʌsti" }
+    },
+    "target_level": 4600,
+    "body": "One rainy afternoon, Sam found a folded paper inside an old book in the attic. When he opened it, he saw a hand-drawn map with a red X near a small lake. The map looked very old, and its edges were torn. Sam showed it to his sister Emma. They decided to follow the map the next day. Early in the morning, they put sandwiches, a flashlight, and an old lantern into a bag, and Emma packed a compass to find their way back. They walked into the forest behind their house. The path was narrow and quiet. They crossed a small stream, climbed over some fallen trees, and counted their steps carefully. At last they reached the lake. Near the X they found a rusty metal box half-buried in the ground. Their hands shook as they opened it. Inside was not gold, but a bundle of letters and a black-and-white photo. The letters told the story of their grandfather's first adventure. To Sam and Emma, that treasure was worth more than any gold."
+  },
+  {
+    "id": "r008",
+    "title": "Robot in the Attic",
+    "topic": "adventure",
+    "glosses": {
+      "muffle": "低沉的",
+      "attic": "阁楼",
+      "robot": "机器人",
+      "antenna": "天线",
+      "twitch": "抽动",
+      "spark": "电火花"
+    },
+    "target_level": 5000,
+    "body": "Late one night, Ben heard a strange, muffled sound coming from the attic. He climbed the stairs and pushed the door open slowly. In the corner, under a dusty sheet, something was glowing with a faint blue light. Ben pulled the sheet away and found a small robot about the size of a cat. Its antenna twitched and its eyes blinked as it turned to look at him. A small spark jumped from a loose wire near its chest. The robot spoke in a soft voice. It said that it had run out of power and landed here by accident. Ben brought it food and helped it charge from the lamp in his room. The little robot could not remember its home, so Ben promised to help it search. Every night they worked together, scanning the sky for a signal. The robot taught Ben about the stars, and Ben taught the robot about jokes and sandwiches. One evening, a bright light appeared above the roof. The robot's family had found it at last. Ben felt proud and a little sad as he waved goodbye to his strange new friend."
+  }
+]

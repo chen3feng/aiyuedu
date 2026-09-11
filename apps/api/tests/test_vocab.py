@@ -48,10 +48,47 @@ def test_estimate_single_known_band():
 def test_estimate_proportion_weighted_sum():
     sess = vocab.TestSession(id="x")
     sess.band_total[0] = 4
-    sess.band_known[0] = 2   # 认识率 0.5 → 2000 × 0.5 = 1000
+    sess.band_known[0] = 3   # 认识率 0.75 → 2000 × 0.75 = 1500
     sess.band_total[3] = 4
-    sess.band_known[3] = 1   # 认识率 0.25 → 2000 × 0.25 = 500
-    assert vocab._estimate(sess) == pytest.approx(1500.0)
+    sess.band_known[3] = 2   # 认识率 0.5 → 2000 × 0.5 = 1000
+    assert vocab._estimate(sess) == pytest.approx(2500.0)
+
+
+def test_estimate_zeroes_below_guess_rate():
+    """认识率 ≤ 25%（四选一纯猜命中率）的段视为无知识信号，计 0。"""
+    sess = vocab.TestSession(id="x")
+    sess.band_total[0] = 4
+    sess.band_known[0] = 2   # 0.5 → 保留
+    sess.band_total[3] = 4
+    sess.band_known[3] = 1   # 0.25 → 猜测下限，清零
+    assert vocab._estimate(sess) == pytest.approx(2000 * 0.5)  # 1000
+
+
+def test_isotonic_output_is_non_increasing():
+    out = vocab._isotonic_noninc([0.3, 0.9, 0.2], [5, 5, 5])
+    assert all(out[i] >= out[i + 1] for i in range(len(out) - 1))
+
+
+def test_estimate_flattens_spike():
+    """尖峰（低段不认识、高段「蒙对」）应被单调平滑压低，不按表面认识率计分。
+
+    对应真实场景：孩子把 rank≈24000 的 cerecloth 蒙对，若按表面 1.0 认识率，
+    单题就 +4000×1.0 = 4000 分；单调平滑后应大幅回落。
+    """
+    sess = vocab.TestSession(id="x")
+    sess.band_total[0] = 4
+    sess.band_known[0] = 2   # 0.5
+    sess.band_total[1] = 4
+    sess.band_known[1] = 1   # 0.25
+    sess.band_total[2] = 4
+    sess.band_known[2] = 0   # 0.0
+    sess.band_total[9] = 4
+    sess.band_known[9] = 4   # 1.0 —— 尖峰：认识最难词却漏了常见词
+    naive = 2000 * 0.5 + 2000 * 0.25 + 2000 * 0.0 + 4000 * 1.0  # 5500
+    assert vocab._estimate(sess) < naive
+    # 尖峰段(1.0) 与相邻低谷段(0.25/0.0) 合并成 (1+0+4)/12=5/12≈0.417，
+    # 故 = 2000×0.5 + 2000×5/12 + 2000×5/12 + 4000×5/12 = 13000/3
+    assert vocab._estimate(sess) == pytest.approx(13000 / 3)
 
 
 # ---------- 出题 ----------
@@ -124,13 +161,20 @@ def test_score_never_jumps_more_than_max_step():
         assert abs(b - a) <= vocab.SCORE_MAX_STEP
 
 
-def test_round_robin_covers_all_bands_first():
-    # 前 10 题应覆盖全部 10 段各一次（轮询抽样，各段均衡）
+def test_ramp_fills_low_bands_first():
+    """按词频从低到高逐段填满：整卷 50 题排成从易到难的单坡道。"""
+    from collections import Counter
+
     sid, _, _ = vocab.start_test()
     sess = vocab.get_session(sid)
-    for _ in range(vocab.N_BANDS):
+    order = []
+    for _ in range(vocab.MAX_QUESTIONS):
+        order.append(vocab._band_of(sess.current["rank"]))
         vocab.submit_answer(sess, None, True)
-    assert sorted(sess.band_total.values()) == [1] * vocab.N_BANDS
+        if sess.finished:
+            break
+    assert order == sorted(order)  # 全局非降：由易到难
+    assert Counter(order) == {i: vocab.ROUNDS for i in range(vocab.N_BANDS)}
 
 
 # ---------- 稳定性回归（曾出现 2 倍分叉） ----------

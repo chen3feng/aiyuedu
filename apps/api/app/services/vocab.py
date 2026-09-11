@@ -32,6 +32,7 @@ ROUNDS = 5                               # 每段抽词轮数 → 总题量 = N_
 MAX_QUESTIONS = N_BANDS * ROUNDS         # 50
 MIN_SAMPLES = 3                          # 至少 3 词才下发估值（前端显示「测评中…」）
 SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝「突变」
+GUESS_RATE = 0.25                        # 四选一纯猜命中率；认识率≤此值的段视为无知识信号
 
 RULES = (
     "认识就选正确的中文意思；"
@@ -172,15 +173,60 @@ def _pick_in_band(i: int, avoid: set) -> dict:
     return _make_question(target)
 
 
+def _isotonic_noninc(values: list, weights: list) -> list:
+    """把各段认识率拟合成「词越难、认识率越低」的非增曲线（PAV，加权最小二乘）。
+
+    压制「尖峰」：低段不认识、却在高段「蒙对」四选一（纯猜 25%），会被误记成
+    认识，从而把高分段严重抬高（例：把 rank≈24000 的 cerecloth 蒙对，单题即
+    +4000×25% = 1000 分）。词越难、认识率应单调下降，尖峰违反此规律，属噪声。
+    """
+    n = len(values)
+    blocks = [[i] for i in range(n)]
+
+    def mean(idx: int) -> float:
+        s = sum(values[j] * weights[j] for j in blocks[idx])
+        t = sum(weights[j] for j in blocks[idx])
+        return s / t if t else 0.0
+
+    changed = True
+    while changed:
+        changed = False
+        i = 0
+        while i < len(blocks) - 1:
+            if mean(i) < mean(i + 1):  # 违反非增（后段反而更高）→ 合并
+                blocks[i] += blocks[i + 1]
+                del blocks[i + 1]
+                changed = True
+            else:
+                i += 1
+
+    out = [0.0] * n
+    for blk in blocks:
+        m = (sum(values[j] * weights[j] for j in blk)
+             / sum(weights[j] for j in blk))
+        for j in blk:
+            out[j] = m
+    return out
+
+
 def _estimate(sess: "TestSession") -> float:
-    """词汇量 = Σ 段宽 × 认识率（只统计已作答的段）。"""
-    vocab = 0.0
+    """词汇量 = Σ 段宽 × 认识率（只统计已作答的段）。
+
+    认识率先做单调非增平滑（压制「尖峰」：低段不认识、却蒙对高段生僻词），
+    再压「猜测下限」：认识率 ≤ GUESS_RATE（四选一纯猜 25%）的段视为无知识信号，
+    计 0。二者合起来把四选一蒙对造成的虚高压回真实水平。
+    """
+    rates, weights, idxs = [], [], []
     for i in range(N_BANDS):
         n = sess.band_total.get(i, 0)
         if n > 0:
-            acc = sess.band_known.get(i, 0) / n
-            vocab += _band_width(i) * acc
-    return vocab
+            rates.append(sess.band_known.get(i, 0) / n)
+            weights.append(n)
+            idxs.append(i)
+    if rates:
+        rates = _isotonic_noninc(rates, weights)
+        rates = [0.0 if r <= GUESS_RATE else r for r in rates]
+    return sum(_band_width(i) * r for i, r in zip(idxs, rates))
 
 
 @dataclass
@@ -242,8 +288,16 @@ def start_test() -> tuple[str, dict, dict]:
 
 
 def _next_band(sess: TestSession) -> int:
-    """取「已答数最少」的段（等价于轮询，保证各段均衡覆盖）。"""
-    return min(range(N_BANDS), key=lambda i: sess.band_total.get(i, 0))
+    """取「词频最低、且未抽满」的段，把 50 题排成从易到难的单坡道。
+
+    先把第 0 段（前 2000 常用词）抽满 `ROUNDS` 词，再进第 1 段……直到末段。
+    旧轮询是「10 题一小坡、反复 5 次」，生僻词全程穿插、易受挫；本实现让孩子
+    先建立信心、再逐渐探到词汇天花板。最终估值与顺序无关（各段仍是 5 样本）。
+    """
+    for i in range(N_BANDS):
+        if sess.band_total.get(i, 0) < ROUNDS:
+            return i
+    return N_BANDS - 1  # 理论不可达（答满 MAX_QUESTIONS 即结束）
 
 
 def _log_answer(sess: TestSession, q: dict, response: str, estimate: float) -> None:

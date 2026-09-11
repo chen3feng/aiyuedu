@@ -1,0 +1,197 @@
+// 语音合成统一封装：
+//   - 优先后端 edge-tts（音色可控、跨平台一致）；
+//   - 加载失败时回退浏览器 Web Speech API（未来「免费试用」档走浏览器）；
+//   - 非 H5 平台（小程序）暂不支持，返回 false 由调用方降级。
+import { ttsUrl } from "../api/tts";
+
+let audio: HTMLAudioElement | null = null;
+
+function stopAudio(): void {
+  if (audio) {
+    audio.pause();
+    audio.onended = null;
+    audio.onerror = null;
+    audio.src = "";
+    audio = null;
+  }
+}
+
+// 浏览器 TTS（回退档 / 未来免费试用档）
+function browserSpeak(text: string, lang: string, onEnd?: () => void): boolean {
+  // #ifdef H5
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = 0.9;
+    if (onEnd) {
+      u.onend = onEnd;
+      u.onerror = onEnd;
+    }
+    synth.speak(u);
+    return true;
+  }
+  // #endif
+  return false;
+}
+
+function browserSpeakLong(text: string, lang: string, onEnd?: () => void): boolean {
+  // #ifdef H5
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const chunks = text
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const sentences = chunks.length ? chunks : [text];
+    let remaining = sentences.length;
+    sentences.forEach((chunk) => {
+      const u = new SpeechSynthesisUtterance(chunk);
+      u.lang = lang;
+      u.rate = 0.9;
+      const done = () => {
+        remaining -= 1;
+        if (remaining <= 0 && onEnd) onEnd();
+      };
+      u.onend = done;
+      u.onerror = done;
+      synth.speak(u);
+    });
+    return true;
+  }
+  // #endif
+  return false;
+}
+
+// 浏览器逐句朗读（回退档 / 免费试用档）：按句入队，onstart 时回调当前句下标
+function browserSpeakLines(
+  sentences: string[],
+  lang: string,
+  onLine?: (i: number) => void,
+  onEnd?: () => void,
+): boolean {
+  // #ifdef H5
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    let remaining = sentences.length;
+    sentences.forEach((s, idx) => {
+      const u = new SpeechSynthesisUtterance(s);
+      u.lang = lang;
+      u.rate = 0.9;
+      u.onstart = () => onLine?.(idx);
+      const done = () => {
+        remaining -= 1;
+        if (remaining <= 0 && onEnd) onEnd();
+      };
+      u.onend = done;
+      u.onerror = done;
+      synth.speak(u);
+    });
+    return true;
+  }
+  // #endif
+  return false;
+}
+
+// 播放后端 edge-tts 音频；失败则回退浏览器 TTS。fallback 返回 false 表示也不可用。
+function playUrl(url: string, fallback: () => boolean, onEnd?: () => void): boolean {
+  // #ifdef H5
+  stopAudio();
+  const a = new Audio(url);
+  let fellBack = false;
+  const fail = () => {
+    if (fellBack) return;
+    fellBack = true;
+    if (!fallback() && onEnd) onEnd();
+  };
+  a.onerror = fail;
+  a.onended = () => {
+    if (onEnd) onEnd();
+  };
+  const p = a.play();
+  if (p && typeof p.catch === "function") p.catch(fail);
+  audio = a;
+  return true;
+  // #endif
+  // #ifndef H5
+  return fallback();
+  // #endif
+}
+
+export function speak(text: string, lang = "en-US"): boolean {
+  if (!text) return false;
+  return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang));
+}
+
+export function speakLong(text: string, lang = "en-US", onEnd?: () => void): boolean {
+  if (!text) return false;
+  return playUrl(ttsUrl(text, lang), () => browserSpeakLong(text, lang, onEnd), onEnd);
+}
+
+// 逐句朗读：后端 edge-tts 每句一个音频、顺序播放，onLine 回调当前句下标（供高亮 + 滚屏）。
+// 首句失败视为后端不可用，整体回退浏览器逐句朗读；后续单句失败仅跳过。
+export function speakLines(
+  sentences: string[],
+  lang = "en-US",
+  onLine?: (i: number) => void,
+  onEnd?: () => void,
+): boolean {
+  // #ifdef H5
+  if (typeof window === "undefined") return false;
+  if (!sentences.length) {
+    onEnd?.();
+    return true;
+  }
+  stopAudio();
+  // 并行预取：new Audio(url) 立即触发加载，播放时无网络空档
+  const audios = sentences.map((s) => new Audio(ttsUrl(s, lang)));
+  let i = 0;
+  const advance = () => {
+    if (i >= audios.length) {
+      onEnd?.();
+      return;
+    }
+    const idx = i++;
+    onLine?.(idx);
+    const a = audios[idx];
+    let settled = false;
+    const failOrNext = () => {
+      if (settled) return;
+      settled = true;
+      if (idx === 0) {
+        stopAudio();
+        browserSpeakLines(sentences, lang, onLine, onEnd);
+      } else {
+        advance();
+      }
+    };
+    a.onended = () => {
+      if (!settled) {
+        settled = true;
+        advance();
+      }
+    };
+    a.onerror = failOrNext;
+    a.play().catch(failOrNext);
+    audio = a;
+  };
+  advance();
+  return true;
+  // #endif
+  // #ifndef H5
+  return browserSpeakLines(sentences, lang, onLine, onEnd);
+  // #endif
+}
+
+// 停止朗读（后端音频 + 浏览器 TTS 都停）
+export function stopSpeak(): void {
+  stopAudio();
+  // #ifdef H5
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+  // #endif
+}

@@ -5,12 +5,16 @@
       <text class="slogan">从词汇量开始</text>
     </view>
     <button class="start-btn" @click="goAssessment">开始词汇量评测</button>
+    <button class="reading-btn" @click="goReading">分级阅读</button>
   </view>
 </template>
 
 <script setup lang="ts">
 function goAssessment() {
   uni.navigateTo({ url: "/pages/assessment/assessment" });
+}
+function goReading() {
+  uni.navigateTo({ url: "/pages/reading/list" });
 }
 </script>
 
@@ -45,6 +49,15 @@ function goAssessment() {
   width: 100%;
   background: #4f7cff;
   color: #fff;
+  border-radius: 16rpx;
+  font-size: 34rpx;
+  font-weight: 600;
+}
+.reading-btn {
+  width: 100%;
+  margin-top: 24rpx;
+  background: #fff;
+  color: #4f7cff;
   border-radius: 16rpx;
   font-size: 34rpx;
   font-weight: 600;

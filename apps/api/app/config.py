@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     wordlist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "wordlist.csv")
     vocab_log_path: str = str(PROJECT_ROOT / "data" / "logs" / "vocab_sessions.jsonl")
+    surface_lemma_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "surface_lemma.json")
+    readings_path: str = str(PROJECT_ROOT / "data" / "readings" / "readings.json")
+    reading_log_path: str = str(PROJECT_ROOT / "data" / "logs" / "reading_records.jsonl")
 
 
 settings = Settings()

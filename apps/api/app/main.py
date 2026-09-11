@@ -4,7 +4,7 @@ from sqlalchemy import text
 
 from .config import settings
 from .db import engine
-from .routers import vocab
+from .routers import reading, tts, vocab
 
 app = FastAPI(title=settings.app_name)
 
@@ -17,6 +17,8 @@ app.add_middleware(
 )
 
 app.include_router(vocab.router)
+app.include_router(reading.router)
+app.include_router(tts.router)
 
 
 @app.get("/health")

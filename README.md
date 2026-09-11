@@ -21,7 +21,8 @@ english/
 │   │   └── src/pages/    # 页面：评测 / 阅读 / 生词本 / 复习 / 推荐 / 报告
 │   └── api/              # FastAPI 后端
 │       └── app/          # main.py / config.py / db.py
-├── data/wordlists/       # 词表数据（主词表 wordlist.csv）
+├── data/wordlists/       # 词表数据（主词表 wordlist.csv + surface_lemma.json）
+├── data/readings/        # 分级阅读素材（readings.json）
 ├── docs/                 # 设计文档 + 实现计划
 ├── docker-compose.yml    # PostgreSQL(pgvector) + Redis
 └── .gitignore
@@ -64,4 +65,5 @@ uv run --directory apps/api pytest -q
 - 设计文档：[design-doc.md](design-doc.md)
 - 实现计划：[implementation-plan.md](implementation-plan.md)
 - 词汇量评测算法：[docs/vocab-assessment.md](docs/vocab-assessment.md)
+- 分级阅读算法：[docs/graded-reading.md](docs/graded-reading.md)
 - 词表说明：[data/wordlists/README.md](data/wordlists/README.md)

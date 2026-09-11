@@ -7,6 +7,8 @@
 | 文件 | 说明 |
 | --- | --- |
 | `wordlist.csv` | **项目主词表**（已过滤、分带），供评测/分级/生词标注使用 |
+| `surface_lemma.json` | 词形 → 词族头映射（约 7.5 万条，提交入库），供分级阅读做词形还原 |
+| `build_surface_lemma.py` | 从 raw 词族表 + 词形还原表生成 `surface_lemma.json` 的脚本 |
 | `raw/ecdict.csv` | ECDICT 全量原始数据（约 76 万词条，63MB，MIT） |
 | `raw/basewrd1.txt`~`basewrd25.txt` | Paul Nation BNC/COCA 25000 基础词族表（每文件 1000 词族，CC BY-SA 4.0） |
 | `raw/basewrd31~34.txt` | Nation 附加表：专有名词 / 边缘词 / 透明复合词 / 缩写（**不参与排名**） |
@@ -65,5 +67,12 @@
 ## 重新生成
 
 ```bash
+# 主词表（wordlist.csv）
 uv run data/wordlists/process_ecdict.py
+
+# 词形还原产物（surface_lemma.json）——分级阅读依赖
+uv run data/wordlists/build_surface_lemma.py
 ```
+
+`surface_lemma.json` 是 `build_surface_lemma.py` 从 `raw/basewrd*.txt`（派生）+ `raw/lemma.en.txt`
+（屈折/不规则）生成，**只保留词族头在 `wordlist.csv` 中的条目**，运行时加载产物、不解析 raw。

@@ -11,6 +11,18 @@
 			"style": {
 				"navigationBarTitleText": "词汇量评测"
 			}
+		},
+		{
+			"path": "pages/reading/list",
+			"style": {
+				"navigationBarTitleText": "分级阅读"
+			}
+		},
+		{
+			"path": "pages/reading/reader",
+			"style": {
+				"navigationBarTitleText": "阅读"
+			}
 		}
 	],
 	"globalStyle": {
