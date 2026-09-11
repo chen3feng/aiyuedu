@@ -18,7 +18,9 @@
       <view v-for="r in items" :key="r.id" class="card" @click="open(r.id)">
         <view class="card-top">
           <text class="title">{{ r.title }}</text>
-          <text class="tag">{{ topicLabel(r.topic) }}</text>
+          <view class="tags">
+            <text v-for="(label, i) in topicTags(r)" :key="i" class="tag">{{ label }}</text>
+          </view>
         </view>
         <view class="meta">
           <text class="meta-item">{{ t("reading.list.wordCount", { n: r.word_count }) }}</text>
@@ -38,7 +40,7 @@ import { listReadings } from "../../api/reading";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
 
-const { t, te } = useI18n();
+const { t } = useI18n();
 
 const tabs = [
   { key: "", labelKey: "reading.list.all" },
@@ -48,10 +50,10 @@ const tabs = [
   { key: "adventure", labelKey: "topic.adventure" },
 ];
 
-// 主题名走前端 i18n（后端 topic_label 仅中文），未知主题回退原始 key
-function topicLabel(topic: string): string {
-  const key = `topic.${topic}`;
-  return te(key) ? t(key) : topic;
+// 多主题中文名直接来自后端 topic_labels；标签缺失回退主题 key
+function topicTags(r: ReadingSummary): string[] {
+  const labels = r.topic_labels || [];
+  return (r.topics || []).map((k, i) => labels[i] || k);
 }
 
 // 读者词汇量：优先用评测结果（若已存），否则默认初一估算 3600
@@ -170,6 +172,13 @@ function open(id: string) {
   color: #1f2d50;
   flex: 1;
   margin-right: 20rpx;
+}
+.tags {
+  display: flex;
+  gap: 8rpx;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .tag {
   flex-shrink: 0;

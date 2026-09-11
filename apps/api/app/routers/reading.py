@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel
 
-from ..services import reading, users
+from ..services import reading, topics, users
 
 router = APIRouter(prefix="/readings", tags=["reading"])
 
-# 四大兴趣主题（design §11.2 确认的种子分类）
-TOPICS = {
-    "science": "科普/科技",
-    "sports": "体育/游戏/汽车",
-    "history": "历史/名人",
-    "adventure": "冒险/科幻/悬疑",
-}
+
+def _topics_of(r: dict) -> list[str]:
+    """文章主题列表（多值；兼容旧单值 topic 字段）。"""
+    return r.get("topics") or ([r["topic"]] if r.get("topic") else [])
+
+
+def _topic_labels(keys: list[str]) -> list[str]:
+    return [topics.topic_label(k) for k in keys]
 
 
 class RecordIn(BaseModel):
@@ -31,15 +32,16 @@ def list_readings(
     level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
     items = []
     for r in reading.list_readings():
-        if topic and r.get("topic") != topic:
+        rtopics = _topics_of(r)
+        if topic and topic not in rtopics:
             continue
         st = reading.stats(r["body"], level)
         items.append(
             {
                 "id": r["id"],
                 "title": r["title"],
-                "topic": r["topic"],
-                "topic_label": TOPICS.get(r.get("topic", ""), r["topic"]),
+                "topics": rtopics,
+                "topic_labels": _topic_labels(rtopics),
                 "target_level": r.get("target_level"),
                 "word_count": st["word_count"],
                 "new_word_rate": st["new_word_rate"],
@@ -61,11 +63,13 @@ def get_reading(
     ann = reading.annotate(
         r["body"], level, r.get("glosses"), r.get("full_glosses"), r.get("headwords")
     )
+    rtopics = _topics_of(r)
     return {
         "id": r["id"],
         "title": r["title"],
-        "topic": r["topic"],
-        "topic_label": TOPICS.get(r.get("topic", ""), r["topic"]),
+        "subtitle": r.get("subtitle", ""),
+        "topics": rtopics,
+        "topic_labels": _topic_labels(rtopics),
         "target_level": r.get("target_level"),
         "body": r["body"],
         "word_count": ann["word_count"],

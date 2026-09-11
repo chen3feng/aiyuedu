@@ -1,0 +1,18 @@
+[
+  {
+    "key": "science",
+    "label_zh": "科普/科技"
+  },
+  {
+    "key": "sports",
+    "label_zh": "体育/游戏/汽车"
+  },
+  {
+    "key": "history",
+    "label_zh": "历史/名人"
+  },
+  {
+    "key": "adventure",
+    "label_zh": "冒险/科幻/悬疑"
+  }
+]

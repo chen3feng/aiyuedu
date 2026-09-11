@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from ..services import users
+from ..services import topics, users
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -31,7 +31,7 @@ def put_me(payload: ProfileIn, user_id: str | None = Header(None, alias="X-User-
     patch: dict = {}
     if payload.topic_preferences is not None:
         for t in payload.topic_preferences:
-            if t not in users.TOPICS:
+            if t not in topics.get_topic_keys():
                 raise HTTPException(status_code=422, detail=f"未知主题: {t}")
         patch["topic_preferences"] = payload.topic_preferences
     if payload.vocab_size is not None:

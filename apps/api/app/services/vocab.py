@@ -54,6 +54,17 @@ def _load_rows() -> list:
         return list(csv.DictReader(f))
 
 
+@lru_cache(maxsize=1)
+def _load_blacklist() -> frozenset:
+    """少儿不宜敏感词黑名单（评测抽题时排除），缺文件/损坏则返回空。"""
+    try:
+        with open(settings.sensitive_blacklist_path, encoding="utf-8") as f:
+            data = json.load(f)
+        return frozenset(data.get("lemmas", []))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+
+
 def gloss(translation: str) -> str:
     """从 ECDICT 释义提取词义：保留词性前缀与多个义项，去掉 [医][计] 等领域标签。
 
@@ -86,6 +97,7 @@ def gloss(translation: str) -> str:
 @lru_cache(maxsize=1)
 def _candidates() -> list:
     """[(rank, lemma, gloss)] 按词族 rank 升序，仅保留可作题目的词。"""
+    blacklist = _load_blacklist()
     rows = []
     for w in _load_rows():
         try:
@@ -96,6 +108,8 @@ def _candidates() -> list:
             continue
         lemma = w.get("lemma", "")
         if not _WORD_OK.match(lemma):
+            continue
+        if lemma in blacklist:
             continue
         g = gloss(w.get("translation", ""))
         if not g:

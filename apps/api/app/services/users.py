@@ -13,9 +13,6 @@ from pathlib import Path
 
 from ..config import settings
 
-# 四大兴趣主题（与 routers/reading.py 的 TOPICS 一致）
-TOPICS = ["science", "sports", "history", "adventure"]
-
 _lock = threading.Lock()
 
 

@@ -107,6 +107,24 @@ def test_pick_in_band_respects_rank_range():
         assert 21000 <= q["rank"] <= 25000
 
 
+# ---------- 少儿不宜敏感词黑名单 ----------
+
+def test_blacklist_loads_sensitive_words():
+    bl = vocab._load_blacklist()
+    assert "rape" in bl
+    assert "penis" in bl
+    assert "prostitute" in bl
+    assert "sodomite" in bl
+
+
+def test_candidates_exclude_blacklisted_words():
+    """黑名单词不得进入抽题候选，正常词仍在候选里。"""
+    lemmas = {c[1] for c in vocab._candidates()}
+    for banned in ("rape", "penis", "prostitute", "whore", "sodomite", "condom"):
+        assert banned not in lemmas
+    assert "apple" in lemmas
+
+
 # ---------- 会话流程 ----------
 
 def _run_flow(respond):

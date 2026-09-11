@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     readings_path: str = str(PROJECT_ROOT / "data" / "readings" / "readings.json")
     reading_log_path: str = str(PROJECT_ROOT / "data" / "logs" / "reading_records.jsonl")
     users_path: str = str(PROJECT_ROOT / "data" / "users" / "users.json")
+    topics_path: str = str(PROJECT_ROOT / "data" / "topics" / "topics.json")
+    sensitive_blacklist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "sensitive_blacklist.json")
 
 
 settings = Settings()

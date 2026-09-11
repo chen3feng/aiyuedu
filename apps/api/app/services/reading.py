@@ -80,10 +80,28 @@ _EXTRA_COMMON = {
 }
 
 
-@lru_cache(maxsize=1)
+_readings_cache: dict = {"mtime": None, "data": None}
+
+
 def _load_readings() -> list:
-    with open(settings.readings_path, encoding="utf-8") as f:
-        return json.load(f)
+    """读 readings.json，带 mtime 缓存：文件变化（含后台跨进程写入）自动重读。"""
+    path = Path(settings.readings_path)
+    mtime = path.stat().st_mtime
+    if _readings_cache["data"] is None or _readings_cache["mtime"] != mtime:
+        with open(path, encoding="utf-8") as f:
+            _readings_cache["data"] = json.load(f)
+        _readings_cache["mtime"] = mtime
+    return _readings_cache["data"]
+
+
+def _save_readings(items: list) -> None:
+    """写盘并失效 mtime 缓存（后台增删改文章后即时可见）。"""
+    path = Path(settings.readings_path)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(items, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    _readings_cache["mtime"] = None
+    _readings_cache["data"] = None
 
 
 @lru_cache(maxsize=1)
@@ -298,3 +316,69 @@ def record_reading(
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+
+# ---------- 后台：自动定级 / 自动注释 / 文章 CRUD ----------
+
+
+def suggest_level(body: str, target_rate: float = 0.03) -> dict:
+    """按词频自动定级：取生词率最接近 target_rate 的词汇量档位，四舍五入到百位。
+
+    生词率随 level 单调非增，扫描 500→20000（步长 500）取最接近者即可。
+    返回 {level, word_count, new_word_count, new_word_rate}。
+    """
+    best: dict | None = None
+    for level in range(500, 20001, 500):
+        st = stats(body, level)
+        if best is None or abs(st["new_word_rate"] - target_rate) < abs(
+            best["new_word_rate"] - target_rate
+        ):
+            best = {"level": level, **st}
+    best["level"] = round(best["level"] / 100) * 100
+    return best
+
+
+def build_glosses(body: str, level: int) -> dict:
+    """自动提取生词语境义：词族头 -> 词典义（后台可再手工改）。
+
+    full_glosses / headwords 是派生词「词面义 ≠ 词族头义」时的人工覆盖，
+    自动提取无法推断，故这里只产出 glosses。
+    """
+    ann = annotate(body, level)
+    return {v["lemma"]: v["gloss"] for v in ann["vocabulary"]}
+
+
+def next_reading_id() -> str:
+    """按现有最大编号生成下一个 id（r001、r002…）。"""
+    nums = [
+        int(r["id"][1:])
+        for r in _load_readings()
+        if r.get("id", "").startswith("r") and r["id"][1:].isdigit()
+    ]
+    return f"r{max(nums, default=0) + 1:03d}"
+
+
+def add_reading(article: dict) -> dict:
+    items = _load_readings()
+    items.append(article)
+    _save_readings(items)
+    return article
+
+
+def update_reading(reading_id: str, article: dict) -> dict | None:
+    items = _load_readings()
+    for i, r in enumerate(items):
+        if r.get("id") == reading_id:
+            items[i] = article
+            _save_readings(items)
+            return article
+    return None
+
+
+def delete_reading(reading_id: str) -> bool:
+    items = _load_readings()
+    kept = [r for r in items if r.get("id") != reading_id]
+    if len(kept) == len(items):
+        return False
+    _save_readings(kept)
+    return True

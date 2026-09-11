@@ -163,7 +163,7 @@ def test_list_readings_filters_by_topic():
     from app.routers import reading as reading_router
     resp = reading_router.list_readings(3600, "science", None)
     assert resp["items"]
-    assert all(i["topic"] == "science" for i in resp["items"])
+    assert all("science" in i["topics"] for i in resp["items"])
 
 
 def test_record_writes_jsonl(tmp_path, monkeypatch):
@@ -256,8 +256,10 @@ def test_every_reading_has_three_valid_choice_quizzes():
         for q in quizzes:
             assert q["type"] == "choice"
             assert q["question"]
-            assert len(q["options"]) == 4, f"{r['id']} 选项须为 4 个"
-            assert isinstance(q["answer"], int) and 0 <= q["answer"] < 4
+            opts = q["options"]
+            assert len(opts) == 4, f"{r['id']} 选项须为 4 个"
+            assert all(isinstance(o, dict) and "text" in o and "correct" in o for o in opts)
+            assert sum(1 for o in opts if o["correct"]) >= 1, f"{r['id']} 至少一个正确选项"
             assert q["explanation_zh"]
             assert q["explanation_en"]
 
@@ -267,7 +269,8 @@ def test_get_reading_returns_quizzes():
     resp = reading_router.get_reading("r001", 3600, None)
     assert len(resp["quizzes"]) == 3
     q = resp["quizzes"][0]
-    assert set(q) >= {"type", "question", "options", "answer", "explanation_zh", "explanation_en"}
+    assert set(q) >= {"type", "question", "options", "explanation_zh", "explanation_en"}
+    assert all({"text", "correct"} <= set(o) for o in q["options"])
 
 
 def test_record_writes_user_id(tmp_path, monkeypatch):

@@ -4,7 +4,9 @@
     <view v-if="detail" class="header">
       <view class="head-top">
         <text class="title">{{ detail.title }}</text>
-        <text class="tag">{{ topicLabel(detail.topic) }}</text>
+        <view class="tags">
+          <text v-for="(label, i) in topicTags(detail)" :key="i" class="tag">{{ label }}</text>
+        </view>
       </view>
       <view class="meta">
         <text class="meta-item">{{ t("reading.reader.words", { n: detail.word_count }) }}</text>
@@ -79,14 +81,14 @@
             @click="chooseQuiz(item.i, oi)"
           >
             <text class="q-letter">{{ LETTERS[oi] }}</text>
-            <text class="q-opt-text">{{ opt }}</text>
+            <text class="q-opt-text">{{ opt.text }}</text>
           </view>
           <view
             v-if="answers[item.i] >= 0"
             class="q-explain"
-            :class="answers[item.i] === item.q.answer ? 'right' : 'wrong'"
+            :class="chosenIsCorrect(item.q, item.i) ? 'right' : 'wrong'"
           >
-            <text class="q-result">{{ answers[item.i] === item.q.answer ? "✅ " + t("reading.reader.correct") : "❌ " + t("reading.reader.wrong") }}</text>
+            <text class="q-result">{{ chosenIsCorrect(item.q, item.i) ? "✅ " + t("reading.reader.correct") : "❌ " + t("reading.reader.wrong") }}</text>
             <view class="q-explanation" @click="toggleZh(item.i)">
               <text class="q-explanation-text">{{ item.q.explanation_en }}</text>
               <text class="q-explanation-hint">{{ zhShown[item.i] ? t("reading.reader.hideZh") : t("reading.reader.showZh") }}</text>
@@ -135,12 +137,12 @@ import { getReading, recordReading } from "../../api/reading";
 import type { ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
 
-const { t, te } = useI18n();
+const { t } = useI18n();
 
-// 主题名走前端 i18n（后端 topic_label 仅中文），未知主题回退原始 key
-function topicLabel(topic: string): string {
-  const key = `topic.${topic}`;
-  return te(key) ? t(key) : topic;
+// 多主题中文名直接来自后端 topic_labels；标签缺失回退主题 key
+function topicTags(d: ReadingDetail): string[] {
+  const labels = d.topic_labels || [];
+  return (d.topics || []).map((k, i) => labels[i] || k);
 }
 
 // 课后小测解答：默认只出英文，点击英文解答后额外展示中文（与 UI 语言无关）
@@ -189,10 +191,15 @@ function chooseQuiz(qi: number, oi: number) {
   answers.value[qi] = oi;
 }
 
+function chosenIsCorrect(q: ChoiceQuiz, qi: number): boolean {
+  const oi = answers.value[qi];
+  return oi >= 0 && !!q.options[oi]?.correct;
+}
+
 function optClass(q: ChoiceQuiz, qi: number, oi: number): string {
   const chosen = answers.value[qi];
   if (chosen < 0) return "";
-  if (oi === q.answer) return "opt-correct";
+  if (q.options[oi]?.correct) return "opt-correct";
   if (oi === chosen) return "opt-wrong";
   return "opt-dim";
 }
@@ -376,6 +383,13 @@ function finish() {
   color: #1f2d50;
   flex: 1;
   margin-right: 20rpx;
+}
+.tags {
+  display: flex;
+  gap: 8rpx;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .tag {
   flex-shrink: 0;

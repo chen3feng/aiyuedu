@@ -4,8 +4,8 @@ import { request } from "./request";
 export interface ReadingSummary {
   id: string;
   title: string;
-  topic: string;
-  topic_label: string;
+  topics: string[];
+  topic_labels: string[];
   target_level: number | null;
   word_count: number;
   new_word_rate: number;
@@ -41,8 +41,9 @@ export interface VocabItem {
 export interface ReadingDetail {
   id: string;
   title: string;
-  topic: string;
-  topic_label: string;
+  subtitle: string;
+  topics: string[];
+  topic_labels: string[];
   target_level: number | null;
   body: string;
   word_count: number;
@@ -54,14 +55,13 @@ export interface ReadingDetail {
 }
 
 // 课后小测题目。当前只渲染 `choice`；`type` 字段为未来题型（如判断题 `truefalse`）预留，
-// 不同题型用不同字段：choice 用 options + answer(下标)，truefalse 用 answer(布尔)。
+// 不同题型用不同字段：choice 用 options[{text, correct}]（可多个 correct 项），truefalse 用 answer(布尔)。
 export type QuizType = "choice" | "truefalse";
 
 export interface ChoiceQuiz {
   type: "choice";
   question: string;
-  options: string[]; // 固定 4 项（A/B/C/D）
-  answer: number; // 正确选项下标 0-3
+  options: { text: string; correct: boolean }[]; // 每项：选项内容 + 是否正确答案（可多个）
   explanation_en: string; // 英文解答（默认展示）
   explanation_zh: string; // 中文解答（UI 为中文时额外展示）
 }

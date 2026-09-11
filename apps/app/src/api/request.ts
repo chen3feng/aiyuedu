@@ -2,7 +2,7 @@
 // 身份：X-User-Id 请求头（匿名设备 ID），见 utils/user.ts
 import { getUserId } from "../utils/user";
 
-export const API_BASE = "http://127.0.0.1:8000";
+export const API_BASE = "http://192.168.1.16:8000";
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT";

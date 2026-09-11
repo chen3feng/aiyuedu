@@ -2,7 +2,6 @@
   {
     "id": "r001",
     "title": "Why Is the Sky Blue?",
-    "topic": "science",
     "glosses": {
       "particle": "微粒",
       "rainbow": "彩虹",
@@ -17,12 +16,23 @@
         "type": "choice",
         "question": "Why does the sky look blue during the day?",
         "options": [
-          "The sea reflects blue light into the sky",
-          "Blue light bounces around more than other colors",
-          "The Sun only sends out blue light",
-          "Clouds are made of blue water"
+          {
+            "text": "The sea reflects blue light into the sky",
+            "correct": false
+          },
+          {
+            "text": "Blue light bounces around more than other colors",
+            "correct": true
+          },
+          {
+            "text": "The Sun only sends out blue light",
+            "correct": false
+          },
+          {
+            "text": "Clouds are made of blue water",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "阳光进入空气后，蓝光波长最短、散射最强，四处弹开铺满天空，所以白天看天是蓝的。",
         "explanation_en": "Sunlight entering the air scatters most strongly in short blue waves, spreading across the sky — so it looks blue by day."
       },
@@ -30,12 +40,23 @@
         "type": "choice",
         "question": "Why does the sky turn orange and red in the evening?",
         "options": [
-          "The Sun becomes red at night",
-          "Blue light scatters away before reaching our eyes",
-          "Clouds change color in the evening",
-          "There is more blue light in the evening"
+          {
+            "text": "The Sun becomes red at night",
+            "correct": false
+          },
+          {
+            "text": "Blue light scatters away before reaching our eyes",
+            "correct": true
+          },
+          {
+            "text": "Clouds change color in the evening",
+            "correct": false
+          },
+          {
+            "text": "There is more blue light in the evening",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "傍晚阳光要穿过更长的空气路程，蓝光大多在到达眼前之前就散掉了，剩下橙红色的光。",
         "explanation_en": "In the evening sunlight travels a longer path, and most blue light scatters away before reaching our eyes, leaving orange and red."
       },
@@ -43,21 +64,34 @@
         "type": "choice",
         "question": "Why do stars seem to twinkle?",
         "options": [
-          "Their light crosses moving air",
-          "They move very fast in the sky",
-          "They are very close to the Earth",
-          "The Moon hides them at night"
+          {
+            "text": "Their light crosses moving air",
+            "correct": true
+          },
+          {
+            "text": "They move very fast in the sky",
+            "correct": false
+          },
+          {
+            "text": "They are very close to the Earth",
+            "correct": false
+          },
+          {
+            "text": "The Moon hides them at night",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "星光穿过流动的空气时被不断折射，所以看起来一闪一闪。",
         "explanation_en": "Starlight keeps being bent as it passes through moving air, which makes the stars twinkle."
       }
+    ],
+    "topics": [
+      "science"
     ]
   },
   {
     "id": "r002",
     "title": "A Visit to the Moon",
-    "topic": "science",
     "glosses": {
       "astronaut": "宇航员",
       "crater": "环形山",
@@ -71,12 +105,23 @@
         "type": "choice",
         "question": "Why is the sky completely black on the Moon even in daytime?",
         "options": [
-          "The Moon is far from the Sun",
-          "There is no air to scatter sunlight",
-          "The Moon has no sky at all",
-          "The Sun is too small there"
+          {
+            "text": "The Moon is far from the Sun",
+            "correct": false
+          },
+          {
+            "text": "There is no air to scatter sunlight",
+            "correct": true
+          },
+          {
+            "text": "The Moon has no sky at all",
+            "correct": false
+          },
+          {
+            "text": "The Sun is too small there",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "月球没有大气，阳光无法被散射，所以白天天空也是黑的。",
         "explanation_en": "The Moon has no atmosphere, so sunlight is not scattered and the sky stays black even in daytime."
       },
@@ -84,12 +129,23 @@
         "type": "choice",
         "question": "What happened to the dust when Mia took a step?",
         "options": [
-          "It turned into water",
-          "It drifted slowly back to the ground",
-          "It flew away into space",
-          "It stuck to her boots"
+          {
+            "text": "It turned into water",
+            "correct": false
+          },
+          {
+            "text": "It drifted slowly back to the ground",
+            "correct": true
+          },
+          {
+            "text": "It flew away into space",
+            "correct": false
+          },
+          {
+            "text": "It stuck to her boots",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "月球引力小、又没有风，扬起的尘土会慢慢飘回地面。",
         "explanation_en": "Because the Moon's gravity is weak and there is no wind, the dust drifts slowly back to the ground."
       },
@@ -97,21 +153,34 @@
         "type": "choice",
         "question": "What would the ship do before heading home?",
         "options": [
-          "Land on the Earth",
-          "Orbit the Moon once",
-          "Visit the stars",
-          "Fly to the Sun"
+          {
+            "text": "Land on the Earth",
+            "correct": false
+          },
+          {
+            "text": "Orbit the Moon once",
+            "correct": true
+          },
+          {
+            "text": "Visit the stars",
+            "correct": false
+          },
+          {
+            "text": "Fly to the Sun",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "飞船回地球前会绕月球飞行一圈。",
         "explanation_en": "Before returning home, the ship would orbit the Moon once."
       }
+    ],
+    "topics": [
+      "science"
     ]
   },
   {
     "id": "r003",
     "title": "The First Football Match",
-    "topic": "sports",
     "glosses": {
       "referee": "裁判",
       "stadium": "体育场",
@@ -124,12 +193,23 @@
         "type": "choice",
         "question": "What did Leo do at the start of the match?",
         "options": [
-          "He played in the first half",
-          "He sat on the bench and watched",
-          "He scored the first goal",
-          "He was the coach"
+          {
+            "text": "He played in the first half",
+            "correct": false
+          },
+          {
+            "text": "He sat on the bench and watched",
+            "correct": true
+          },
+          {
+            "text": "He scored the first goal",
+            "correct": false
+          },
+          {
+            "text": "He was the coach",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "开场时 Leo 坐在替补席上看着上半场比赛。",
         "explanation_en": "At the start Leo sat on the bench and watched the first half."
       },
@@ -137,12 +217,23 @@
         "type": "choice",
         "question": "How did Leo score the goal?",
         "options": [
-          "He headed the ball into the net",
-          "He passed the ball to a teammate",
-          "He dribbled past defenders and shot into the corner",
-          "The referee gave him a penalty"
+          {
+            "text": "He headed the ball into the net",
+            "correct": false
+          },
+          {
+            "text": "He passed the ball to a teammate",
+            "correct": false
+          },
+          {
+            "text": "He dribbled past defenders and shot into the corner",
+            "correct": true
+          },
+          {
+            "text": "The referee gave him a penalty",
+            "correct": false
+          }
         ],
-        "answer": 2,
         "explanation_zh": "Leo 带球过掉防守队员，一脚把球射进球门角落。",
         "explanation_en": "Leo dribbled past the defenders and shot the ball into the corner of the goal."
       },
@@ -150,21 +241,34 @@
         "type": "choice",
         "question": "What does the story mainly teach us?",
         "options": [
-          "Winning is the only thing that matters",
-          "Being afraid is wrong",
-          "Trying your best is what matters",
-          "Watching from the bench is safest"
+          {
+            "text": "Winning is the only thing that matters",
+            "correct": false
+          },
+          {
+            "text": "Being afraid is wrong",
+            "correct": false
+          },
+          {
+            "text": "Trying your best is what matters",
+            "correct": true
+          },
+          {
+            "text": "Watching from the bench is safest",
+            "correct": false
+          }
         ],
-        "answer": 2,
         "explanation_zh": "故事强调 Leo 虽然害怕，但尽了全力，这就足够了。",
         "explanation_en": "The story shows that although Leo was afraid, he tried his best — and that was enough."
       }
+    ],
+    "topics": [
+      "sports"
     ]
   },
   {
     "id": "r004",
     "title": "The Fastest Man on Earth",
-    "topic": "sports",
     "glosses": {
       "cricket": "板球",
       "sprint": "短跑运动员",
@@ -174,7 +278,10 @@
       "sprint": "n. 短跑运动员；v. 短距离冲刺，疾跑"
     },
     "headwords": {
-      "sprint": { "word": "sprinter", "phonetic": "ˈsprɪntə" }
+      "sprint": {
+        "word": "sprinter",
+        "phonetic": "ˈsprɪntə"
+      }
     },
     "target_level": 4800,
     "body": "Usain Bolt was born in a small town in Jamaica. As a child, he loved to run and play cricket. When he grew older, his speed became famous. As a young sprinter, he learned to start fast and hold his speed to the line. His long legs seemed to soar over the track as he ran. He trained hard every day and learned to use his long legs and tall body. In 2009, he ran one hundred meters in only 9.58 seconds, faster than any human before him. At the Olympic Games, he won gold medals again and again. People called him the fastest man on Earth. But Bolt was not only fast. He also loved to make people laugh and dance before a race. His joyful style made millions of fans around the world. He showed that hard work and a happy heart can go together. After he stopped racing, he still encouraged young athletes to dream big. His story teaches us that a strong body and a warm smile can both lead to great things.",
@@ -183,12 +290,23 @@
         "type": "choice",
         "question": "What sport did Usain Bolt love as a child?",
         "options": [
-          "Football",
-          "Cricket",
-          "Tennis",
-          "Swimming"
+          {
+            "text": "Football",
+            "correct": false
+          },
+          {
+            "text": "Cricket",
+            "correct": true
+          },
+          {
+            "text": "Tennis",
+            "correct": false
+          },
+          {
+            "text": "Swimming",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "文中说 Bolt 小时候喜欢跑步和打板球（cricket）。",
         "explanation_en": "The text says Bolt loved running and playing cricket as a child."
       },
@@ -196,12 +314,23 @@
         "type": "choice",
         "question": "How fast did Bolt run 100 meters in 2009?",
         "options": [
-          "9.58 seconds",
-          "10.58 seconds",
-          "8.58 seconds",
-          "9.85 seconds"
+          {
+            "text": "9.58 seconds",
+            "correct": true
+          },
+          {
+            "text": "10.58 seconds",
+            "correct": false
+          },
+          {
+            "text": "8.58 seconds",
+            "correct": false
+          },
+          {
+            "text": "9.85 seconds",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "2009 年 Bolt 用 9.58 秒跑完 100 米。",
         "explanation_en": "In 2009 Bolt ran 100 meters in 9.58 seconds."
       },
@@ -209,21 +338,34 @@
         "type": "choice",
         "question": "Besides being fast, what did Bolt love to do?",
         "options": [
-          "Play cricket in the Olympics",
-          "Make people laugh and dance",
-          "Teach young runners math",
-          "Build bicycles"
+          {
+            "text": "Play cricket in the Olympics",
+            "correct": false
+          },
+          {
+            "text": "Make people laugh and dance",
+            "correct": true
+          },
+          {
+            "text": "Teach young runners math",
+            "correct": false
+          },
+          {
+            "text": "Build bicycles",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "文中提到 Bolt 喜欢在赛前逗人笑、跳舞，给人带来快乐。",
         "explanation_en": "The text says Bolt liked to make people laugh and dance before races, bringing joy to everyone."
       }
+    ],
+    "topics": [
+      "sports"
     ]
   },
   {
     "id": "r005",
     "title": "The Wright Brothers and the First Flight",
-    "topic": "history",
     "glosses": {
       "tilt": "倾斜",
       "propel": "螺旋桨",
@@ -235,7 +377,10 @@
       "propel": "n. 螺旋桨，推进器"
     },
     "headwords": {
-      "propel": { "word": "propeller", "phonetic": "prəˈpelə" }
+      "propel": {
+        "word": "propeller",
+        "phonetic": "prəˈpelə"
+      }
     },
     "target_level": 5000,
     "body": "Over a hundred years ago, two brothers owned a small bicycle shop. Wilbur and Orville Wright loved machines and spent their free time studying how birds fly. They watched how a bird tilts its wings to turn, and they decided to build a flying machine of their own. They fixed a small propeller to the front of the machine and laid a long wooden runway on the sand. They tested many models on the beach, where the wind was strong and steady. Each test taught them something new, and they often failed before they succeeded. On a cold December morning in 1903, their plane was ready. Orville lay on the lower wing while Wilbur ran beside it. The engine started, and the plane climbed to a low altitude above the waves. A sudden gust of wind pushed against the wings, but the plane held steady. It stayed up for only twelve seconds and traveled about forty meters. But those twelve seconds changed the world. Today, huge planes carry people across oceans, and it all began with two careful brothers and a wooden machine on a windy beach.",
@@ -244,12 +389,23 @@
         "type": "choice",
         "question": "What did the Wright brothers own before building planes?",
         "options": [
-          "A bicycle shop",
-          "A car factory",
-          "A shipyard",
-          "A farm"
+          {
+            "text": "A bicycle shop",
+            "correct": true
+          },
+          {
+            "text": "A car factory",
+            "correct": false
+          },
+          {
+            "text": "A shipyard",
+            "correct": false
+          },
+          {
+            "text": "A farm",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "莱特兄弟原来开着一家自行车店。",
         "explanation_en": "The Wright brothers owned a bicycle shop before building planes."
       },
@@ -257,12 +413,23 @@
         "type": "choice",
         "question": "What helped them learn how birds turn?",
         "options": [
-          "Reading books about birds",
-          "Watching a bird tilt its wings",
-          "Asking a scientist for help",
-          "Flying kites on the beach"
+          {
+            "text": "Reading books about birds",
+            "correct": false
+          },
+          {
+            "text": "Watching a bird tilt its wings",
+            "correct": true
+          },
+          {
+            "text": "Asking a scientist for help",
+            "correct": false
+          },
+          {
+            "text": "Flying kites on the beach",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "他们观察鸟如何倾斜翅膀来转弯，从中得到灵感。",
         "explanation_en": "They watched a bird tilt its wings to turn, which gave them the idea."
       },
@@ -270,21 +437,34 @@
         "type": "choice",
         "question": "How long was the first successful flight?",
         "options": [
-          "About twelve seconds",
-          "About twelve minutes",
-          "About one hour",
-          "About twelve days"
+          {
+            "text": "About twelve seconds",
+            "correct": true
+          },
+          {
+            "text": "About twelve minutes",
+            "correct": false
+          },
+          {
+            "text": "About one hour",
+            "correct": false
+          },
+          {
+            "text": "About twelve days",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "首次飞行只持续了约 12 秒、飞了约 40 米，却改变了世界。",
         "explanation_en": "The first flight lasted only about twelve seconds and covered about 40 meters, yet it changed the world."
       }
+    ],
+    "topics": [
+      "history"
     ]
   },
   {
     "id": "r006",
     "title": "How Paper Was Invented",
-    "topic": "history",
     "glosses": {
       "bamboo": "竹子",
       "soak": "浸泡",
@@ -297,12 +477,23 @@
         "type": "choice",
         "question": "What did people write on before paper?",
         "options": [
-          "Glass and stone",
-          "Bamboo, silk, and animal skin",
-          "Paper and leaves",
-          "Iron and wood"
+          {
+            "text": "Glass and stone",
+            "correct": false
+          },
+          {
+            "text": "Bamboo, silk, and animal skin",
+            "correct": true
+          },
+          {
+            "text": "Paper and leaves",
+            "correct": false
+          },
+          {
+            "text": "Iron and wood",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "纸发明前，人们写在竹简、丝绸和兽皮上，又重又贵。",
         "explanation_en": "Before paper, people wrote on bamboo, silk, and animal skin — heavy and expensive."
       },
@@ -310,12 +501,23 @@
         "type": "choice",
         "question": "Who wanted to make a lighter, cheaper writing surface?",
         "options": [
-          "A man named Cai Lun",
-          "A king",
-          "A cloth maker",
-          "A farmer"
+          {
+            "text": "A man named Cai Lun",
+            "correct": true
+          },
+          {
+            "text": "A king",
+            "correct": false
+          },
+          {
+            "text": "A cloth maker",
+            "correct": false
+          },
+          {
+            "text": "A farmer",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "约两千年前，一个叫蔡伦的人想做出更轻更便宜的书写材料。",
         "explanation_en": "About two thousand years ago, a man named Cai Lun wanted a lighter and cheaper writing surface."
       },
@@ -323,21 +525,34 @@
         "type": "choice",
         "question": "Which of these did Cai Lun use to make paper?",
         "options": [
-          "Glass and sand",
-          "Tree bark, old cloth, and fishing nets",
-          "Silk and gold",
-          "Stone and metal"
+          {
+            "text": "Glass and sand",
+            "correct": false
+          },
+          {
+            "text": "Tree bark, old cloth, and fishing nets",
+            "correct": true
+          },
+          {
+            "text": "Silk and gold",
+            "correct": false
+          },
+          {
+            "text": "Stone and metal",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "蔡伦尝试用树皮、旧布、渔网等材料造纸。",
         "explanation_en": "Cai Lun made paper from tree bark, old cloth, and fishing nets."
       }
+    ],
+    "topics": [
+      "history"
     ]
   },
   {
     "id": "r007",
     "title": "The Secret of the Old Map",
-    "topic": "adventure",
     "glosses": {
       "attic": "阁楼",
       "flashlight": "手电筒",
@@ -346,7 +561,10 @@
       "rust": "生锈的"
     },
     "headwords": {
-      "rust": { "word": "rusty", "phonetic": "ˈrʌsti" }
+      "rust": {
+        "word": "rusty",
+        "phonetic": "ˈrʌsti"
+      }
     },
     "target_level": 4600,
     "body": "One rainy afternoon, Sam found a folded paper inside an old book in the attic. When he opened it, he saw a hand-drawn map with a red X near a small lake. The map looked very old, and its edges were torn. Sam showed it to his sister Emma. They decided to follow the map the next day. Early in the morning, they put sandwiches, a flashlight, and an old lantern into a bag, and Emma packed a compass to find their way back. They walked into the forest behind their house. The path was narrow and quiet. They crossed a small stream, climbed over some fallen trees, and counted their steps carefully. At last they reached the lake. Near the X they found a rusty metal box half-buried in the ground. Their hands shook as they opened it. Inside was not gold, but a bundle of letters and a black-and-white photo. The letters told the story of their grandfather's first adventure. To Sam and Emma, that treasure was worth more than any gold.",
@@ -355,12 +573,23 @@
         "type": "choice",
         "question": "Where did Sam find the map?",
         "options": [
-          "In a book in the attic",
-          "Under a rock by the lake",
-          "In his school bag",
-          "On the beach"
+          {
+            "text": "In a book in the attic",
+            "correct": true
+          },
+          {
+            "text": "Under a rock by the lake",
+            "correct": false
+          },
+          {
+            "text": "In his school bag",
+            "correct": false
+          },
+          {
+            "text": "On the beach",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "Sam 在阁楼一本旧书里发现了折好的地图。",
         "explanation_en": "Sam found the folded map inside an old book in the attic."
       },
@@ -368,12 +597,23 @@
         "type": "choice",
         "question": "What did Emma pack to find their way back?",
         "options": [
-          "A flashlight",
-          "A compass",
-          "A map",
-          "A phone"
+          {
+            "text": "A flashlight",
+            "correct": false
+          },
+          {
+            "text": "A compass",
+            "correct": true
+          },
+          {
+            "text": "A map",
+            "correct": false
+          },
+          {
+            "text": "A phone",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "Emma 带上指南针（compass）以防迷路。",
         "explanation_en": "Emma packed a compass so they could find their way back."
       },
@@ -381,21 +621,34 @@
         "type": "choice",
         "question": "What was inside the rusty box?",
         "options": [
-          "Gold and money",
-          "Letters and a photo",
-          "A treasure map",
-          "Nothing"
+          {
+            "text": "Gold and money",
+            "correct": false
+          },
+          {
+            "text": "Letters and a photo",
+            "correct": true
+          },
+          {
+            "text": "A treasure map",
+            "correct": false
+          },
+          {
+            "text": "Nothing",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "盒子里不是金子，而是一捆信和一张黑白照片，讲述了爷爷的第一次冒险。",
         "explanation_en": "Inside the box were not gold but letters and a photo telling the story of their grandfather's first adventure."
       }
+    ],
+    "topics": [
+      "adventure"
     ]
   },
   {
     "id": "r008",
     "title": "Robot in the Attic",
-    "topic": "adventure",
     "glosses": {
       "muffle": "低沉的",
       "attic": "阁楼",
@@ -411,12 +664,23 @@
         "type": "choice",
         "question": "What did Ben find under the dusty sheet?",
         "options": [
-          "A small robot",
-          "A cat",
-          "A box of food",
-          "A lamp"
+          {
+            "text": "A small robot",
+            "correct": true
+          },
+          {
+            "text": "A cat",
+            "correct": false
+          },
+          {
+            "text": "A box of food",
+            "correct": false
+          },
+          {
+            "text": "A lamp",
+            "correct": false
+          }
         ],
-        "answer": 0,
         "explanation_zh": "掀开布满灰尘的布，Ben 发现一只小猫大小的机器人。",
         "explanation_en": "Under the dusty sheet Ben found a small robot the size of a cat."
       },
@@ -424,12 +688,23 @@
         "type": "choice",
         "question": "Why did the robot land here?",
         "options": [
-          "It was looking for food",
-          "It had run out of power and landed by accident",
-          "It wanted to play with Ben",
-          "It was hiding from its family"
+          {
+            "text": "It was looking for food",
+            "correct": false
+          },
+          {
+            "text": "It had run out of power and landed by accident",
+            "correct": true
+          },
+          {
+            "text": "It wanted to play with Ben",
+            "correct": false
+          },
+          {
+            "text": "It was hiding from its family",
+            "correct": false
+          }
         ],
-        "answer": 1,
         "explanation_zh": "机器人说自己没电了，意外降落在这里。",
         "explanation_en": "The robot said it had run out of power and landed here by accident."
       },
@@ -437,14 +712,122 @@
         "type": "choice",
         "question": "How did Ben feel at the end?",
         "options": [
-          "Only happy",
-          "Angry",
-          "Proud and a little sad",
-          "Scared"
+          {
+            "text": "Only happy",
+            "correct": false
+          },
+          {
+            "text": "Angry",
+            "correct": false
+          },
+          {
+            "text": "Proud and a little sad",
+            "correct": true
+          },
+          {
+            "text": "Scared",
+            "correct": false
+          }
         ],
-        "answer": 2,
         "explanation_zh": "机器人被家人找到后，Ben 既为它高兴又有点舍不得，感到骄傲又有一丝难过。",
         "explanation_en": "When the robot's family found it, Ben felt proud and a little sad to say goodbye."
+      }
+    ],
+    "topics": [
+      "adventure"
+    ]
+  },
+  {
+    "id": "r009",
+    "title": "Mars Exploration",
+    "subtitle": "Looking for a Second Home",
+    "topics": [
+      "science"
+    ],
+    "target_level": 6500,
+    "glosses": {
+      "spacecraft": "n. 太空飞行器",
+      "rovers": "",
+      "persevere": "vi. 坚持，孜孜不倦，不屈不挠",
+      "rover": "",
+      "emir": "n. 埃米尔(穆斯林国家酋长等的称号)",
+      "orbiters": "n. 轨道器"
+    },
+    "full_glosses": {},
+    "headwords": {},
+    "body": "Mars is often called the \"Red Planet\" because its soil contains a lot of iron. For a long time, scientists have been asking a big question: Is there life on Mars?  \nTo find the answer, humans have sent many spacecraft to explore this mysterious world. The United States (USA) has played a leading role in this space race. NASA has sent famous rovers like Curiosity and Perseverance to walk on the Martian rocks, take clear photos, and look for water.\nOther countries are also joining the adventure. China made history with its Tianwen-1 mission, successfully landing the Zhurong rover on Mars. The European Space Agency (ESA) and the United Arab Emirates (UAE) have also sent their own orbiters to study the planet's weather and atmosphere.\nMars exploration has also inspired great movies and TV shows! In the famous movie The Martian, an astronaut gets left behind on Mars and has to grow potatoes to survive until a rescue team arrives. Shows like Mars blend real science with exciting stories about building human cities on the planet.  \nMaybe one day, you will be one of the first humans to step on Mars!",
+    "quizzes": [
+      {
+        "type": "choice",
+        "question": "Why is Mars called the \"Red Planet\"?",
+        "options": [
+          {
+            "text": "Its soil contains a lot of iron",
+            "correct": true
+          },
+          {
+            "text": "It has red oceans",
+            "correct": false
+          },
+          {
+            "text": "It is very close to the Sun",
+            "correct": false
+          },
+          {
+            "text": "Its sky is always red",
+            "correct": false
+          }
+        ],
+        "explanation_zh": "火星土壤含大量铁，所以呈红色。",
+        "explanation_en": "Mars soil contains a lot of iron, which makes it look red."
+      },
+      {
+        "type": "choice",
+        "question": "Which country landed the Zhurong rover on Mars?",
+        "options": [
+          {
+            "text": "China",
+            "correct": true
+          },
+          {
+            "text": "The United States",
+            "correct": false
+          },
+          {
+            "text": "The United Arab Emirates",
+            "correct": false
+          },
+          {
+            "text": "Japan",
+            "correct": false
+          }
+        ],
+        "explanation_zh": "中国的天问一号任务把祝融号火星车送上了火星。",
+        "explanation_en": "China's Tianwen-1 mission landed the Zhurong rover on Mars."
+      },
+      {
+        "type": "choice",
+        "question": "In the movie The Martian, what does the astronaut do to survive?",
+        "options": [
+          {
+            "text": "Grows potatoes",
+            "correct": true
+          },
+          {
+            "text": "Builds a rocket",
+            "correct": false
+          },
+          {
+            "text": "Swims across a lake",
+            "correct": false
+          },
+          {
+            "text": "Climbs a high mountain",
+            "correct": false
+          }
+        ],
+        "explanation_zh": "电影里宇航员靠种土豆求生，直到救援队到来。",
+        "explanation_en": "In The Martian, the astronaut grows potatoes to survive until rescue arrives."
       }
     ]
   }
