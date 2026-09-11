@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     surface_lemma_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "surface_lemma.json")
     readings_path: str = str(PROJECT_ROOT / "data" / "readings" / "readings.json")
     reading_log_path: str = str(PROJECT_ROOT / "data" / "logs" / "reading_records.jsonl")
+    users_path: str = str(PROJECT_ROOT / "data" / "users" / "users.json")
 
 
 settings = Settings()

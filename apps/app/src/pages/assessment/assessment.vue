@@ -97,6 +97,7 @@ import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { startTest, answer, finishTest } from "../../api/vocab";
 import type { Question, Feedback, Progress, Result } from "../../api/vocab";
+import { saveProfile } from "../../api/users";
 
 const { t } = useI18n();
 
@@ -181,6 +182,7 @@ async function finish() {
   try {
     const resp = await finishTest(sessionId.value);
     result.value = resp.result;
+    persistVocabSize(resp.result.vocab_size);
     feedback.value = null;
     selectedIndex.value = null;
     phase.value = "result";
@@ -208,6 +210,7 @@ async function submit(choice: number | null, unknown: boolean) {
     };
     if (resp.finished && resp.result) {
       result.value = resp.result;
+      persistVocabSize(resp.result.vocab_size);
       setTimeout(() => {
         phase.value = "result";
       }, 900);
@@ -225,6 +228,13 @@ async function submit(choice: number | null, unknown: boolean) {
   } finally {
     loading.value = false;
   }
+}
+
+function persistVocabSize(v: number) {
+  uni.setStorageSync("vocab_size", v);
+  saveProfile({ vocab_size: v }).catch(() => {
+    /* 网络失败不影响本地 */
+  });
 }
 
 function again() {

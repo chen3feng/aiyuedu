@@ -92,6 +92,7 @@ export default {
   settings: {
     title: "设置",
     language: "语言",
+    topicPref: "阅读主题偏好",
     followSystem: "跟随系统",
     chinese: "中文",
     english: "English",

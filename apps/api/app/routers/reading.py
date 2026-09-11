@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel
 
-from ..services import reading
+from ..services import reading, users
 
 router = APIRouter(prefix="/readings", tags=["reading"])
 
@@ -22,7 +22,13 @@ class RecordIn(BaseModel):
 
 
 @router.get("")
-def list_readings(level: int = Query(reading.DEFAULT_LEVEL, ge=0), topic: str | None = None):
+def list_readings(
+    level: int | None = Query(None, ge=0),
+    topic: str | None = None,
+    user_id: str | None = Header(None, alias="X-User-Id"),
+):
+    # 未显式指定 level 时，用该用户的评测词汇量，否则回退默认
+    level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
     items = []
     for r in reading.list_readings():
         if topic and r.get("topic") != topic:
@@ -43,7 +49,12 @@ def list_readings(level: int = Query(reading.DEFAULT_LEVEL, ge=0), topic: str | 
 
 
 @router.get("/{reading_id}")
-def get_reading(reading_id: str, level: int = Query(reading.DEFAULT_LEVEL, ge=0)):
+def get_reading(
+    reading_id: str,
+    level: int | None = Query(None, ge=0),
+    user_id: str | None = Header(None, alias="X-User-Id"),
+):
+    level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
     r = reading.get_reading(reading_id)
     if r is None:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -67,7 +78,11 @@ def get_reading(reading_id: str, level: int = Query(reading.DEFAULT_LEVEL, ge=0)
 
 
 @router.post("/{reading_id}/record")
-def record(reading_id: str, payload: RecordIn):
+def record(
+    reading_id: str,
+    payload: RecordIn,
+    user_id: str | None = Header(None, alias="X-User-Id"),
+):
     if reading.get_reading(reading_id) is None:
         raise HTTPException(status_code=404, detail="文章不存在")
     reading.record_reading(
@@ -76,5 +91,6 @@ def record(reading_id: str, payload: RecordIn):
         payload.completed_ratio,
         payload.seconds,
         payload.new_word_clicks,
+        user_id,
     )
     return {"ok": True, "reading_id": reading_id}

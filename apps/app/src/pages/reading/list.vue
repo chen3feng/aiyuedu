@@ -36,6 +36,7 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
 import type { ReadingSummary } from "../../api/reading";
+import { getProfile } from "../../api/users";
 
 const { t, te } = useI18n();
 
@@ -61,8 +62,22 @@ const loading = ref(false);
 const error = ref("");
 
 onLoad(() => {
-  fetchList();
+  applyPrefThenFetch();
 });
+
+async function applyPrefThenFetch() {
+  if (!activeTopic.value) {
+    try {
+      const p = await getProfile();
+      if (p.topic_preferences && p.topic_preferences.length) {
+        activeTopic.value = p.topic_preferences[0];
+      }
+    } catch {
+      /* 后端不可用则保持「全部」 */
+    }
+  }
+  fetchList();
+}
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("nav.reading") });

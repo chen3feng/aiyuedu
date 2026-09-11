@@ -13,13 +13,29 @@
         <text v-if="langSetting === opt.value" class="check">✓</text>
       </view>
     </view>
+
+    <view class="card">
+      <view class="section-title">{{ t("settings.topicPref") }}</view>
+      <view
+        v-for="tp in TOPICS"
+        :key="tp.key"
+        class="option"
+        :class="{ active: prefs.includes(tp.key) }"
+        @click="toggleTopic(tp.key)"
+      >
+        <text class="label">{{ t(tp.labelKey) }}</text>
+        <text v-if="prefs.includes(tp.key)" class="check">✓</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { onShow } from "@dcloudio/uni-app";
 import { langSetting, setLanguage, type LangSetting } from "../../locale";
+import { getProfile, saveProfile } from "../../api/users";
 
 const { t } = useI18n();
 
@@ -29,12 +45,38 @@ const options: { value: LangSetting; key: string }[] = [
   { value: "en", key: "settings.english" },
 ];
 
+const TOPICS = [
+  { key: "science", labelKey: "topic.science" },
+  { key: "sports", labelKey: "topic.sports" },
+  { key: "history", labelKey: "topic.history" },
+  { key: "adventure", labelKey: "topic.adventure" },
+];
+
+const prefs = ref<string[]>([]);
+
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("settings.title") });
+  loadPrefs();
 });
 
 function choose(value: LangSetting) {
   setLanguage(value);
+}
+
+async function loadPrefs() {
+  try {
+    const p = await getProfile();
+    prefs.value = p.topic_preferences || [];
+  } catch {
+    /* 后端不可用时保持现状 */
+  }
+}
+
+function toggleTopic(key: string) {
+  const idx = prefs.value.indexOf(key);
+  if (idx >= 0) prefs.value.splice(idx, 1);
+  else prefs.value.push(key);
+  saveProfile({ topic_preferences: prefs.value }).catch(() => {});
 }
 </script>
 

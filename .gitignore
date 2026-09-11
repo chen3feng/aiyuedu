@@ -26,6 +26,8 @@ Thumbs.db
 data/wordlists/raw/
 # 运行时日志（测评会话记录，体积大且持续增长）
 data/logs/
+# 运行时用户档案（按 user_id 隔离的偏好/词汇量）
+data/users/
 
 # 临时/逆向分析产物（含 APK、反编译文件）
 tmp/

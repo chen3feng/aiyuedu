@@ -145,7 +145,7 @@ def test_new_word_rate_is_fraction():
 
 def test_get_reading_returns_lines():
     from app.routers import reading as reading_router
-    resp = reading_router.get_reading("r001", 3600)
+    resp = reading_router.get_reading("r001", 3600, None)
     assert resp["id"] == "r001"
     assert resp["lines"]
     assert 0.0 <= resp["new_word_rate"] <= 1.0
@@ -155,13 +155,13 @@ def test_get_reading_unknown_raises_404():
     from app.routers import reading as reading_router
     from fastapi import HTTPException
     with pytest.raises(HTTPException) as exc:
-        reading_router.get_reading("nope", 3600)
+        reading_router.get_reading("nope", 3600, None)
     assert exc.value.status_code == 404
 
 
 def test_list_readings_filters_by_topic():
     from app.routers import reading as reading_router
-    resp = reading_router.list_readings(3600, topic="science")
+    resp = reading_router.list_readings(3600, "science", None)
     assert resp["items"]
     assert all(i["topic"] == "science" for i in resp["items"])
 
@@ -235,7 +235,7 @@ def test_annotate_defaults_without_glosses():
 
 def test_get_reading_returns_vocabulary_and_body():
     from app.routers import reading as reading_router
-    resp = reading_router.get_reading("r001", 3600)
+    resp = reading_router.get_reading("r001", 3600, None)
     assert resp["body"]
     assert resp["vocabulary"]
     lemmas = {v["lemma"] for v in resp["vocabulary"]}
@@ -264,7 +264,28 @@ def test_every_reading_has_three_valid_choice_quizzes():
 
 def test_get_reading_returns_quizzes():
     from app.routers import reading as reading_router
-    resp = reading_router.get_reading("r001", 3600)
+    resp = reading_router.get_reading("r001", 3600, None)
     assert len(resp["quizzes"]) == 3
     q = resp["quizzes"][0]
     assert set(q) >= {"type", "question", "options", "answer", "explanation_zh", "explanation_en"}
+
+
+def test_record_writes_user_id(tmp_path, monkeypatch):
+    monkeypatch.setattr(reading.settings, "reading_log_path", str(tmp_path / "r.jsonl"))
+    reading.record_reading("r001", 3600, 1.0, 120, ["wavelength"], user_id="u1")
+    line = (tmp_path / "r.jsonl").read_text(encoding="utf-8").strip()
+    rec = json.loads(line)
+    assert rec["user_id"] == "u1"
+
+
+def test_list_readings_level_defaults_to_user_vocab(tmp_path, monkeypatch):
+    from app.routers import reading as reading_router
+    from app.services import users as users_service
+    monkeypatch.setattr(users_service.settings, "users_path", str(tmp_path / "u.json"))
+    users_service.upsert_profile("u1", {"vocab_size": 4200})
+    # level=None 时应落到 u1 的词汇量 4200，与显式传 4200 结果一致
+    by_profile = reading_router.list_readings(None, None, "u1")["items"]
+    by_explicit = reading_router.list_readings(4200, None, "u1")["items"]
+    assert [(i["id"], i["new_word_rate"]) for i in by_profile] == [
+        (i["id"], i["new_word_rate"]) for i in by_explicit
+    ]

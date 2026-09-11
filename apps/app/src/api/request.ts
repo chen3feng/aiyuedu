@@ -1,8 +1,11 @@
-// 通用请求封装：对接 FastAPI 后端，支持 GET/POST，统一错误处理
+// 通用请求封装：对接 FastAPI 后端，支持 GET/POST/PUT，统一错误处理
+// 身份：X-User-Id 请求头（匿名设备 ID），见 utils/user.ts
+import { getUserId } from "../utils/user";
+
 export const API_BASE = "http://127.0.0.1:8000";
 
 interface RequestOptions {
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PUT";
   data?: Record<string, unknown>;
 }
 
@@ -13,7 +16,7 @@ export function request<T>(path: string, options: RequestOptions = {}): Promise<
       url: API_BASE + path,
       method,
       data,
-      header: { "Content-Type": "application/json" },
+      header: { "Content-Type": "application/json", "X-User-Id": getUserId() },
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as T);

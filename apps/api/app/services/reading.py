@@ -279,6 +279,7 @@ def record_reading(
     completed_ratio: float,
     seconds: int,
     new_word_clicks: list,
+    user_id: str | None = None,
 ) -> None:
     """追加一条阅读记录（JSONL），供后续「已知词概率模型」离线分析。失败不影响接口。"""
     try:
@@ -286,6 +287,7 @@ def record_reading(
         path.parent.mkdir(parents=True, exist_ok=True)
         rec = {
             "ts": round(time.time(), 3),
+            "user_id": user_id,
             "reading_id": reading_id,
             "level": level,
             "completed_ratio": completed_ratio,
