@@ -95,6 +95,19 @@ def test_analyze_returns_level_and_glosses():
     assert 0.0 < r["new_word_rate"] <= 1.0
 
 
+def test_analyze_dedupes_repeated_multiword(monkeypatch):
+    # 同一多词短语在正文出现两次，scan_multiword 返回两条，analyze 只列一次
+    def fake_scan(body):
+        return [
+            {"text": "odd number", "translation": "n. 奇数", "tag": "", "kind": "term", "pos_first": "n:100"},
+            {"text": "odd number", "translation": "n. 奇数", "tag": "", "kind": "term", "pos_first": "n:100"},
+        ]
+
+    monkeypatch.setattr(admin.ecdict, "scan_multiword", fake_scan)
+    r = admin.analyze("An odd number of bridges. An odd number of edges.", 100)
+    assert [m["text"] for m in r["multiword"]] == ["odd number"]
+
+
 # ---------- AI 语境义 ----------
 
 def test_parse_json_strips_fences_and_noise():

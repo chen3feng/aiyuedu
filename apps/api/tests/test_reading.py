@@ -185,6 +185,26 @@ def test_classify_noise_fragment_skipped(tmp_path, monkeypatch):
     assert e["known"] is True
 
 
+def test_network_only_detects_no_clean_line():
+    # 释义仅 [网络]/【网络】行时为真；有任一干净行时为假
+    assert reading._network_only("[网络] 硬编码；写死") is True
+    assert reading._network_only("工作流程") is False
+    assert reading._network_only("n. 轨道\n[网络] 轨道") is False
+
+
+def test_classify_prefers_clean_head_over_network_only_inflected(tmp_path, monkeypatch):
+    # workflows 仅 [网络] 噪声，而词族头 workflow 有干净释义 → 取词族头
+    _make_ecdict(tmp_path, monkeypatch, [
+        ("workflows", None, "[网络] 工作流文档库；流程", "", "", 0, 0),
+        ("workflow", None, " 工作流程", "", "", 0, 0),
+    ])
+    e = reading._classify("workflows", 3600)
+    assert e["known"] is False
+    assert e["lemma"] == "workflow"
+    assert e["gloss"] == "工作流程"
+    assert e["full_gloss"] == "工作流程"
+
+
 def test_classify_single_letter_is_noise_without_db():
     # 单字母（数学符号/单位）无需词库硬判噪声
     for ch in "rvegms":
@@ -282,6 +302,28 @@ def test_short_gloss_strips_pos_and_network_noise():
     assert reading.short_gloss("vt. 使…；vi. 发生") == "使…"
     assert reading.short_gloss("n. 温室效应\n[网络] 造成温室效应；快乐工人") == "温室效应"
     assert reading.short_gloss("") == ""
+
+
+def test_short_gloss_falls_back_to_network_only_line():
+    # 现代技术词常仅 [网络] 一行（hardcoding/refactoring/datacenters 等）；与 full_gloss
+    # 一致，此时退而取该行核心义，避免「生词本有义、行内 ruby 空」。
+    assert reading.short_gloss("[网络] 硬编码；写死") == "硬编码"
+    assert reading.short_gloss("[网络] 重构；代码重构；重整") == "重构"
+    assert reading.short_gloss("[网络] 数据中心；资料中心；参观唯一机房") == "数据中心"
+
+
+def test_short_gloss_strips_parenthetical_notes():
+    # ECDICT 的括注（复数/第三人称/语法说明/括住定语）剥掉，只留核心义
+    assert reading.short_gloss("n. 化石燃料( fossil fuel的名词复数 )") == "化石燃料"
+    assert reading.short_gloss("n. 屋顶( rooftop的复数形式 )") == "屋顶"
+    assert reading.short_gloss("(不污染大气的)洁净能源(指电和原子能等)") == "洁净能源"
+    assert reading.short_gloss("n. 上帝们；众神，诸神，泛指神灵（god的复数）") == "上帝们"
+
+
+def test_short_gloss_strips_angle_tags():
+    # ECDICT 的尖括号语体/地区标签（<非正> <英> 等）剥掉
+    assert reading.short_gloss("<非正>小心翼翼") == "小心翼翼"
+    assert reading.short_gloss("<英>室友") == "室友"
 
 
 def test_annotate_ruby_marks_new_word_with_context_gloss():

@@ -26,6 +26,11 @@ from . import ecdict, mwe
 _BRACKET = re.compile(r"\[[^\]]*\]")
 # 全角领域标签（ECDICT 的【物理学】【化】等），同样剥掉
 _FULL_BRACKET = re.compile(r"【[^】]*】")
+# 半角尖括号语体/地区标签（ECDICT 的 <非正> <英> <美> 等），剥掉
+_ANGLE = re.compile(r"<[^<>]*>")
+# 半角/全角圆括号里的括注（ECDICT 的语法说明，如「( fossil fuel的名词复数 )」、
+# 「（god的复数）」「(不污染大气的)」等），short_gloss 里剥掉，只留核心义
+_PAREN = re.compile(r"[（(][^（）()]*[）)]")
 # 词性前缀（n./vt./adj./na. 等），short_gloss 里剥掉，只留中文义
 _POS_RE = re.compile(r"^\s*(?:[A-Za-z]+\.\s*)+")
 
@@ -50,7 +55,7 @@ def full_gloss(translation: str) -> str:
         if line.strip().startswith("[网络]"):
             continue
         for g in line.split("；"):
-            g = _FULL_BRACKET.sub("", g)
+            g = _ANGLE.sub("", _FULL_BRACKET.sub("", g))
             g = g.strip(" ,，;；\n\t")
             if not g:
                 continue
@@ -61,11 +66,26 @@ def full_gloss(translation: str) -> str:
                 groups.append(g)
     if not groups:
         for line in translation.split("\n"):
-            seg = _FULL_BRACKET.sub("", _BRACKET.sub("", line)).strip(" ,，;；\n\t")
+            seg = _ANGLE.sub("", _FULL_BRACKET.sub("", _BRACKET.sub("", line))).strip(" ,，;；\n\t")
             if seg:
                 groups = [seg]
                 break
     return "；".join(groups)
+
+
+def _short_line(s: str) -> str:
+    """从单行释义取第一条短义（剥领域标签/括注/词性后取首个逗号义项）；无则空串。"""
+    for seg in re.split(r"[；;]", s):
+        seg = _ANGLE.sub("", _PAREN.sub("", _FULL_BRACKET.sub("", _BRACKET.sub("", seg))))
+        seg = _POS_RE.sub("", seg).strip(" ,，;；\n\t")
+        if not seg:
+            continue
+        parts = [p.strip() for p in re.split(r"[，,]", seg) if p.strip()]
+        out = parts[0] if parts else seg
+        if len(out) > 16:
+            out = out[:16].rstrip(" ,，;；") + "…"
+        return out
+    return ""
 
 
 def short_gloss(translation: str) -> str:
@@ -74,6 +94,8 @@ def short_gloss(translation: str) -> str:
     与 full_gloss（全量、供生词本完整解释）相对，这里要「短而贴切」，避免
     「n. 土地，战场，场地；a. 土地的，地面上的」这类满行注释。半角/全角分号、逗号
     均按义项分隔；[网络]/【网络】噪声行整行丢弃；领域标签剥除后不再单独成义。
+    现代技术词（hardcoding/refactoring/datacenters 等）常仅 [网络] 一行，此时退而
+    取该行核心义，与 full_gloss 的兜底一致，避免「生词本有义、行内 ruby 空」。
     """
     if not translation:
         return ""
@@ -83,17 +105,27 @@ def short_gloss(translation: str) -> str:
             continue
         if s.startswith("[网络]") or s.startswith("【网络】"):
             continue
-        for seg in re.split(r"[；;]", s):
-            seg = _FULL_BRACKET.sub("", _BRACKET.sub("", seg))
-            seg = _POS_RE.sub("", seg).strip(" ,，;；\n\t")
-            if not seg:
-                continue
-            parts = [p.strip() for p in re.split(r"[，,]", seg) if p.strip()]
-            out = parts[0] if parts else seg
-            if len(out) > 16:
-                out = out[:16].rstrip(" ,，;；") + "…"
+        out = _short_line(s)
+        if out:
+            return out
+    # 全是 [网络]/【网络】行：退而取核心义兜底（现代技术词常仅网络释义）
+    for line in translation.split("\n"):
+        out = _short_line(line.strip())
+        if out:
             return out
     return ""
+
+
+def _network_only(translation: str) -> bool:
+    """释义是否仅由 [网络]/【网络】噪声行构成（无任何干净行）。"""
+    for line in (translation or "").split("\n"):
+        s = line.strip()
+        if not s:
+            continue
+        if s.startswith("[网络]") or s.startswith("【网络】"):
+            continue
+        return False  # 存在干净行
+    return True
 
 
 # 目标学生估算词汇量（design §2.1：初一男生 ~3600），可用 ?level= 覆盖
@@ -250,7 +282,15 @@ def _classify(text: str, level: int) -> dict:
     # surface_lemma 还原到原型（rover/orbiter），使二者合并成同一生词条目。
     if text[0].isupper():
         return {"w": text, "known": True, "proper": True}
-    ec = ecdict.lookup(lower) or ecdict.lookup(head)
+    ec = ecdict.lookup(lower)
+    # 屈折形的释义若仅 [网络] 噪声，而词族头有干净释义（workflows→workflow「工作流程」），
+    # 取词族头，避免行内 ruby / 生词本被网络噪声污染。
+    if lower != head and ec and _network_only(ec.get("translation")):
+        ec_head = ecdict.lookup(head)
+        if ec_head and not _network_only(ec_head.get("translation")):
+            ec = ec_head
+    if ec is None:
+        ec = ecdict.lookup(head)
     if ec and (ec.get("translation") or "").strip():
         fg = full_gloss(ec["translation"])
         if fg:

@@ -5031,19 +5031,19 @@
     },
     {
       "text": "single turn",
-      "gloss": "单向旋回法",
+      "gloss": "单轮",
       "type": "phrasal_verb",
       "separable": false
     },
     {
       "text": "open source",
-      "gloss": "打开源",
+      "gloss": "开源",
       "type": "phrasal_verb",
       "separable": false
     },
     {
       "text": "cloud platform",
-      "gloss": "云端平台\n云平台",
+      "gloss": "云平台",
       "type": "phrasal_verb",
       "separable": false
     },
@@ -5938,6 +5938,114 @@
     {
       "text": "run about",
       "gloss": "跑来跑去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time delay",
+      "gloss": "延时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall at",
+      "gloss": "在…时变成某种状态",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wave theory of light",
+      "gloss": "光波理论",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time measurement",
+      "gloss": "时间测量",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time interval",
+      "gloss": "时间间隔",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power plant",
+      "gloss": "发电厂",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power lines",
+      "gloss": "电力线",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "brand new",
+      "gloss": "崭新的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "head start",
+      "gloss": "领先",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long time ago",
+      "gloss": "很久以前",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wet mixture",
+      "gloss": "湿拌",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "spread to",
+      "gloss": "蔓延到",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "iron will",
+      "gloss": "铁的意志",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "host country",
+      "gloss": "东道国",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take part",
+      "gloss": "参加比赛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "struggle in",
+      "gloss": "在打架〔挣扎〕",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "home television",
+      "gloss": "民用电视",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "use to",
+      "gloss": "过去常常",
       "type": "phrasal_verb",
       "separable": false
     }

@@ -17,12 +17,16 @@ def analyze(body: str, level: int | None = None) -> dict:
     """
     global_phrases = mwe.texts()
     multiword = []
+    seen: set[str] = set()
     for m in ecdict.scan_multiword(body):
         if m["text"] in global_phrases:
             continue  # 已全局短语，无需再列
+        if m["text"] in seen:
+            continue  # 同一短语在正文多次出现，只列一次
         g = reading.short_gloss(m["translation"])
         if not g:
             continue  # 词典中无干净释义：不翻译也不列入
+        seen.add(m["text"])
         multiword.append({
             "text": m["text"],
             "gloss": g,
