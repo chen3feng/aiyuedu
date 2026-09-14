@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     users_path: str = str(PROJECT_ROOT / "data" / "users" / "users.json")
     topics_path: str = str(PROJECT_ROOT / "data" / "topics" / "topics.json")
     sensitive_blacklist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "sensitive_blacklist.json")
+    mwe_path: str = str(PROJECT_ROOT / "data" / "mwe" / "mwe.json")
+    ecdict_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "raw" / "stardict.db")
+    ai_config_path: str = str(PROJECT_ROOT / "data" / "config" / "ai.json")
 
 
 settings = Settings()

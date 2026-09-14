@@ -35,7 +35,7 @@ def list_readings(
         rtopics = _topics_of(r)
         if topic and topic not in rtopics:
             continue
-        st = reading.stats(r["body"], level)
+        st = reading.stats(r["body"], level, r.get("terms"), r.get("skip"))
         items.append(
             {
                 "id": r["id"],
@@ -61,7 +61,8 @@ def get_reading(
     if r is None:
         raise HTTPException(status_code=404, detail="文章不存在")
     ann = reading.annotate(
-        r["body"], level, r.get("glosses"), r.get("full_glosses"), r.get("headwords")
+        r["body"], level, r.get("glosses"), r.get("full_glosses"), r.get("headwords"), r.get("terms"),
+        r.get("skip"),
     )
     rtopics = _topics_of(r)
     return {

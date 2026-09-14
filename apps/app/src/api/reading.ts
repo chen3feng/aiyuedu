@@ -23,6 +23,7 @@ export interface ReadingWord {
   proper?: boolean;
   stop?: boolean;
   lemma?: string;
+  phrase?: boolean; // 多词短语（take over / throw up），整段一个生词单元
 }
 
 export interface ReadingLine {
@@ -36,6 +37,7 @@ export interface VocabItem {
   phonetic: string;
   gloss: string;
   full_gloss: string;
+  phrase?: boolean; // 多词短语，word/lemma 为短语 canonical 文本
 }
 
 export interface ReadingDetail {

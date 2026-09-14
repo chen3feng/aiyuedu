@@ -7,8 +7,9 @@
 - raw/lemma.en.txt —— ECDICT 词形还原表（`base/freq -> 屈折形式`，84k 组），
   覆盖屈折 + 不规则（went→go、children→child、better→good）。
 
-只保留「词族头出现在 wordlist.csv 中」的条目（约 23611 词族），
-否则运行时会把映射到一个无 rank 的头，无法判定已知/生词。
+词族头与词表内派生仍来自 basewrd（只收词表头）；屈折（含词表外 base）来自
+lemma.en.txt，全部收录——词表外单词（rover/orbiter）也要能还原屈折
+（rovers→rover、orbiters→orbiter）以便去重，否则每个复数都会单独成生词。
 
 产出：data/wordlists/surface_lemma.json（{surface: 词族头}，已提交）。
 运行：uv run data/wordlists/build_surface_lemma.py
@@ -72,8 +73,14 @@ def add_family_members(mapping: dict[str, str], heads: set[str]) -> None:
             mapping[current_head] = current_head
 
 
-def add_inflections(mapping: dict[str, str], heads: set[str]) -> None:
-    """lemma.en.txt：`base/freq -> 屈折形式`，仅当 base 在词表中才收录。"""
+def add_inflections(mapping: dict[str, str]) -> None:
+    """lemma.en.txt：`base/freq -> 屈折形式`，全部收录（含词表外 base）。
+
+    词表外单词（rover/orbiter）也要能还原屈折以便去重（rovers→rover、orbiters→orbiter）。
+    「不覆盖已有映射」：basewrd 的「派生 + 屈折」是权威（environmentalism→environment，
+    而不应被 lemma.en 里 environmentalism 作为 base 的自映射覆盖），lemma.en 只填补
+    basewrd 缺失的词形。词族头自映射在 main() 末尾统一强制，防止头被某 base 的 token 覆盖。
+    """
     path = RAW / "lemma.en.txt"
     with open(path, encoding="utf-8") as f:
         for line in f:
@@ -82,12 +89,13 @@ def add_inflections(mapping: dict[str, str], heads: set[str]) -> None:
                 continue
             left, _, right = line.partition("->")
             base = left.split("/")[0].strip().lower()
-            if base not in heads:
+            if not base:
                 continue
-            mapping[base] = base
+            if base not in mapping:
+                mapping[base] = base
             for token in right.split(","):
                 token = token.strip().lower()
-                if token:
+                if token and token not in mapping:
                     mapping[token] = base
 
 
@@ -96,10 +104,14 @@ def main() -> None:
     mapping: dict[str, str] = {}
     # 派生（词族成员）优先，再补屈折；缩略词最后显式覆盖
     add_family_members(mapping, heads)
-    add_inflections(mapping, heads)
+    add_inflections(mapping)
     for surface, head in CONTRACTIONS.items():
         if head in heads:
             mapping[surface] = head
+    # 词族头强制自映射（最后一步）：防止某词表外 base 的屈折 token 恰好是词族头时
+    # 把它映射走（如 data 作为 datum 的 token）。
+    for h in heads:
+        mapping[h] = h
 
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(mapping, f, ensure_ascii=False, separators=(",", ":"))
@@ -108,7 +120,7 @@ def main() -> None:
     print(f"heads={len(heads)}  surface_lemma entries={len(mapping)}  size={size_mb:.2f}MB")
     # 自检
     checks = {
-        "jumped": "jump", "went": "go", "children": "child", "better": "good",
+        "jumped": "jump", "went": "go", "children": "child", "better": "better",
         "beautiful": "beauty", "environmentalism": "environment", "can't": "can",
         "dogs": "dog",
     }

@@ -71,6 +71,7 @@
   <nav class="tabs">
     <div class="tab active" id="tab-topics" onclick="switchTab('topics')">主题管理</div>
     <div class="tab" id="tab-articles" onclick="switchTab('articles')">文章管理</div>
+    <div class="tab" id="tab-ai" onclick="switchTab('ai')">AI 提供者</div>
   </nav>
 </header>
 <main id="main"></main>
@@ -87,11 +88,19 @@ const state = {
   editing: null,        // null=列表, 'new'=新增, id=编辑
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
+  aiLoading: false,     // AI 生成本文义进行中
+  ai: { providers: [], default: null, editing: null },
 };
 
 function esc(s) {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")
     .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function maskKey(k) {
+  if (!k) return "";
+  if (k.length <= 8) return "****";
+  return k.slice(0, 4) + "****" + k.slice(-4);
 }
 
 function toast(msg, isErr) {
@@ -141,7 +150,7 @@ async function delTopic(key, label) {
 
 function newForm() {
   return { title: "", subtitle: "", body: "", topics: [], target_level: null,
-    glosses: {}, full_glosses: {}, headwords: {}, quizzes: [] };
+    glosses: {}, full_glosses: {}, headwords: {}, multiword: [], skip: [], quizzes: [] };
 }
 function newOption() { return { text: "", correct: false }; }
 function newQuiz() {
@@ -163,7 +172,10 @@ async function startEdit(id) {
   state.editing = id;
   state.form = { title: a.title, subtitle: a.subtitle || "", body: a.body, topics: a.topics || [],
     target_level: a.target_level, glosses: a.glosses || {}, full_glosses: a.full_glosses || {},
-    headwords: a.headwords || {}, quizzes: a.quizzes || [] };
+    headwords: a.headwords || {},
+    multiword: Object.entries(a.terms || {}).map(([text, gloss]) => ({ text, gloss, kind: "term" })),
+    skip: a.skip || [],
+    quizzes: a.quizzes || [] };
   state.analyze = null;
   renderArticles();
 }
@@ -190,6 +202,15 @@ function addOption(qi) { state.form.quizzes[qi].options.push(newOption()); rende
 function delOption(qi, oi) { state.form.quizzes[qi].options.splice(oi, 1); renderForm(); }
 function setOption(qi, oi, k, v) { state.form.quizzes[qi].options[oi][k] = v; }
 function setGloss(lemma, v) { state.form.glosses[lemma] = v; }
+function setMwGloss(i, v) { state.form.multiword[i].gloss = v; }
+function setMwKind(i, kind) { state.form.multiword[i].kind = kind; renderForm(); }
+function delMw(i) { state.form.multiword.splice(i, 1); renderForm(); }
+function delGloss(lemma) {
+  delete state.form.glosses[lemma];
+  if (!state.form.skip.includes(lemma)) state.form.skip.push(lemma);
+  if (state.analyze) state.analyze.vocabulary = state.analyze.vocabulary.filter((v) => v.lemma !== lemma);
+  renderForm();
+}
 
 async function analyzeBody() {
   const body = state.form.body;
@@ -198,11 +219,44 @@ async function analyzeBody() {
     const r = await api("/articles/analyze", "POST", { body });
     state.analyze = r;
     state.form.target_level = r.level;
+    const skipSet = new Set(state.form.skip || []);
     const g = {};
-    r.vocabulary.forEach((v) => (g[v.lemma] = v.gloss));
+    r.vocabulary.forEach((v) => { if (!skipSet.has(v.lemma)) g[v.lemma] = v.gloss; });
     state.form.glosses = g;
+    state.analyze.vocabulary = r.vocabulary.filter((v) => !skipSet.has(v.lemma));
+    state.form.multiword = r.multiword || [];
     renderForm();
   } catch (e) { toast(e.message, true); }
+}
+
+async function aiGlossBody() {
+  if (!state.form.body.trim()) return toast("请先填写正文", true);
+  if (!state.analyze) return toast("请先点「自动定级 + 提取生词」", true);
+  state.aiLoading = true;
+  renderForm();
+  try {
+    const r = await api("/articles/ai-glosses", "POST",
+      { body: state.form.body, level: state.form.target_level });
+    if (r.glosses) {
+      const skipSet = new Set(state.form.skip || []);
+      const g = {};
+      Object.keys(r.glosses).forEach((k) => { if (!skipSet.has(k)) g[k] = r.glosses[k]; });
+      state.form.glosses = g;
+    }
+    const mw = r.multiword_glosses || {};
+    const lk = {};
+    Object.keys(mw).forEach((k) => (lk[k.toLowerCase()] = mw[k]));
+    state.form.multiword.forEach((m) => {
+      const g = lk[(m.text || "").toLowerCase()];
+      if (g) m.gloss = g;
+    });
+    toast("已生成本文语境义（仅 ruby 显示）");
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    state.aiLoading = false;
+    renderForm();
+  }
 }
 
 function validateQuizzes() {
@@ -221,9 +275,11 @@ async function saveArticle() {
   if (!state.form.body.trim()) return toast("正文不能为空", true);
   if (!state.form.topics.length) return toast("至少选择一个主题", true);
   if (!validateQuizzes()) return;
-  const payload = { ...state.form, quizzes: state.form.quizzes.map((q) => ({
-    type: "choice", question: q.question, options: q.options,
-    explanation_zh: q.explanation_zh, explanation_en: q.explanation_en })) };
+  const payload = { ...state.form,
+    multiword: state.form.multiword.map((m) => ({ text: m.text, gloss: m.gloss, kind: m.kind })),
+    quizzes: state.form.quizzes.map((q) => ({
+      type: "choice", question: q.question, options: q.options,
+      explanation_zh: q.explanation_zh, explanation_en: q.explanation_en })) };
   try {
     if (state.editing === "new") await api("/articles", "POST", payload);
     else await api("/articles/" + state.editing, "PUT", payload);
@@ -233,14 +289,74 @@ async function saveArticle() {
   toast("已保存");
 }
 
+// ---------- AI 提供者 ----------
+
+function newProvider() { return { name: "", base_url: "", api_key: "", model: "" }; }
+
+async function loadAi() {
+  const [providers, def] = await Promise.all([
+    api("/ai/providers"), api("/ai/default")]);
+  state.ai.providers = providers.items;
+  state.ai.default = def.default;
+}
+function startAddProvider() {
+  state.ai.editing = "new";
+  state.ai.form = newProvider();
+  renderAi();
+}
+function startEditProvider(name) {
+  const p = state.ai.providers.find((x) => x.name === name);
+  state.ai.editing = name;
+  state.ai.form = { ...p };
+  renderAi();
+}
+function cancelAiEdit() { state.ai.editing = null; state.ai.form = null; renderAi(); }
+function setAiField(k, v) { state.ai.form[k] = v; }
+
+async function saveProvider() {
+  const f = state.ai.form;
+  if (!f.name.trim()) return toast("名称不能为空", true);
+  if (!f.base_url.trim()) return toast("url 不能为空", true);
+  if (!f.model.trim()) return toast("模型名不能为空", true);
+  try {
+    if (state.ai.editing === "new") {
+      await api("/ai/providers", "POST", f);
+    } else {
+      const body = { base_url: f.base_url, api_key: f.api_key, model: f.model };
+      if (f.name.trim() !== state.ai.editing) body.new_name = f.name.trim();
+      await api("/ai/providers/" + encodeURIComponent(state.ai.editing), "PUT", body);
+    }
+  } catch (e) { return toast(e.message, true); }
+  state.ai.editing = null; state.ai.form = null;
+  await renderAi();
+  toast("已保存");
+}
+
+async function delProvider(name) {
+  if (!confirm(`确认删除提供者「${name}」？`)) return;
+  try { await api("/ai/providers/" + encodeURIComponent(name), "DELETE"); }
+  catch (e) { return toast(e.message, true); }
+  await renderAi();
+  toast("已删除");
+}
+
+async function setDefaultProvider(name) {
+  try { await api("/ai/default", "PUT", { name }); }
+  catch (e) { return toast(e.message, true); }
+  await renderAi();
+  toast(`默认提供者已设为 ${name}`);
+}
+
 // ---------- 渲染 ----------
 
 async function switchTab(tab) {
   state.tab = tab;
   $("tab-topics").className = "tab" + (tab === "topics" ? " active" : "");
   $("tab-articles").className = "tab" + (tab === "articles" ? " active" : "");
+  $("tab-ai").className = "tab" + (tab === "ai" ? " active" : "");
   if (tab === "topics") await renderTopics();
-  else await renderArticles();
+  else if (tab === "articles") await renderArticles();
+  else await renderAi();
 }
 
 async function renderTopics() {
@@ -297,7 +413,19 @@ function renderForm() {
     <div class="gloss-row">
       <div class="w" title="${esc(v.word)}">${esc(v.word)}${v.phonetic ? ` <span class="muted">${esc(v.phonetic)}</span>` : ""}</div>
       <input type="text" value="${esc(f.glosses[v.lemma] ?? "")}" oninput="setGloss('${esc(v.lemma)}', this.value)">
+      <button class="danger small" onclick="delGloss('${esc(v.lemma)}')">删</button>
     </div>`).join("") : "";
+
+  const mwRows = f.multiword.map((m, i) => `
+    <div class="gloss-row">
+      <div class="w" title="${esc(m.text)}">${esc(m.text)}${m.tag ? ` <span class="muted">${esc(m.tag)}</span>` : ""}</div>
+      <select onchange="setMwKind(${i}, this.value)" style="width:90px;flex-shrink:0">
+        <option value="term" ${m.kind === "phrase" ? "" : "selected"}>术语</option>
+        <option value="phrase" ${m.kind === "phrase" ? "selected" : ""}>短语</option>
+      </select>
+      <input type="text" value="${esc(m.gloss ?? "")}" oninput="setMwGloss(${i}, this.value)" placeholder="中文注释">
+      <button class="danger small" onclick="delMw(${i})">删</button>
+    </div>`).join("");
 
   const quizzes = f.quizzes.map((q, qi) => `
     <div class="quiz">
@@ -339,6 +467,9 @@ function renderForm() {
       <div class="row" style="margin-bottom:14px">
         <button class="primary" onclick="analyzeBody()">自动定级 + 提取生词</button>
         ${state.analyze ? `<span class="muted">已分析：${state.analyze.new_word_count} 个生词</span>` : ""}
+        <button class="primary" onclick="aiGlossBody()" ${!state.analyze || state.aiLoading ? "disabled" : ""}>
+          ${state.aiLoading ? "AI 生成中…" : "AI 生成本文义"}
+        </button>
       </div>
       ${state.analyze ? `
         <div class="card" style="background:#fafbfe">
@@ -354,6 +485,14 @@ function renderForm() {
 
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <strong>多词表达式（短语 / 术语）</strong>
+      </div>
+      <div class="muted" style="margin-bottom:10px">短语：并入全局短语库，计生词、进生词本；术语：仅本文行内注释，不计生词。</div>
+      ${mwRows || '<div class="empty">暂无，点「自动定级」识别</div>'}
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
         <strong>课后小测</strong>
         <button class="small" onclick="addQuiz()">+ 添加题目</button>
       </div>
@@ -363,6 +502,58 @@ function renderForm() {
     <div class="row" style="gap:12px">
       <button class="primary" onclick="saveArticle()">保存</button>
       <button onclick="cancelEdit()">取消</button>
+    </div>`;
+}
+
+async function renderAi() {
+  await loadAi();
+  if (state.ai.editing !== null) { renderAiForm(); return; }
+  main().innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <strong>AI 提供者</strong>
+        <button class="primary" onclick="startAddProvider()">+ 新增提供者</button>
+      </div>
+    </div>
+    <div class="card">
+      ${state.ai.providers.length ? "" : '<div class="empty">暂无提供者</div>'}
+      ${state.ai.providers.map((p) => `
+        <div class="item">
+          <div class="grow">
+            <div><strong>${esc(p.name)}</strong>
+              ${p.name === state.ai.default ? '<span class="tag">默认</span>' : ""}
+              <span class="muted">${esc(p.model)}</span></div>
+            <div class="muted">${esc(p.base_url)} · ${
+              p.api_key ? `<code>${esc(maskKey(p.api_key))}</code>` : "无 key"}</div>
+          </div>
+          ${p.name !== state.ai.default
+            ? `<button class="small" onclick="setDefaultProvider('${esc(p.name)}')">设为默认</button>` : ""}
+          <button class="small" onclick="startEditProvider('${esc(p.name)}')">编辑</button>
+          <button class="danger small" onclick="delProvider('${esc(p.name)}')">删除</button>
+        </div>`).join("")}
+    </div>`;
+}
+
+function renderAiForm() {
+  const f = state.ai.form;
+  main().innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <strong>${state.ai.editing === "new" ? "新增提供者" : "编辑提供者"}</strong>
+        <button onclick="cancelAiEdit()">返回列表</button>
+      </div>
+      <div class="field"><label>名称</label>
+        <input type="text" value="${esc(f.name)}" oninput="setAiField('name',this.value)" placeholder="如 DeepSeek"></div>
+      <div class="field"><label>url（OpenAI 兼容端点，含 /v1）</label>
+        <input type="text" value="${esc(f.base_url)}" oninput="setAiField('base_url',this.value)" placeholder="https://api.deepseek.com/v1"></div>
+      <div class="field"><label>API key（可选）</label>
+        <input type="password" value="${esc(f.api_key)}" oninput="setAiField('api_key',this.value)" placeholder="sk-..."></div>
+      <div class="field"><label>模型名</label>
+        <input type="text" value="${esc(f.model)}" oninput="setAiField('model',this.value)" placeholder="deepseek-chat"></div>
+      <div class="row" style="gap:12px">
+        <button class="primary" onclick="saveProvider()">保存</button>
+        <button onclick="cancelAiEdit()">取消</button>
+      </div>
     </div>`;
 }
 

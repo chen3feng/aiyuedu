@@ -13,7 +13,35 @@ import json
 
 import pytest
 
-from app.services import reading
+from app.services import ecdict, reading
+
+
+@pytest.fixture(autouse=True)
+def _no_ecdict_db(tmp_path, monkeypatch):
+    """隔离真实 811MB stardict.db：指向不存在的路径，使 _classify 走「无词库降级」路径，
+    让本文件各测试不依赖词库内容、离线可确定运行（词库相关行为在 test_ecdict.py 与下方
+    显式建库的测试中覆盖）。"""
+    monkeypatch.setattr(ecdict.settings, "ecdict_path", str(tmp_path / "no-stardict.db"))
+    ecdict._lookup_row.cache_clear()
+    ecdict.has_db.cache_clear()
+
+
+def _make_ecdict(tmp_path, monkeypatch, rows):
+    """建一个带 schema 与指定行的临时 stardict.db，覆盖 autouse 无库夹具。"""
+    import sqlite3
+
+    path = tmp_path / "stardict.db"
+    con = sqlite3.connect(path)
+    con.execute(
+        "CREATE TABLE stardict (word TEXT UNIQUE COLLATE NOCASE, phonetic TEXT, "
+        "translation TEXT, pos TEXT, tag TEXT, bnc INTEGER, frq INTEGER)"
+    )
+    con.executemany("INSERT INTO stardict VALUES (?,?,?,?,?,?,?)", rows)
+    con.commit()
+    con.close()
+    monkeypatch.setattr(ecdict.settings, "ecdict_path", str(path))
+    ecdict._lookup_row.cache_clear()
+    ecdict.has_db.cache_clear()
 
 
 # ---------- 句子与 token 切分 ----------
@@ -41,6 +69,16 @@ def test_tokenize_keeps_decimal_as_one_token():
     assert ("word", "9.58") in [(t["kind"], t["text"]) for t in toks]
 
 
+def test_tokenize_keeps_ordinal_as_one_token():
+    # 序数 20th/21st/2nd 整体按数字，不拆出 th/st/nd 碎片
+    toks = reading._tokenize("the 20th century and the 21st and 2nd")
+    kinds = [(t["kind"], t["text"]) for t in toks]
+    assert ("word", "20th") in kinds
+    assert ("word", "21st") in kinds
+    assert ("word", "2nd") in kinds
+    assert not any(t["text"] in ("th", "st", "nd", "rd") for t in toks)
+
+
 # ---------- 词形还原（词族头） ----------
 
 @pytest.mark.parametrize(
@@ -64,6 +102,20 @@ def test_head_of(surface, expected):
 
 def test_head_of_possessive():
     assert reading._head_of("dog's") == "dog"
+
+
+def test_head_of_out_of_wordlist_inflection_reduces():
+    # 词表外单词的屈折也要还原去重：rovers→rover、orbiters→orbiter
+    assert reading._head_of("rovers") == "rover"
+    assert reading._head_of("orbiters") == "orbiter"
+
+
+def test_annotate_dedups_out_of_wordlist_plural():
+    # 词表外复数与单数合并成同一生词条目，只入生词表一次
+    ann = reading.annotate("The rover drove past the rovers and orbiters.", 3600)
+    lemmas = [v["lemma"] for v in ann["vocabulary"]]
+    assert lemmas.count("rover") == 1
+    assert lemmas.count("orbiter") == 1
 
 
 # ---------- 生词判定 ----------
@@ -113,6 +165,38 @@ def test_level_threshold_controls_known():
     # 同一词在不同 level 下判定不同
     assert reading._classify("molecule", 100)["known"] is False
     assert reading._classify("molecule", 25000)["known"] is True
+
+
+def test_classify_ecdict_fallback_fills_gloss(tmp_path, monkeypatch):
+    # 词表外单词（orbiter 不在 Nation 词表）→ 查 ECDICT 补释义，不再空释义
+    _make_ecdict(tmp_path, monkeypatch, [("orbiter", "ˈɔːbɪtə", "n. 轨道飞行器, 人造卫星", "n:100", "", 0, 0)])
+    e = reading._classify("orbiter", 3600)
+    assert e["known"] is False
+    assert e["lemma"] == "orbiter"
+    assert e["gloss"]
+    assert e["full_gloss"]
+
+
+def test_classify_noise_fragment_skipped(tmp_path, monkeypatch):
+    # 词库有词条但无干净释义（[计]/[网络] 噪声）→ 噪声，不计词、不进生词表
+    _make_ecdict(tmp_path, monkeypatch, [("r", None, "[计] 半径, 比例", "", "", 0, 0)])
+    e = reading._classify("r", 3600)
+    assert e.get("noise") is True
+    assert e["known"] is True
+
+
+def test_classify_single_letter_is_noise_without_db():
+    # 单字母（数学符号/单位）无需词库硬判噪声
+    for ch in "rvegms":
+        assert reading._classify(ch, 3600).get("noise") is True
+
+
+def test_classify_out_of_wordlist_without_db_is_empty_gloss_new_word():
+    # 词库缺失时降级：词表外单词仍是生词（空释义待后台补全），而非被误判为噪声
+    e = reading._classify("orbiter", 3600)
+    assert e["known"] is False
+    assert e["lemma"] == "orbiter"
+    assert e["gloss"] == ""
 
 
 # ---------- 逐行标注与统计 ----------
@@ -182,6 +266,24 @@ def test_full_gloss_keeps_all_senses():
     assert reading.full_gloss("") == ""
 
 
+def test_full_gloss_drops_network_noise_line():
+    # ECDICT 的「[网络] ...」整行是抓取噪声，须连同其子义项一起丢弃
+    assert reading.full_gloss("n. 温室效应\n[网络] 造成温室效应；快乐工人；植物生长剂") == "n. 温室效应"
+
+
+def test_short_gloss_single_sense():
+    # 多词性/多义项只取第一个义项，去词性前缀与领域噪声
+    assert reading.short_gloss("n. 土地，战场，场地；a. 土地的，地面上的") == "土地"
+    assert reading.short_gloss("应用，应用程序; 相联并行处理器") == "应用"
+    assert reading.short_gloss("n. 时差") == "时差"
+
+
+def test_short_gloss_strips_pos_and_network_noise():
+    assert reading.short_gloss("vt. 使…；vi. 发生") == "使…"
+    assert reading.short_gloss("n. 温室效应\n[网络] 造成温室效应；快乐工人") == "温室效应"
+    assert reading.short_gloss("") == ""
+
+
 def test_annotate_ruby_marks_new_word_with_context_gloss():
     ann = reading.annotate(
         "A dinosaur walked.", 100,
@@ -233,6 +335,20 @@ def test_annotate_defaults_without_glosses():
         assert v["full_gloss"]  # 词表生词必有完整义
 
 
+def test_annotate_skip_drops_new_word():
+    # 后台手工删掉的生词：不注音、不进生词表、不计生词数
+    ann = reading.annotate("A dinosaur walked.", 100, {"dinosaur": "恐龙"}, skip=["dinosaur"])
+    html = ann["lines"][0]["html"]
+    assert "<ruby>dinosaur" not in html
+    assert not any(v["lemma"] == "dinosaur" for v in ann["vocabulary"])
+    assert ann["new_word_count"] == 1  # 只剩 walk
+
+
+def test_stats_skip_not_counted_as_new():
+    st = reading.stats("A dinosaur walked.", 100, skip=["dinosaur"])
+    assert st["new_word_count"] == 1
+
+
 def test_get_reading_returns_vocabulary_and_body():
     from app.routers import reading as reading_router
     resp = reading_router.get_reading("r001", 3600, None)
@@ -250,9 +366,10 @@ def test_get_reading_returns_vocabulary_and_body():
 
 def test_every_reading_has_three_valid_choice_quizzes():
     # 每篇 3 题，当前只支持选择题；字段设计对判断题等未来题型保持可扩展（type 区分）
+    # 无题的导入稿（如 036）允许 0 题；英文解析稿允许无中文解释（zh/en 二选一）
     for r in reading.list_readings():
         quizzes = r.get("quizzes", [])
-        assert len(quizzes) == 3, f"{r['id']} 应有 3 道题"
+        assert len(quizzes) in (0, 3), f"{r['id']} 应为 0 或 3 道题"
         for q in quizzes:
             assert q["type"] == "choice"
             assert q["question"]
@@ -260,8 +377,7 @@ def test_every_reading_has_three_valid_choice_quizzes():
             assert len(opts) == 4, f"{r['id']} 选项须为 4 个"
             assert all(isinstance(o, dict) and "text" in o and "correct" in o for o in opts)
             assert sum(1 for o in opts if o["correct"]) >= 1, f"{r['id']} 至少一个正确选项"
-            assert q["explanation_zh"]
-            assert q["explanation_en"]
+            assert q["explanation_zh"] or q["explanation_en"]
 
 
 def test_get_reading_returns_quizzes():
@@ -292,3 +408,110 @@ def test_list_readings_level_defaults_to_user_vocab(tmp_path, monkeypatch):
     assert [(i["id"], i["new_word_rate"]) for i in by_profile] == [
         (i["id"], i["new_word_rate"]) for i in by_explicit
     ]
+
+
+# ---------- 多词短语（MWE）标注 ----------
+
+def test_annotate_glosses_phrase_as_one_unit():
+    ann = reading.annotate("I will take over the company.", 3600)
+    html = ann["lines"][0]["html"]
+    assert "<ruby>take over<rt>" in html
+    assert "<ruby>take<rt>" not in html  # take 不再单独注释
+    lemmas = {v["lemma"] for v in ann["vocabulary"]}
+    assert "take over" in lemmas
+
+
+def test_annotate_separable_phrase_surface():
+    ann = reading.annotate("Take it apart now.", 3600)
+    html = ann["lines"][0]["html"]
+    assert "<ruby>Take it apart<rt>拆开</rt></ruby>" in html
+    voc = {v["lemma"]: v for v in ann["vocabulary"]}
+    assert voc["take apart"]["gloss"] == "拆开"
+
+
+def test_stats_counts_phrase_as_one_word():
+    st = reading.stats("I will throw up now.", 3600)
+    assert st["word_count"] == 4
+    assert st["new_word_count"] == 1
+
+
+# ---------- 文章级术语（term）标注 ----------
+
+def test_annotate_term_ruby_every_occurrence():
+    # 术语每次出现都注 ruby（与生词「仅首次」不同）
+    body = "The conservation of momentum law and the conservation of momentum rule."
+    ann = reading.annotate(body, 25000, terms={"conservation of momentum": "动量守恒"})
+    html = ann["lines"][0]["html"]
+    assert html.count("<ruby>conservation of momentum<rt>动量守恒</rt></ruby>") == 2
+
+
+def test_annotate_term_not_in_vocab_and_not_new():
+    ann = reading.annotate(
+        "The greenhouse effect warms Earth.", 25000, terms={"greenhouse effect": "温室效应"}
+    )
+    # 术语不计生词、不进生词表
+    assert ann["new_word_count"] == 0
+    assert not any("greenhouse" in v["lemma"] for v in ann["vocabulary"])
+
+
+def test_annotate_term_marks_known_and_term_flag():
+    ann = reading.annotate(
+        "Study the greenhouse effect now.", 25000, terms={"greenhouse effect": "温室效应"}
+    )
+    term = next(w for w in ann["lines"][0]["words"] if w.get("term"))
+    assert term["w"] == "greenhouse effect"
+    assert term["known"] is True
+    assert term["gloss"] == "温室效应"
+
+
+def test_stats_term_counts_words_but_not_new():
+    # 术语词数 +1（greenhouse effect 算 1 个单元），生词数 +0
+    st = reading.stats(
+        "The greenhouse effect warms Earth.", 25000, terms={"greenhouse effect": "温室效应"}
+    )
+    assert st["word_count"] == 4
+    assert st["new_word_count"] == 0
+
+
+def test_annotate_without_terms_unchanged():
+    # 不传 terms 时行为与旧版一致（greenhouse 走逐词判定）
+    ann = reading.annotate("The greenhouse effect warms Earth.", 25000)
+    assert not any(w.get("term") for w in ann["lines"][0]["words"])
+
+
+# ---------- 旧存冗长释义归一（行内 ruby 只显示单一义） ----------
+
+def test_annotate_single_word_gloss_normalized_to_short():
+    # 文章 glosses 旧存「词性前缀+多义项」时，行内 ruby 也应归一为短义
+    ann = reading.annotate(
+        "The ground is wet.", 100,
+        glosses={"ground": "n. 土地，战场，场地；a. 土地的，地面上的"},
+    )
+    html = ann["lines"][0]["html"]
+    assert "<rt>土地</rt>" in html
+    assert "战场" not in html
+
+
+def test_annotate_term_gloss_normalized_to_short():
+    # 文章 terms 旧存带词性前缀的释义，行内 ruby 归一为短义
+    ann = reading.annotate(
+        "Time differences matter.", 25000, terms={"time differences": "n. 时差"}
+    )
+    term = next(w for w in ann["lines"][0]["words"] if w.get("term"))
+    assert term["gloss"] == "时差"
+
+
+def test_annotate_hand_edited_short_gloss_preserved():
+    # 人工改过的干净短义（含括号/省略号）不被短义归一破坏
+    ann = reading.annotate(
+        "The orbit decays.", 100, glosses={"orbit": "环绕…运行"}
+    )
+    html = ann["lines"][0]["html"]
+    assert "<rt>环绕…运行</rt>" in html
+
+
+def test_build_glosses_excludes_multiword_phrases():
+    # 多词短语只进 multiword/terms，不混入 glosses（避免带空格的多词键）
+    g = reading.build_glosses("I will take over the company.", 3600)
+    assert "take over" not in g
+    assert all(" " not in k for k in g)

@@ -7,7 +7,7 @@
 | 文件 | 说明 |
 | --- | --- |
 | `wordlist.csv` | **项目主词表**（已过滤、分带），供评测/分级/生词标注使用 |
-| `surface_lemma.json` | 词形 → 词族头映射（约 7.5 万条，提交入库），供分级阅读做词形还原 |
+| `surface_lemma.json` | 词形 → 词族头映射（约 19.8 万条，提交入库），供分级阅读做词形还原 |
 | `build_surface_lemma.py` | 从 raw 词族表 + 词形还原表生成 `surface_lemma.json` 的脚本 |
 | `raw/ecdict.csv` | ECDICT 全量原始数据（约 76 万词条，63MB，MIT） |
 | `raw/basewrd1.txt`~`basewrd25.txt` | Paul Nation BNC/COCA 25000 基础词族表（每文件 1000 词族，CC BY-SA 4.0） |
@@ -75,4 +75,10 @@ uv run data/wordlists/build_surface_lemma.py
 ```
 
 `surface_lemma.json` 是 `build_surface_lemma.py` 从 `raw/basewrd*.txt`（派生）+ `raw/lemma.en.txt`
-（屈折/不规则）生成，**只保留词族头在 `wordlist.csv` 中的条目**，运行时加载产物、不解析 raw。
+（屈折/不规则）生成，运行时加载产物、不解析 raw。
+
+- **派生**（`basewrd*.txt` 缩进成员）只保留词族头在 `wordlist.csv` 中的条目（约 23611 族）——
+  映射到无 rank 的头无法判定已知/生词。
+- **屈折**（`lemma.en.txt`）**全部收录**，含词表外 base（rover/orbiter），使词表外单词的
+  复数/第三人称等也能还原去重（rovers→rover、orbiters→orbiter），否则每个复数都单独成生词。
+- 词族头强制自映射，且 lemma.en 不覆盖 basewrd 的派生映射（environmentalism 仍还原到 environment）。

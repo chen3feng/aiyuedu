@@ -95,6 +95,29 @@ def test_analyze_returns_level_and_glosses():
     assert 0.0 < r["new_word_rate"] <= 1.0
 
 
+# ---------- AI 语境义 ----------
+
+def test_parse_json_strips_fences_and_noise():
+    assert admin._parse_json('```json\n{"a": "b"}\n```') == {"a": "b"}
+    assert admin._parse_json('前缀 {"a": "b"} 后缀') == {"a": "b"}
+    assert admin._parse_json("不是 json") == {}
+    assert admin._parse_json("") == {}
+
+
+def test_ai_glosses_overrides_and_falls_back(monkeypatch):
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    assert base  # 有生词
+    lemma = next(iter(base))
+    monkeypatch.setattr(
+        admin.ai, "chat", lambda *a, **k: json.dumps({lemma: "AI义"}, ensure_ascii=False)
+    )
+    r = admin.ai_glosses(body, 100)
+    assert r["glosses"][lemma] == "AI义"  # AI 覆盖
+    assert set(r["glosses"]) == set(base)  # 其余保留词典义兜底
+    assert r["multiword_glosses"] == {}
+
+
 # ---------- 文章 CRUD ----------
 
 def _valid_article(**overrides) -> dict:
@@ -151,6 +174,12 @@ def test_create_article_requires_topic(isolated_data):
 def test_create_article_rejects_unknown_topic(isolated_data):
     with pytest.raises(ValueError):
         admin.create_article(_valid_article(topics=["nope"]))
+
+
+def test_create_article_persists_skip(isolated_data):
+    article = admin.create_article(_valid_article(skip=["ground"]))
+    assert article["skip"] == ["ground"]
+    assert reading.get_reading(article["id"])["skip"] == ["ground"]
 
 
 def test_update_and_delete_article(isolated_data):

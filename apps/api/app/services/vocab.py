@@ -45,6 +45,7 @@ RESULT_MESSAGE = (
 )
 
 _BRACKET = re.compile(r"\[[^\]]*\]")
+_FULL_BRACKET = re.compile(r"【[^】]*】")
 _WORD_OK = re.compile(r"^[a-z][a-z'\-]+$")
 
 
@@ -69,19 +70,32 @@ def gloss(translation: str) -> str:
     """从 ECDICT 释义提取词义：保留词性前缀与多个义项，去掉 [医][计] 等领域标签。
 
     例："n. 技巧, 技术, 方法；[化] 工艺方法" → "n. 技巧，技术，方法"
+
+    兼容 ECDICT 的「\\n」分行义项与「【物理学】」全角领域标签（reading.full_gloss 同理）。
     """
     if not translation:
         return ""
-    groups = []
-    for g in translation.split("；"):
-        if "[" in g or "]" in g:
-            continue  # 领域义项（如 [医]、[计]）对少儿不友好，跳过
-        g = g.strip(" ,，;；")
-        if g:
-            groups.append(g)
+    groups: list[str] = []
+    seen: set[str] = set()
+    for line in translation.split("\n"):
+        if line.strip().startswith("[网络]"):
+            continue
+        for g in line.split("；"):
+            g = _FULL_BRACKET.sub("", g)
+            g = g.strip(" ,，;；\n\t")
+            if not g:
+                continue
+            if "[" in g or "]" in g:
+                continue  # 领域义项（如 [医]、[计]）对少儿不友好，跳过
+            if g not in seen:
+                seen.add(g)
+                groups.append(g)
     if not groups:
-        seg = _BRACKET.sub("", translation).strip(" ,，;；")
-        groups = [seg] if seg else []
+        for line in translation.split("\n"):
+            seg = _FULL_BRACKET.sub("", _BRACKET.sub("", line)).strip(" ,，;；\n\t")
+            if seg:
+                groups = [seg]
+                break
 
     # 每组最多保留前 3 个义项，最多取 2 组，避免选项过长
     trimmed = []

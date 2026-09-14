@@ -1,0 +1,5945 @@
+{
+  "note": "英语多词短语（动词短语/习语）种子库：阅读标注用，可分离短语按 verb...particle 匹配。来源：中文维基教科书；暂无词频（后续并入 PHaVE/PHRASE List 标频）。",
+  "items": [
+    {
+      "text": "a cut above",
+      "gloss": "胜过一筹",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a great many",
+      "gloss": "许多",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a mixture of",
+      "gloss": "一种…混合物",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a point lead",
+      "gloss": "分领先",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a set of",
+      "gloss": "一套，一副，一部",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a short cut",
+      "gloss": "近路，捷径",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "a suit of",
+      "gloss": "一套，一副",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "after a time after some time",
+      "gloss": "过一段时间后",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "as far as isee",
+      "gloss": "据我所了解/看到的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ask for leave",
+      "gloss": "请假",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at a time each time",
+      "gloss": "每次",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at all times",
+      "gloss": "经常，一直，始终",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at least",
+      "gloss": "至少",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at no time",
+      "gloss": "决不",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at one push",
+      "gloss": "一口气",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at one time once time",
+      "gloss": "曾经",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at present at the present time",
+      "gloss": "目前",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the age of",
+      "gloss": "岁时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the back of",
+      "gloss": "在…背后，支持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the beginning of",
+      "gloss": "在…开始时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the bottom of",
+      "gloss": "在…底部",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the corner",
+      "gloss": "在拐角处（外角）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the end of",
+      "gloss": "在…末梢/尽头",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the exit from",
+      "gloss": "在…出口处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the foot of",
+      "gloss": "在…脚下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the moment",
+      "gloss": "当时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the same time",
+      "gloss": "同时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the time",
+      "gloss": "在…的时候",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at the top of",
+      "gloss": "在…顶上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "at times sometimes",
+      "gloss": "有时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be bad for",
+      "gloss": "对…有害",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be caught doing",
+      "gloss": "被发现做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be caught in the rain",
+      "gloss": "淋雨",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be caught in the traffic",
+      "gloss": "遭遇交通阻塞",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be compared to",
+      "gloss": "被比作，与…相比",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be compared with",
+      "gloss": "与…相比",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be devoted to",
+      "gloss": "贡献给，致力于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be divided by",
+      "gloss": "被…除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be divided on",
+      "gloss": "对于…有分歧",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be done in",
+      "gloss": "精疲力竭",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be done with",
+      "gloss": "完全结束",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be given to",
+      "gloss": "沉溺于，习惯于，癖好",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be good at",
+      "gloss": "擅长于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be good for",
+      "gloss": "对…有益处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be harmful to",
+      "gloss": "对…有害",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be held in",
+      "gloss": "在…举行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be made from",
+      "gloss": "由…原料制成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be made of",
+      "gloss": "由…材料制成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be made to do",
+      "gloss": "被迫做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be made up of",
+      "gloss": "由…组成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be on watch",
+      "gloss": "值班，值勤",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be open to",
+      "gloss": "对…开放，易于接受，经不起（诱惑）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be proud of",
+      "gloss": "以…为骄傲/自豪",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be referred to",
+      "gloss": "和…有关,归功于,被提交…处理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be responsible for",
+      "gloss": "对…负责",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be set in",
+      "gloss": "以…为背景",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be suited to do",
+      "gloss": "配（做），适于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be taken aback",
+      "gloss": "吃惊",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be used to do",
+      "gloss": "被用来做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be used to doing",
+      "gloss": "习惯于某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "be worried about",
+      "gloss": "担心",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "behind the times",
+      "gloss": "落在时代后面",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "behind time",
+      "gloss": "迟到，过期",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "believe in",
+      "gloss": "确信，信任，信仰，主张",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "believe one s ears",
+      "gloss": "相信所听到的话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "benefit from",
+      "gloss": "受益于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow about",
+      "gloss": "吹散",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow away",
+      "gloss": "吹走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow off",
+      "gloss": "吹掉，吹散，吹灭",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow out",
+      "gloss": "吹灭，走气",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow up",
+      "gloss": "爆炸，放大（照片），发脾气",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break away from",
+      "gloss": "脱离，逃离，打破",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break down",
+      "gloss": "破坏,粉碎,瓦解；出故障抛锚,衰弱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break in",
+      "gloss": "闯进，打断；使顺服",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break into",
+      "gloss": "闯入；强行进入；突然开始",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break off",
+      "gloss": "打断，断绝，折断，突然终止",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break one s promise",
+      "gloss": "失言",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break open",
+      "gloss": "破开，撬开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break out",
+      "gloss": "爆发，发生；准备使用；起锚",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break short",
+      "gloss": "中断，折断",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break the law",
+      "gloss": "违反法律",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break the record",
+      "gloss": "破记录",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break through",
+      "gloss": "突破，克服，挤过去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break up",
+      "gloss": "开垦，破碎；解散，分解；结束",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring about",
+      "gloss": "导致，引起，促使",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring back",
+      "gloss": "带回，使回忆，使恢复",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring down",
+      "gloss": "使下降，浓缩，收缩，击落",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring forth",
+      "gloss": "开（花）,结（果），发表，宣布，提出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring forward",
+      "gloss": "提出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring in",
+      "gloss": "把..带进来，引进，挣得（收入）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring into action",
+      "gloss": "使行动起来，使生效",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring into operation",
+      "gloss": "使运转，将…投入生产",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring off",
+      "gloss": "完成，救出，使成功，搬走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring on",
+      "gloss": "导致，引起，使发展，提出（论点）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring out",
+      "gloss": "拿出，公布，发表，出版，生产",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring through",
+      "gloss": "治愈，使度过困难/危险时期",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring to light",
+      "gloss": "出现，公布，暴露",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring to mind",
+      "gloss": "使想起，回忆起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring to the push",
+      "gloss": "使陷绝境",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bring up",
+      "gloss": "抚养，养育，培养，使停止",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "build into",
+      "gloss": "把…建设成，把…装入",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "build up",
+      "gloss": "增加，增进，建成，振兴",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "build up to",
+      "gloss": "增加",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "burst forth",
+      "gloss": "爆发，喷出，忽然出现",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "burst in",
+      "gloss": "闯进，突然出现",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "burst into",
+      "gloss": "闯进，突然…起来，突然发出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "burst out",
+      "gloss": "迸发，爆发，突然发出，大声叫喊",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "by name",
+      "gloss": "名叫",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "by the time",
+      "gloss": "到…的时候",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "by the way",
+      "gloss": "顺便说一下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call at",
+      "gloss": "访问（某地），停泊在",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call away",
+      "gloss": "叫走，把（注意力）转移开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call for",
+      "gloss": "需要，要求，接（某人），迎，取",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call in",
+      "gloss": "召集，收集，请入，引入",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call off",
+      "gloss": "取消，下令停止",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call on",
+      "gloss": "拜访（某人），号召",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call out",
+      "gloss": "大声喊，唤起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call to mind",
+      "gloss": "使想起，回忆起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "call up",
+      "gloss": "打电话给…，召集，使想起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry about",
+      "gloss": "随身携带",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry away",
+      "gloss": "冲走，带走，冲昏某人头脑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry back",
+      "gloss": "拿回，运回，使想起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry off",
+      "gloss": "带走叼走，夺去…的生命，获得（奖品）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry on",
+      "gloss": "坚持，继续，进行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry out",
+      "gloss": "贯彻，执行，实施，完成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "carry through",
+      "gloss": "坚持到底，进行到底，贯彻，完成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch a cold",
+      "gloss": "伤风，感冒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch on",
+      "gloss": "挂住，明白，理解，受欢迎",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch one s word",
+      "gloss": "听懂某人的话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch out",
+      "gloss": "发觉，抓住某人的错处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch sight of",
+      "gloss": "发现，瞥见",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch the point of",
+      "gloss": "抓住…的要点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch up with",
+      "gloss": "赶上，追及，追上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check in",
+      "gloss": "报到，登记，投宿旅馆",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check off",
+      "gloss": "检验，清点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check on",
+      "gloss": "检查，调查",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check out",
+      "gloss": "查明，结帐，付款而离开旅馆",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check up",
+      "gloss": "核对，检查，检验",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "check with",
+      "gloss": "商议，符合，核对无误",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear away",
+      "gloss": "扫除，消除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear off",
+      "gloss": "清除，清理，（云雾）消散，（雨）停",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear out",
+      "gloss": "清除，扫出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear through",
+      "gloss": "通过（检查，批准）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear up",
+      "gloss": "天）变晴，打扫，消除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come about",
+      "gloss": "发生，改变方向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come across",
+      "gloss": "偶尔发现，想起；越过；偿付",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come along",
+      "gloss": "一道来，陪伴；进步，进展；出现",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come at",
+      "gloss": "达到，求得，得到；扑向，袭击",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come back",
+      "gloss": "回来；恢复，复原",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come down",
+      "gloss": "倒下；降落；跌落；病倒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come from",
+      "gloss": "来自，起源于，从…产生，生于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come in",
+      "gloss": "进来，进入；流行起来；获名次",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into being",
+      "gloss": "发生，产生，出现，形成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into existence",
+      "gloss": "形成，产生，开始存在",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into fashion",
+      "gloss": "开始流行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into operation",
+      "gloss": "开始运转，实施，生效",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into possession of",
+      "gloss": "占有，拥有",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into power",
+      "gloss": "开始执政，当权，当选",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into the possession of",
+      "gloss": "被…占有，被…拥有",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come into use",
+      "gloss": "开始使用，获得应用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come near",
+      "gloss": "接近，不亚于，几乎，差一点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come off",
+      "gloss": "头发，牙齿，纽扣）脱落，离开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come on",
+      "gloss": "上演,开始,赶快；发展；登台；被提出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come out",
+      "gloss": "出来,发芽；出版；结果是；褪色；泄露",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come over",
+      "gloss": "访问，越过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come this way",
+      "gloss": "这边走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to",
+      "gloss": "苏醒,复原,共计,达到,归结于,渐渐",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to a conclusion",
+      "gloss": "得出结论",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to a decision",
+      "gloss": "作出决定",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to a stop",
+      "gloss": "结束，停止，停顿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to an agreement",
+      "gloss": "达成协议",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to an end",
+      "gloss": "终止，结束",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to an understanding",
+      "gloss": "取得谅解",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to know",
+      "gloss": "开始了解到",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to life",
+      "gloss": "苏醒，栩栩如生",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come to light",
+      "gloss": "明朗化，出现，显露出来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come true",
+      "gloss": "实现，成为现实；证实",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come up",
+      "gloss": "走近；上楼；流行起来，发芽,上来，（问题）被提出，（风浪）猛烈起来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come up with",
+      "gloss": "想出，提出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "come upon",
+      "gloss": "偶然）遇见，突然发生",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "compare notes with",
+      "gloss": "和…交换意见/商量/核对笔记",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "compare to",
+      "gloss": "把..比作，把…与…相比",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "compare with",
+      "gloss": "把…与…相比",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "compete for",
+      "gloss": "为…竞赛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "compete in",
+      "gloss": "参加比赛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "consider doing",
+      "gloss": "考虑做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "consist of",
+      "gloss": "组成，构成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cross one s fingers",
+      "gloss": "交叉手指（表祝福）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cross one s mind",
+      "gloss": "想起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cross over",
+      "gloss": "横贯，穿过，交叉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut away",
+      "gloss": "切去，砍掉，逃走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut down",
+      "gloss": "砍倒，削减，缩短",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut off",
+      "gloss": "切断，中断，剪下，关掉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut out",
+      "gloss": "切下，剪下，裁下，删去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut the cost of",
+      "gloss": "减少…的成本",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut through",
+      "gloss": "凿通，挖通，贯穿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cut up",
+      "gloss": "切碎，齐根切掉，割裂，歼灭",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "deal with",
+      "gloss": "处理，应对",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "depend on",
+      "gloss": "依赖, 依靠",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "devote one s attention to",
+      "gloss": "专心于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "devote to",
+      "gloss": "献身于，专心于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "divide a from b",
+      "gloss": "把A同B分开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "divide into",
+      "gloss": "把…分成",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "divide up",
+      "gloss": "分割，瓜分，划分，分配",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do a good deed",
+      "gloss": "做一件好事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do away with",
+      "gloss": "去掉，废除；弄死；浪费",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do its work",
+      "gloss": "有效，有作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do much",
+      "gloss": "极有用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do one s best",
+      "gloss": "尽某人最大努力",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do one s homework",
+      "gloss": "做作业",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do one s utmost",
+      "gloss": "尽力而为",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do proud",
+      "gloss": "足以使…骄傲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do the deed",
+      "gloss": "付诸行动，生效",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do up",
+      "gloss": "捆，扎，系，扣，收拾，刷新",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do well in",
+      "gloss": "学得不错，干得漂亮",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do with",
+      "gloss": "和…相处，忍受，处理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do without",
+      "gloss": "不需要…也行，不用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do wonders",
+      "gloss": "创造奇迹，产生奇特的效果",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "do wrong to",
+      "gloss": "做错",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "drive away",
+      "gloss": "开车走掉 ；赶走，驱赶",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "drive off",
+      "gloss": "驱散",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "drive out",
+      "gloss": "逐出，乘车出去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "drive through",
+      "gloss": "乘车穿过（街道等）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "either or",
+      "gloss": "邻近)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "enjoy the trust of",
+      "gloss": "得到…的信任",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall asleep",
+      "gloss": "入睡",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall back",
+      "gloss": "撤退，后退",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall behind",
+      "gloss": "落后，落伍，落在后面",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall down",
+      "gloss": "倒下，落下，掉下，病倒，失败",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall in love with",
+      "gloss": "爱上（某人）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall into",
+      "gloss": "陷入，养成，开始，渐渐",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall into a habit of",
+      "gloss": "养成…习惯",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall into ruins",
+      "gloss": "成为废墟",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall off",
+      "gloss": "掉下，衰退，减少",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall over",
+      "gloss": "摔倒，落在…上，（头发）披在肩上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall to pieces",
+      "gloss": "破碎，崩溃，瓦解",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall to the guound",
+      "gloss": "坠地，失败，落空",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "figure out",
+      "gloss": "弄明白，想出",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "fill with",
+      "gloss": "用…充满，装满",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "find out",
+      "gloss": "查明，发现",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "fix up",
+      "gloss": "修理，安装，安排，建造，提供",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "for a moment",
+      "gloss": "一会儿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "for a time for some time",
+      "gloss": "一时，有一段时间",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "for the moment",
+      "gloss": "暂时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "for the present",
+      "gloss": "暂时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get about",
+      "gloss": "徘徊，走动，旅行；流传",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get accustomed to",
+      "gloss": "习惯于，对…习以为常",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get across",
+      "gloss": "度过，通过，横过；说服，使被理解",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get ahead of",
+      "gloss": "胜过，超过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get along",
+      "gloss": "前进，进步；同意；离去，相处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get along with",
+      "gloss": "与…相处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get around",
+      "gloss": "走动，传播，影响，说服",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get at",
+      "gloss": "发现，了解；掌握；攻击",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get away",
+      "gloss": "离开，逃脱，出发，开始度假",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get back",
+      "gloss": "取回，回来；报复",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get behind",
+      "gloss": "落后；识破",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get close to",
+      "gloss": "接近，靠近",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get down",
+      "gloss": "咽下；写下；使沮丧，使倒下；下来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get down to",
+      "gloss": "认真对待，静下心来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get familiar with",
+      "gloss": "变得熟悉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get hold of",
+      "gloss": "获得，取得",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get home",
+      "gloss": "到家",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get in",
+      "gloss": "进入，陷入；牵涉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get in touch with",
+      "gloss": "与…取得联系",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get into",
+      "gloss": "进入，陷入，养成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get off",
+      "gloss": "送走；脱下（衣服）；下车；动身",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get on",
+      "gloss": "上车；穿上；进步，使前进；成功；相处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get one s hand in",
+      "gloss": "熟悉；习惯",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get one s own way to do",
+      "gloss": "随心所欲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get out",
+      "gloss": "摆脱，出去，下车，泄露",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get out of",
+      "gloss": "由…出来，从…得出；避免；退休",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get over",
+      "gloss": "越过；恢复，痊愈；克服；完成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get possession of",
+      "gloss": "占有，取得…所有权",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get ready for",
+      "gloss": "为…作准备",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get rid of",
+      "gloss": "除去，去掉；免除，摆脱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get through",
+      "gloss": "拨通，到达，完成，通过；及格",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get together",
+      "gloss": "积聚，积累；商谈，取得一致意见",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get up",
+      "gloss": "起床，起立；研究，钻研；致力于；安排",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get upon with",
+      "gloss": "进步；在…方面获得成功",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "get used to",
+      "gloss": "习惯于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give a new turn to",
+      "gloss": "对…予以新的看法",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give about",
+      "gloss": "分配；传播",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give and take",
+      "gloss": "相互迁就，互让",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give away",
+      "gloss": "赠送；牺牲；泄露；颁发",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give back",
+      "gloss": "归还，反射",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give cause",
+      "gloss": "给予…的理由",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give ear to",
+      "gloss": "侧耳倾听",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give forth",
+      "gloss": "发出，放出；发表",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give in",
+      "gloss": "屈服，让步，投降",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give in to",
+      "gloss": "同意，接受；向…让步",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give leave",
+      "gloss": "准假",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give off",
+      "gloss": "发出（烟，气味）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give out",
+      "gloss": "分发,公布,发出,使筋疲力尽 ；用完",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give place to",
+      "gloss": "让位于，被…所替代",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give rise to",
+      "gloss": "引起，导致；使…发生",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give up",
+      "gloss": "放弃；停止",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give up doing",
+      "gloss": "放弃做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give way",
+      "gloss": "让步，屈服",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "give way to",
+      "gloss": "让步，退却；屈服于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "given that",
+      "gloss": "假定，给定，已知",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go about",
+      "gloss": "走来走去，（谣言等）流传",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go across",
+      "gloss": "度过，越过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go after",
+      "gloss": "追逐，追求，跟随",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go against",
+      "gloss": "反对，不利于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go ahead",
+      "gloss": "前进，进展，继续",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go all about",
+      "gloss": "鼓足干劲，全力以赴",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go along",
+      "gloss": "前进，进行下去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go along with",
+      "gloss": "陪伴，和…一道走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go around",
+      "gloss": "走来走去，四处走动",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go away",
+      "gloss": "离开，走掉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go back",
+      "gloss": "回去，返回，走下坡，追溯",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go back to",
+      "gloss": "追溯至",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go bad",
+      "gloss": "变坏，腐败",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go beyond",
+      "gloss": "超过，胜过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go by",
+      "gloss": "经过，过去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go dead",
+      "gloss": "电脑）死机",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go down",
+      "gloss": "下降，沉没，垮台，（风等）平静",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go down to",
+      "gloss": "延续到，继续到",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go for",
+      "gloss": "支持，赞成，适用于，去（取，拿）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go forward",
+      "gloss": "前进，进展",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go in",
+      "gloss": "进去，（日月等）被云遮蔽",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go in for",
+      "gloss": "喜欢，参加，赞成，从事，为…而努力",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go into",
+      "gloss": "进入，参加，调查，从事，深入研究",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go off",
+      "gloss": "走开，爆炸",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go on",
+      "gloss": "继续，接下去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go on doing",
+      "gloss": "继续做（同一件事）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go on to do",
+      "gloss": "接着做（另一件事）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go on with",
+      "gloss": "继续做，忍受",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go out",
+      "gloss": "出去，熄灭，离开，下台，退休",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go over",
+      "gloss": "温习，检查，越过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go round",
+      "gloss": "拜访，绕道走，绕…运行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go through",
+      "gloss": "审查，履行，通过，经历，忍受",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go too far",
+      "gloss": "走得太远，做/说得太过火",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go up",
+      "gloss": "上升，上涨，攀登",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go well",
+      "gloss": "进展顺利",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go with",
+      "gloss": "与…相配，和…一道走，同意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go without",
+      "gloss": "无需，没有…也行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go wrong",
+      "gloss": "出故障，走错路",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "had better",
+      "gloss": "最好做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hand in",
+      "gloss": "上交，提交",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "hand out",
+      "gloss": "分发",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "hang out",
+      "gloss": "闲逛，泡在一起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have a go",
+      "gloss": "企图，试图",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have got to do",
+      "gloss": "不得不，必须",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have much to do with",
+      "gloss": "和…很有关系",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have nothing to do with",
+      "gloss": "与…无关",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have something to do with",
+      "gloss": "和…有关",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have to do with",
+      "gloss": "和…有关系",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold back",
+      "gloss": "隐瞒，阻止，克制，扣留",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold down",
+      "gloss": "压制，压低，缩减",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold off",
+      "gloss": "耽搁，不接近，离开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold on",
+      "gloss": "等一下；坚持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold out",
+      "gloss": "伸出，提出，支持，主张",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold up",
+      "gloss": "举起，竖起，支持，使停滞",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hold with",
+      "gloss": "和…意见一致，赞成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in a way",
+      "gloss": "在某点上，在某种程度上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in any case",
+      "gloss": "无论如何",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in case",
+      "gloss": "万一",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in comfort",
+      "gloss": "舒适地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in danger of",
+      "gloss": "处于危险中",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in doing so in so doing",
+      "gloss": "这时，在这种情况下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in honor of",
+      "gloss": "为了纪念",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in no time",
+      "gloss": "立即，马上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in one s turn",
+      "gloss": "轮到某人做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the air",
+      "gloss": "空中，在流传",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the corner",
+      "gloss": "在角落里（内角）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the course of",
+      "gloss": "在…过程中",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the end at last finally",
+      "gloss": "最后",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the eyes of",
+      "gloss": "从…观点看来，在…眼里",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the face of",
+      "gloss": "面对…，尽管，纵使",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the least",
+      "gloss": "丝毫，一点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the middle of",
+      "gloss": "在…中间",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the name of",
+      "gloss": "以…名义",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in the way",
+      "gloss": "挡路，障碍，用…方法",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in trust",
+      "gloss": "受托的，代为保管的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in turn",
+      "gloss": "轮流",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "in two weeks time",
+      "gloss": "两周后",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "insist that",
+      "gloss": "注意两种语气)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "it is said that",
+      "gloss": "据说",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "it is said to do",
+      "gloss": "据说",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep at",
+      "gloss": "坚持，不停地做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep back",
+      "gloss": "阻止，扣留，隐瞒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep company with",
+      "gloss": "和…结交",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep dark",
+      "gloss": "保守秘密",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep doing",
+      "gloss": "继续，不断地做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep down",
+      "gloss": "缩减，控制",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep from",
+      "gloss": "阻止",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "keep in",
+      "gloss": "闭门不出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep in mind",
+      "gloss": "记住",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep in touch with",
+      "gloss": "与…保持联系/不断接触",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep off",
+      "gloss": "不接近，远离",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep on",
+      "gloss": "继续",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep on doing",
+      "gloss": "继续，不停地做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep one s balance",
+      "gloss": "保持平衡",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep out",
+      "gloss": "使…不入内",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep pace with",
+      "gloss": "跟上，同…步调一致",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep time",
+      "gloss": "合拍子，按时，（钟表）走得准",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep to",
+      "gloss": "坚持，固守，遵守",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep up",
+      "gloss": "继续，坚持，保持，维持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep up with",
+      "gloss": "赶上，跟上 ，与…并肩前进",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "keep watch",
+      "gloss": "守望，值班，注意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lay aside",
+      "gloss": "把..放在一边，抛弃，贮藏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lay down",
+      "gloss": "放下，使躺下，放弃，牺牲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lay off",
+      "gloss": "暂时）解雇，放弃，停止",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lay out",
+      "gloss": "花费，投资，不置，打昏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leading players",
+      "gloss": "主要运动员",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave about",
+      "gloss": "乱放，乱丢",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave alone",
+      "gloss": "听任，任其自然",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave behind",
+      "gloss": "留下，忘记携带",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave for",
+      "gloss": "离开某地）去某地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave off",
+      "gloss": "停止，脱去，戒除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave office",
+      "gloss": "离职，下台",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave out",
+      "gloss": "省去，遗漏，不把…计算在内",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave over",
+      "gloss": "留下，剩下，延期",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave room for",
+      "gloss": "为…让出地方",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leave school",
+      "gloss": "毕业",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "let down",
+      "gloss": "使失望",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "let in",
+      "gloss": "让…进来",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "lie in",
+      "gloss": "位于…之内",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lie on",
+      "gloss": "同…接壤",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lie to",
+      "gloss": "位于…之外",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look about",
+      "gloss": "四下环顾；查看",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look after",
+      "gloss": "照顾，看管",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look around",
+      "gloss": "东张西望",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look at",
+      "gloss": "注视，着眼于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look back",
+      "gloss": "回顾，回头看",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look down on",
+      "gloss": "俯视；轻视",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look for",
+      "gloss": "寻找；期待，期望",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look forward to",
+      "gloss": "盼望，期待",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look in",
+      "gloss": "看望，顺便进去望一下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look into",
+      "gloss": "窥视；调查；浏览",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look like",
+      "gloss": "看起来象",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look on",
+      "gloss": "旁观；面向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look one s age",
+      "gloss": "和年龄相称",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look out",
+      "gloss": "向外看；注意；当心，提防",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look out for",
+      "gloss": "当心，寻找，搜寻",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look over",
+      "gloss": "从上面看过去；检查，忽略",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look through",
+      "gloss": "透过…看去；看穿；浏览，彻底调查",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look to",
+      "gloss": "面向，注意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look up",
+      "gloss": "查阅，仰视，涨价",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "look up to",
+      "gloss": "仰望，尊敬",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lose one s way",
+      "gloss": "迷路",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a beeline for",
+      "gloss": "走直路,走进路,朝…径直走去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a booking",
+      "gloss": "预定",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a difference",
+      "gloss": "有差别，有关系，很重要",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a fool of",
+      "gloss": "愚弄，欺骗",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a mistake",
+      "gloss": "弄错",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a note of",
+      "gloss": "记下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a point",
+      "gloss": "阐述观点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a point of doing",
+      "gloss": "强调；决心，坚持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a promise",
+      "gloss": "许诺",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make a will",
+      "gloss": "立下遗嘱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make after",
+      "gloss": "追求，追赶",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make believe",
+      "gloss": "假装",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make both ends meet",
+      "gloss": "使收支相抵",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make certain",
+      "gloss": "确信，把…弄清楚",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make contact with",
+      "gloss": "接通，与…接触，与…联系",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make eyes at",
+      "gloss": "抛眉眼，以目示意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make for",
+      "gloss": "去向，向…前进；有利于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make friends with",
+      "gloss": "和…交友",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make into",
+      "gloss": "把…制成，使…转变为",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make it",
+      "gloss": "就这么定了，成功，达到某一特定目标",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make it clear that",
+      "gloss": "使人明白",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make much of",
+      "gloss": "重视；理解；赏识",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make one s own",
+      "gloss": "当作自己的看待",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make out",
+      "gloss": "填写；开支票；理解；辨认",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make preparations for",
+      "gloss": "为…作准备",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make the best of",
+      "gloss": "尽量利用；极为重视",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make towards",
+      "gloss": "向…前进",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make up",
+      "gloss": "弥补,修理,赔偿,起草,编造,化装,配制,占…比例",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make up to",
+      "gloss": "接近，巴结；向…求爱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make way for",
+      "gloss": "为…让路，让路于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "meet the case",
+      "gloss": "适合，令人满意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "meet with",
+      "gloss": "偶然碰见，遭受",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "more than once",
+      "gloss": "不止一次",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "national pride",
+      "gloss": "国家的骄傲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "neither nor",
+      "gloss": "邻近) 既不…也不",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "not only but also",
+      "gloss": "邻近) 不但…而且",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on leave",
+      "gloss": "休假，请假",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on one s way to",
+      "gloss": "在去…的路上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on the air",
+      "gloss": "播出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on the corner",
+      "gloss": "在角落上（外角上）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on the eve of",
+      "gloss": "在…前夕",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on the make",
+      "gloss": "急求成功；增加，损人利己追求名利",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "on the side of",
+      "gloss": "在…一边",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "once in a while",
+      "gloss": "偶尔",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "once more",
+      "gloss": "重新，又",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "once or twice",
+      "gloss": "一两次",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "once upon a time",
+      "gloss": "从前",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "one the other",
+      "gloss": "一个…另一个",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "open a for b",
+      "gloss": "为B展开/打开A",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "open to",
+      "gloss": "朝…开，朝向，通向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "open up",
+      "gloss": "开发,开创,开辟,开垦,吐露真情,打开,展现",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "out of fix",
+      "gloss": "钟表)不准，不健全",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "out of turn",
+      "gloss": "不按次序的，不合适宜的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "owe much to",
+      "gloss": "多亏了，在很大程度上归功于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "owe to",
+      "gloss": "把…归功于，把…归因于",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "pass away",
+      "gloss": "去世，（时间）过去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass by",
+      "gloss": "经过，（时间）过去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass into",
+      "gloss": "变成，化为",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass out of one s mind",
+      "gloss": "被人忘掉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass over",
+      "gloss": "忽视，置之不理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass through",
+      "gloss": "经历，经过，贯穿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pass to",
+      "gloss": "传递，传达",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pay a call at sp",
+      "gloss": "访问（某地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pay back",
+      "gloss": "偿还；回报",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "pay off",
+      "gloss": "还清；得到回报",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "pick and choose",
+      "gloss": "仔细挑选，挑挑拣拣",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick off",
+      "gloss": "摘下，逐个地射死",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick on",
+      "gloss": "挑选，挑剔，惹恼",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick one s words",
+      "gloss": "精选用词",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick out",
+      "gloss": "挑出，辨别出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick up",
+      "gloss": "接(某人),接收，获得，搭载，收拾，恢复，爬起，捡起，学会，认识",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pick up with",
+      "gloss": "结识，与…交朋友",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "play a role in",
+      "gloss": "在…中起作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "play an important part in",
+      "gloss": "在…中起重要作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "point out",
+      "gloss": "指出",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "popular culture",
+      "gloss": "通俗文化",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull about",
+      "gloss": "把…拖来拖去，虐待",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull apart",
+      "gloss": "拉开，扯断，严加批评",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull away",
+      "gloss": "拖出，离开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull down",
+      "gloss": "拉下,拉倒,推翻,拆毁,使(价格)下降,使体质减弱,赚取",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull in",
+      "gloss": "车船)抵达, 节省(费用), 缩减(开支)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull off",
+      "gloss": "脱（衣，冒），完成，获得成功",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull on",
+      "gloss": "穿，戴，继续拉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull out",
+      "gloss": "驶出，拔出，离开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull over",
+      "gloss": "靠边停车",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "pull through",
+      "gloss": "克服困难，脱离危险",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pull up",
+      "gloss": "拔起，阻止，使停下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push against",
+      "gloss": "推，推撞",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push back",
+      "gloss": "退回，推回",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push down",
+      "gloss": "向下推",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push in",
+      "gloss": "推进，向岸靠拢",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push off",
+      "gloss": "起程，离开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push on",
+      "gloss": "奋力向前，推进",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push one s way",
+      "gloss": "挤过去，奋力向前",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push out",
+      "gloss": "推出，长出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push over",
+      "gloss": "推倒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push through",
+      "gloss": "促成，完成，穿过，挤过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "push up",
+      "gloss": "向上推",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put an end to",
+      "gloss": "结束，终止，废除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put aside",
+      "gloss": "把…放在一边；搁置；排除",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put away",
+      "gloss": "把…放好，把…收拾；储藏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put back",
+      "gloss": "把…放回原处；拨回",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put down",
+      "gloss": "放下；镇压；记下；削减；降落",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put faith in",
+      "gloss": "相信，信任",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put forward",
+      "gloss": "提出；拨快；建议，推荐；提倡",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put in",
+      "gloss": "驶入，进入",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put off",
+      "gloss": "推迟，延期；消除；推脱，脱下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put on",
+      "gloss": "上演,穿上,戴上,增加,拨快(钟表),推荐",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put one s heart into",
+      "gloss": "全神贯注，专心致志",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put out",
+      "gloss": "熄灭，伸出，拿出，制造，刺杀",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put through",
+      "gloss": "完成，（电话用语）拨通，使穿过",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put up",
+      "gloss": "举起，挂起；提名，推荐；陈列",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "put up with",
+      "gloss": "忍受，容忍",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "refer to",
+      "gloss": "指，提及，参考，查阅",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ring back",
+      "gloss": "回电话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ring off",
+      "gloss": "挂断电话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ring the bell",
+      "gloss": "敲钟，摇铃",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ring up",
+      "gloss": "打电话给…",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "run away",
+      "gloss": "逃跑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "run out of",
+      "gloss": "用完，耗尽",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see after",
+      "gloss": "照料，照顾",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see into",
+      "gloss": "识透，调查",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see off",
+      "gloss": "送行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see out",
+      "gloss": "送某人到门口/屋外",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see through",
+      "gloss": "看透，识破，支持（某人）到底",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see to",
+      "gloss": "照顾，处理，注意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "see to it that",
+      "gloss": "照料，努力使，注意把",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "seeing that",
+      "gloss": "因为，鉴于，既然",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell by retail",
+      "gloss": "零售",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell by whole sale",
+      "gloss": "批发",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell off",
+      "gloss": "廉价出清（存货）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell out",
+      "gloss": "卖完，背叛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell up",
+      "gloss": "变卖，拍卖",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sell well",
+      "gloss": "畅销，好卖",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send away",
+      "gloss": "解雇，赶走，把…送往远处",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send down",
+      "gloss": "把…向下发送,开除,降低（价格，温度）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send for",
+      "gloss": "派人去叫/请/拿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send off",
+      "gloss": "发出，寄出，解雇，送别",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send out",
+      "gloss": "发出，散发，长出（树叶等）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send up",
+      "gloss": "发射，使上升，向上传递",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "send word",
+      "gloss": "通知，转告，捎信",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set about doing",
+      "gloss": "着手，开始",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set aside",
+      "gloss": "取消，放在一边，放弃，忽视，拒绝",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set back",
+      "gloss": "把（钟表）往回拨",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set down",
+      "gloss": "放下，卸下，登记，记载",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set down to",
+      "gloss": "归于，认为是由于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set forward",
+      "gloss": "把（钟表）拨快，出发",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set free",
+      "gloss": "释放（某人）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set off",
+      "gloss": "出发 ；使爆炸，拨出（钱等）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set one s hand to",
+      "gloss": "着手做，从事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set out",
+      "gloss": "出发 ；开始，着手(to do)，布置，发表",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set up",
+      "gloss": "建立，设立，开办，引起（疾病等）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "show off",
+      "gloss": "炫耀",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "shut down",
+      "gloss": "关闭，停业",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "shut in",
+      "gloss": "关进去，禁闭，使中止，压制",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut off",
+      "gloss": "关掉，切断",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut one s heart to",
+      "gloss": "对…不动心",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut one s mind to",
+      "gloss": "死不答应",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut one s teeth",
+      "gloss": "要紧牙关",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut out",
+      "gloss": "关在外面，排除（可能性）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shut up",
+      "gloss": "关闭，密封",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "slow down",
+      "gloss": "放慢，减速",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "some others",
+      "gloss": "一些－另一些",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "speed up",
+      "gloss": "加速",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "stand for",
+      "gloss": "代表",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stand up",
+      "gloss": "起立，站立",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stay up",
+      "gloss": "熬夜",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stick in the mud",
+      "gloss": "陷入泥中，墨守成规",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stick into",
+      "gloss": "把…插入…中",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "stick out",
+      "gloss": "突出，伸出，显眼",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stick to",
+      "gloss": "坚持，忠于，粘到…上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "suit all tastes",
+      "gloss": "人人合口味，人人中意",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "suit the action to the word",
+      "gloss": "使言行一致",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "suit to",
+      "gloss": "使适合于，使适应",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "suit with",
+      "gloss": "与…相称",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "switch off",
+      "gloss": "关掉（开关）",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "switch on",
+      "gloss": "打开（开关）",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "take a seat",
+      "gloss": "就坐",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take a shower",
+      "gloss": "淋浴，洗澡",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take advantage of",
+      "gloss": "利用，乘…之便",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take after",
+      "gloss": "仿效，与…相似",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take aim",
+      "gloss": "瞄准，设立目标",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take apart",
+      "gloss": "拆开",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "take away",
+      "gloss": "拿走，减去；夺去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take back",
+      "gloss": "收回，取消",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take care of",
+      "gloss": "当心,注意；照顾；提防；谨慎；处理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take care to do",
+      "gloss": "务必做，留心做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take charge of",
+      "gloss": "负责，主管",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take cold",
+      "gloss": "感冒，受寒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take down",
+      "gloss": "取下，记下，占领，拆毁，病倒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take effect",
+      "gloss": "生效，起作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take fire",
+      "gloss": "着火",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take hold of",
+      "gloss": "抓住，掌握",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take in",
+      "gloss": "吸收，接纳，欺骗，轻信，领会",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take into",
+      "gloss": "驶入，信任",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take it easy",
+      "gloss": "别着急，慢慢来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take notes",
+      "gloss": "记笔记",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take notice of",
+      "gloss": "注意，留心",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take off",
+      "gloss": "脱去,除去；起飞,起程,成功,成名",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take office",
+      "gloss": "就职，上任",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take on",
+      "gloss": "呈现，雇佣，承担，担任",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take one s place",
+      "gloss": "就坐，入坐，代替",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take one s temperature",
+      "gloss": "量体温",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take one s time to do",
+      "gloss": "慢慢做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take one s turn to do",
+      "gloss": "轮到做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take out",
+      "gloss": "拿出，取出，去除，取得（专利权）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take over",
+      "gloss": "接管，接任，接收",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take part in",
+      "gloss": "参与，参加",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take part with",
+      "gloss": "袒护，支持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take place",
+      "gloss": "发生，举行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take place happen",
+      "gloss": "发生，举行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take possession of",
+      "gloss": "占有，拥有",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take pride in",
+      "gloss": "以…为荣，对…骄傲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take sp by surprise",
+      "gloss": "出奇制胜,突袭",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take the place of",
+      "gloss": "代替",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take the shape of",
+      "gloss": "呈/取….的形状",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take the size of",
+      "gloss": "量….的尺寸",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take turns doing",
+      "gloss": "轮流做某事",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take up",
+      "gloss": "开始从事；占用",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "take up for",
+      "gloss": "袒护",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "take up with",
+      "gloss": "致力于，忍受，对…发生兴趣",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "talk about",
+      "gloss": "谈论",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear a away from b",
+      "gloss": "从B夺走A",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear at",
+      "gloss": "撕，强拉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear away",
+      "gloss": "撕掉，扯开，磨损",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear down",
+      "gloss": "拆毁，扯下，使瓦解，破坏（名誉）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear in two",
+      "gloss": "把…撕成两半",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear off",
+      "gloss": "扯去，扯开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear out",
+      "gloss": "撕下，拉下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tear up",
+      "gloss": "撕掉，撕毁",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tell a from b",
+      "gloss": "区别A和B",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tell a lie",
+      "gloss": "撒谎",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tell about",
+      "gloss": "讲述",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "tell the truth",
+      "gloss": "说实话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "that will do",
+      "gloss": "行了；够了",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "there be",
+      "gloss": "邻近)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think about",
+      "gloss": "考虑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think aloud",
+      "gloss": "自言自语",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think of",
+      "gloss": "想，想着，想做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think out",
+      "gloss": "仔细考虑，想通",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think over",
+      "gloss": "仔细考虑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think through",
+      "gloss": "想通",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "think up",
+      "gloss": "想出，想通，想起",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw about",
+      "gloss": "乱丢，乱花（钱）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw at",
+      "gloss": "把…投向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw away",
+      "gloss": "抛弃，浪费，拒绝，错失（机会）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw back",
+      "gloss": "扔回，拒绝，反驳，（光线）反射",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw down",
+      "gloss": "推翻，拆毁，仍下，拒绝",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw down one s tools",
+      "gloss": "罢工",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw in",
+      "gloss": "插话，（免费）附送",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw into",
+      "gloss": "使…陷入某种状态",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw off",
+      "gloss": "摆脱，匆匆脱掉，设法除去",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw out",
+      "gloss": "扔出，干扰，否决",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw up",
+      "gloss": "呕吐，放弃，举起，批评，匆匆建造",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "throw up one s arms",
+      "gloss": "举起双手，投降",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "trade in",
+      "gloss": "以旧换新",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "trust on",
+      "gloss": "信赖",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "try every means",
+      "gloss": "用各种办法",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "try for",
+      "gloss": "企图获得，争取，谋求",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "try on",
+      "gloss": "试穿",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "try one s best",
+      "gloss": "尽力",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "try out",
+      "gloss": "试验，提炼，参加选拔赛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn a blind eye to",
+      "gloss": "对…视而不见",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn against",
+      "gloss": "背叛，采取敌对态度",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn away",
+      "gloss": "把…打发走,解雇,转脸不采,使转变方向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn back",
+      "gloss": "折回，往回走",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn down",
+      "gloss": "折叠，翻下，驳回，拒绝考虑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn into",
+      "gloss": "走进；变成，变为",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn off",
+      "gloss": "关上,解雇，避开（问题）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn on",
+      "gloss": "打开；反对；依靠，依赖，取决于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn one s attention to",
+      "gloss": "把注意力转向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn out",
+      "gloss": "培养；证明是；制成；实际情况是",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn out to be",
+      "gloss": "原来是，证明是，结果是",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn over a new leaf",
+      "gloss": "翻开新的一页，，改过自新",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn to",
+      "gloss": "变成；着手于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn up",
+      "gloss": "出现；调大（音量）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn upside down",
+      "gloss": "颠倒过来，翻过来",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "under the sun",
+      "gloss": "在世界上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "used to do",
+      "gloss": "过去常常",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wait for",
+      "gloss": "等待",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wake up",
+      "gloss": "醒来；叫醒",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "want a go",
+      "gloss": "试一试",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "watch one s step",
+      "gloss": "当心，留心",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "watch one s weight",
+      "gloss": "留心体重",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "watch over",
+      "gloss": "查看，监视，看守",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "when it comes to",
+      "gloss": "就…而论，谈到",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "why not",
+      "gloss": "为何不做",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "with open arms",
+      "gloss": "张开双臂，热诚（欢迎）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "with open eyes",
+      "gloss": "睁着眼睛，留神地，吃惊地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "with pride",
+      "gloss": "骄傲地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "with the help of",
+      "gloss": "在…帮助下",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "work out",
+      "gloss": "解决；算出；锻炼",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "write down",
+      "gloss": "写下，记下",
+      "type": "phrasal_verb",
+      "separable": true
+    },
+    {
+      "text": "have been",
+      "gloss": "已经",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space race",
+      "gloss": "(美苏间的)空间竞赛",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rescue team",
+      "gloss": "救护队",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "broadcast radio",
+      "gloss": "广播无线电",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time differences",
+      "gloss": "n. 时差",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clean energy",
+      "gloss": "(不污染大气的)洁净能源(指电和原子能等)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wind energy",
+      "gloss": "风能",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wind turbines",
+      "gloss": "un. 风力涡轮机；涡轮式风力发动机；风轮机",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn in",
+      "gloss": "拐入, 上床睡觉, 上缴, (使)向里歪, 告发, 出卖, 作出\n 归还, 移交, 交出",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "generate electricity",
+      "gloss": "发电",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "save money",
+      "gloss": "省钱, 储蓄金钱, 节省资金\n 省钱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "number of",
+      "gloss": "许多；数目；若干",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weather forecasting",
+      "gloss": "天气预报",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "blow at",
+      "gloss": "向…吹",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "steady speed",
+      "gloss": "稳定速度",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power electronics",
+      "gloss": "功率电子学",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power grid",
+      "gloss": "电力网; 电网",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "wind into",
+      "gloss": "把(某物)缠成(某形状)；卷(某物)为(某形)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power station",
+      "gloss": "发电所, 电站\n 动力站; 发电站",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power generation",
+      "gloss": "发电",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "direct current",
+      "gloss": "直流\n 直电流, 化电流, 伽伐尼电流",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shine at",
+      "gloss": "<非正>擅长于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "supply and demand",
+      "gloss": "供应与需求",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "salt is",
+      "gloss": "(salt i 的复数)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light switch",
+      "gloss": "照明开关;电灯开关",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "could not",
+      "gloss": "auxv. 能；行；难道会；(可)能\nmodalv. 会；得；难道会；（表示知道如何做）懂得\nn. （盛食品或饮料的）金属罐；一罐（的量）；塑料容器；喷雾罐\nv. 把（食品）装罐保存；解雇；让…卷铺盖走人；炒…的鱿鱼",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long distances",
+      "gloss": "长途电话局，长途通迅",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "steady frequency",
+      "gloss": "稳定频率",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "spin in",
+      "gloss": "上床, 睡午觉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "up to",
+      "gloss": "从事于(坏事), 忙于, 胜任, 能做, 适合, 适于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "green energy",
+      "gloss": "绿色能源",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power grids",
+      "gloss": "na. 电力输送网",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fuse into",
+      "gloss": "与…熔合成, 接合成",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "amount of energy",
+      "gloss": "能量",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "even though",
+      "gloss": "虽然, 尽管",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light year",
+      "gloss": "n. 光年",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light years",
+      "gloss": "n. 【天文学】光年",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rely on",
+      "gloss": "依赖, 依靠",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "peak brightness",
+      "gloss": "峰值亮度",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "word meaning",
+      "gloss": "字义",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "work week",
+      "gloss": "工作周, 一周的总工时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "reason is",
+      "gloss": "的后面,人们常用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "even numbers",
+      "gloss": "双数",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "add up to",
+      "gloss": "合计达",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "even number",
+      "gloss": "偶数",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "short day",
+      "gloss": "短班，小班",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "leap into",
+      "gloss": "跳入; 〈非正〉突然进入",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rocket propulsion",
+      "gloss": "喷射推进, 喷射推进方式",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ready to",
+      "gloss": "准备好",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "make space",
+      "gloss": "制造空当",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "back on",
+      "gloss": "背向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rebel against",
+      "gloss": "反抗",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fight for",
+      "gloss": "为…而战斗; 争取; 争夺",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "video games",
+      "gloss": "电子游戏；视频游戏；电动游戏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "birth name",
+      "gloss": "本姓, 婚前姓",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "travel to",
+      "gloss": "朝…方向旅行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "out of",
+      "gloss": "在...外, 离开..., 从...里面, 出于, 由于, 因为, 缺乏, 没有, 放弃, 丧失",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "mark on",
+      "gloss": "标上",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "return journey",
+      "gloss": "回程",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "treasure trove",
+      "gloss": "地财,贵重的发现物",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "struggle against",
+      "gloss": "与…进行斗争",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hope for",
+      "gloss": "希望,期望",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "have a dream",
+      "gloss": "做梦",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "live in",
+      "gloss": "住进",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "free from",
+      "gloss": "解除, 没有...的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "divine right",
+      "gloss": "王权神授",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "picture writing",
+      "gloss": "用图画记载（或通讯）的方法, 象形文字",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "race to",
+      "gloss": "跑到…; 快速地把…送到…",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "contrast to",
+      "gloss": "和...相对照, 与...形成对比",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "part of",
+      "gloss": "部分",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "close friend",
+      "gloss": "密友，亲密的朋友",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "honor code",
+      "gloss": "荣誉准则\n荣誉代码",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stretch back",
+      "gloss": "un. 破例；宽容一些；通融一下；上溯",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "pop culture",
+      "gloss": "n. 波普文化,通俗文化",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "video game",
+      "gloss": "电视游戏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "open world",
+      "gloss": "开放世界",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "quest for",
+      "gloss": "追求, 探索",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "gas guzzlers",
+      "gloss": "n. 油老虎",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low fuel",
+      "gloss": "燃油低液位",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "mass produced",
+      "gloss": "大量生产的, 成批生产的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power range",
+      "gloss": "功率范围",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fuel consumption",
+      "gloss": "燃料消耗; 燃料消耗量",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "golf carts",
+      "gloss": "n. 高尔夫球车",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "supply chain",
+      "gloss": "n. 供应链",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "plug in",
+      "gloss": "插上电源",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "range extender",
+      "gloss": "范围扩充，域扩充",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power plants",
+      "gloss": "na. 发电厂；发动机",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "price wars",
+      "gloss": "na. 价格战",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fuel cell",
+      "gloss": "燃料电池",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fuel cells",
+      "gloss": "na. fuel-cell 燃料电池",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "demand for",
+      "gloss": "要求…",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power bank",
+      "gloss": "控制棒)功率组",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "gas plants",
+      "gloss": "煤气厂",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long duration",
+      "gloss": "长持续时间",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lower reservoir",
+      "gloss": "下池;下水库",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "peak demand",
+      "gloss": "最高要求",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "back down",
+      "gloss": "放弃要求, 取消前言",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "initial capital",
+      "gloss": "创办资本",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "vacuum chamber",
+      "gloss": "真空室; 真空箱\n 真空腔, 气腔",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fast response",
+      "gloss": "快反应,速动,快响应",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cycle life",
+      "gloss": "循环寿命",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "discharge duration",
+      "gloss": "放水历时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "parallel processing",
+      "gloss": "并行处理\n 并行处理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "single turn",
+      "gloss": "单向旋回法",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "open source",
+      "gloss": "打开源",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cloud platform",
+      "gloss": "云端平台\n云平台",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "travel from",
+      "gloss": "从…启程去旅行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "embark on",
+      "gloss": "从事, 着手",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "descend into",
+      "gloss": "向下行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "land on",
+      "gloss": "猛烈抨击",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rocket scientists",
+      "gloss": "na. 火箭专家；(能承担高难度工作的)能人",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fog bound",
+      "gloss": "adj. 被雾笼罩的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set on",
+      "gloss": "攻击, 前进, 怂恿, 使开始",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "complete with",
+      "gloss": "连同,包括,以及",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "black powder",
+      "gloss": "黑色火药",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "slow burning",
+      "gloss": "缓慢燃烧；渐渐地发怒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "slow match",
+      "gloss": "缓燃引信",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "step forward",
+      "gloss": "向前走; 站出来; 迈步",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weather resistance",
+      "gloss": "耐气候性",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weather tight",
+      "gloss": "透风雨的，防风雨的，气候防护的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "front loading",
+      "gloss": "前端装载",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "gas pressures",
+      "gloss": "【工程】气压",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "smoke screens",
+      "gloss": "假象",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "bolt action",
+      "gloss": "adj. (步枪)有用手操作的枪机的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "recoil energy",
+      "gloss": "反冲能",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "trigger pull",
+      "gloss": "扳机力",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "assault rifle",
+      "gloss": "（自动或半自动）突击步枪",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "spring loaded",
+      "gloss": "受载弹簧",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "interact with",
+      "gloss": "与…相互作用，与…相互影响; 与…相互配合",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shadow cast",
+      "gloss": "投影",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clear weather",
+      "gloss": "天气晴朗",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "down to",
+      "gloss": "下至; 以至",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "ship time",
+      "gloss": "船时",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "reference time",
+      "gloss": "基准时间; 参考时间",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "second clock",
+      "gloss": "秒钟",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio engineering",
+      "gloss": "无线电工程\n 无线电工程",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "microwave radiation",
+      "gloss": "微波辐射",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "serve as",
+      "gloss": "被用作..., 充当..., 起...的作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low energy",
+      "gloss": "能的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "vacuum ultraviolet",
+      "gloss": "真空紫外; 真空紫外区",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "speed of light",
+      "gloss": "光速",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "saw the light",
+      "gloss": "出现；领悟",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "short for",
+      "gloss": "简短的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "shift in",
+      "gloss": "移入",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "close to",
+      "gloss": "接近于, 靠近于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light pulse",
+      "gloss": "光脉冲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "number of teeth",
+      "gloss": "齿数",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "beam at",
+      "gloss": "向(或对)…广播；针对，目标对着；对…微笑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "support for",
+      "gloss": "支持",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "direct distance",
+      "gloss": "垂直距离",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "meter per second",
+      "gloss": "米/秒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "appear to",
+      "gloss": "似乎，好像",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "forward path",
+      "gloss": "正向通路, 前向路",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "retrograde motion",
+      "gloss": "逆行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "reference points",
+      "gloss": "参考点",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "house arrest",
+      "gloss": "n. （本宅）软禁; 软禁于家中",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "free thought",
+      "gloss": "n. 自由思想",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set the stage for",
+      "gloss": "为…铺平道路,为…做好准备",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "complete cycle",
+      "gloss": "全循环",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "narrow field",
+      "gloss": "狭形野",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "field of view",
+      "gloss": "可见区, 视界\n 视野; 视场",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "color fringing",
+      "gloss": "彩色边缘",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light gathering power",
+      "gloss": "聚光本领",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio signals",
+      "gloss": "无线电讯号",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio astronomy",
+      "gloss": "n. 射电天文学",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio telescope",
+      "gloss": "无线电测远仪",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio emissions",
+      "gloss": "无线电发射；电波发射",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "black hole",
+      "gloss": "n. 黑洞",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light absorption",
+      "gloss": "光吸收",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "rate of",
+      "gloss": "汇率",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "dust clouds",
+      "gloss": "尘云",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "beam splitter",
+      "gloss": "分束器",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light to",
+      "gloss": "将亮光引向\n用灯光指引",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "phase error correction",
+      "gloss": "相位误差校正",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "contract in",
+      "gloss": "保证承担义务",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "thin shell",
+      "gloss": "薄壳",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light source",
+      "gloss": "光源\n 光源",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "thin layer",
+      "gloss": "薄层;薄膜层",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "well above",
+      "gloss": "大大超过；远高于…",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lower atmosphere",
+      "gloss": "低层大气",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "range gating",
+      "gloss": "距离选通",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "reference point",
+      "gloss": "参考点, 控制点, 衡量标准",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "single guide",
+      "gloss": "单面导轨",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "back in",
+      "gloss": "无意中获得,偶然取得",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "direct imaging",
+      "gloss": "直接成像",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "close quarters",
+      "gloss": "n. 近距离",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "combat with",
+      "gloss": "与...战斗",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "join the army",
+      "gloss": "参军; 当兵",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "starve to death",
+      "gloss": "饿死",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "empty handed",
+      "gloss": "徒手，空手",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "clean hands",
+      "gloss": "n. 老实,清白",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hammer blows",
+      "gloss": "na. 锤打",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "hand to hand",
+      "gloss": "逼近地",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long before",
+      "gloss": "在...以前很久",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "circle method",
+      "gloss": "圆法",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "total blindness",
+      "gloss": "全盲",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "graph theory",
+      "gloss": "图论",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "number theory",
+      "gloss": "数论",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "single equation",
+      "gloss": "单一方程式",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "right eye",
+      "gloss": "右眼",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "eye strain",
+      "gloss": "视觉疲劳",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "influence on",
+      "gloss": "对…有影响",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "point to",
+      "gloss": "指向",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "catch up",
+      "gloss": "把...很快拾起, 把...缠住\n 抓取程序",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sum to",
+      "gloss": "共计",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time intervals",
+      "gloss": "时间间隔",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "care to",
+      "gloss": "v. 喜欢",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "act as",
+      "gloss": "担当…, 起…的作用; 充; 充当; 为",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "remain open",
+      "gloss": "保持开着, 继续营业",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lock in",
+      "gloss": "将…锁在里面; 使固定",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "run on",
+      "gloss": "连续, 连写, 流逝, 涉及",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "peer review",
+      "gloss": "同业互查",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cloud computing",
+      "gloss": "n. 云计算(Cloud Computing)是一种新兴的商业计算模型。它将计算任务分布在大量计算机构成的资源池上, 使各种应用系统能够根据需要获取计算力、存储空间和各种软件服务。",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "source code management",
+      "gloss": "源码管理",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stand as",
+      "gloss": "作(侯选人)竞选",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "horse drawn",
+      "gloss": "adj. 马拉的\nn. 马拉的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "home city",
+      "gloss": "n. 家园城市",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "order in",
+      "gloss": "命令(某人)进入; 订购(货物)",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "set by",
+      "gloss": "把...留开",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weight class",
+      "gloss": "(汽车的)重量级",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long standing",
+      "gloss": "维持；存在已久的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "count in",
+      "gloss": "把...计算在内",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "winter sports",
+      "gloss": "冬季运动",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time record",
+      "gloss": "时间记录",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space exploration",
+      "gloss": "空间探索",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stable orbit",
+      "gloss": "稳定轨道",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low earth orbit",
+      "gloss": "近地轨道",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "radio transmitters",
+      "gloss": "无线电广播发射机",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weather monitoring",
+      "gloss": "天气监测",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "function as",
+      "gloss": "起…作用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long term",
+      "gloss": "长期的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space engineering",
+      "gloss": "航天工程",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low cost",
+      "gloss": "低成本",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space debris",
+      "gloss": "空间碎片",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "weather conditions",
+      "gloss": "气象条件",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "steady illumination",
+      "gloss": "稳定照明",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "air circulation",
+      "gloss": "空气环流",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low power consumption",
+      "gloss": "低电力消费",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "heat pump",
+      "gloss": "热泵",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "low temperature",
+      "gloss": "低温，低温度",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "egg whites",
+      "gloss": "na. 蛋白",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "gas combustion",
+      "gloss": "气体燃烧",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "vacuum cleaner",
+      "gloss": "真空吸尘器\n 真空除尘器; 真空吸尘器",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "air conditioners",
+      "gloss": "n. 空调",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "connect to",
+      "gloss": "使与…连接; 使与…接通电话",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "short circuits",
+      "gloss": "n. 电线走火；把与身体的另一部位直接接通",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space heaters",
+      "gloss": "na. 小型供暖器",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "microwave ovens",
+      "gloss": "n. 微波炉",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power strip",
+      "gloss": "电源板, 配电盘",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power cords",
+      "gloss": "n. 电源线",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "smart devices",
+      "gloss": "智能设备；智能设备业务；智能设备部门",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "long time",
+      "gloss": "长期的（持久的）",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "walk on",
+      "gloss": "<非正>小心翼翼",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "step on",
+      "gloss": "踩上...",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "run about",
+      "gloss": "跑来跑去",
+      "type": "phrasal_verb",
+      "separable": false
+    }
+  ]
+}
