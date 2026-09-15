@@ -36,7 +36,18 @@ english/
 docker compose up -d
 ```
 
-### 2. 启动后端
+### 2. 初始化词表数据（可选，后台需多词识别时）
+
+已提交 `wordlist.csv` + `surface_lemma.json`，评测/分级阅读主流程无需额外操作。
+后台「多词表达式/术语识别」运行时依赖 `data/wordlists/raw/stardict.db`（约 811MB，不入库）：
+
+```bash
+uv run data/wordlists/download_raw.py
+```
+
+重新生成全部词表见 [data/wordlists/README.md](data/wordlists/README.md)。
+
+### 3. 启动后端
 
 ```bash
 uv sync --directory apps/api
@@ -45,7 +56,7 @@ uv run --directory apps/api uvicorn app.main:app --reload
 
 验证：打开 http://127.0.0.1:8000/health （返回 `{"status":"ok",...}`）
 
-### 3. 启动前端（H5）
+### 4. 启动前端（H5）
 
 ```bash
 npm install --prefix apps/app

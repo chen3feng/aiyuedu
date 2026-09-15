@@ -8,13 +8,16 @@
 | --- | --- |
 | `wordlist.csv` | **项目主词表**（已过滤、分带），供评测/分级/生词标注使用 |
 | `surface_lemma.json` | 词形 → 词族头映射（约 19.8 万条，提交入库），供分级阅读做词形还原 |
+| `download_raw.py` | 一键下载并解压下方所有 `raw/` 数据（幂等 + SHA256 校验），全新 clone 第一步 |
+| `process_ecdict.py` | 从 raw 生成 `wordlist.csv` 的处理脚本 |
 | `build_surface_lemma.py` | 从 raw 词族表 + 词形还原表生成 `surface_lemma.json` 的脚本 |
 | `raw/ecdict.csv` | ECDICT 全量原始数据（约 76 万词条，63MB，MIT） |
+| `raw/lemma.en.txt` | 词形还原映射（词 → 原型），供阅读标注做词形还原（**不再用于词表生成**） |
+| `raw/ecdict-sqlite-28.zip` | ECDICT SQLite 压缩包（MIT，解压出 `stardict.db`） |
+| `raw/stardict.db` | ECDICT SQLite（约 811MB），后台「多词表达式/术语识别」运行时依赖（不入库，由 `download_raw.py` 拉取） |
 | `raw/basewrd1.txt`~`basewrd25.txt` | Paul Nation BNC/COCA 25000 基础词族表（每文件 1000 词族，CC BY-SA 4.0） |
 | `raw/basewrd31~34.txt` | Nation 附加表：专有名词 / 边缘词 / 透明复合词 / 缩写（**不参与排名**） |
 | `raw/BNC_COCA_25000.zip` | 上述 Nation 数据的官方压缩包（已校验 SHA256） |
-| `raw/lemma.en.txt` | 词形还原映射（词 → 原型），供阅读标注做词形还原（**不再用于词表生成**） |
-| `process_ecdict.py` | 从 raw 生成 wordlist.csv 的处理脚本 |
 
 ## wordlist.csv 字段
 
@@ -64,14 +67,25 @@
 - **Paul Nation BNC/COCA 25000** — https://www.wgtn.ac.nz/lals/resources/paul-nations-resources/vocabulary-analysis-programs/range/BNC_COCA_25000.zip （**CC BY-SA 4.0**，使用时请署名 Paul Nation）：词族标度。
 - **lemma.en.txt** — ECDICT 附带，扫描 BNC 一亿词生成的词形还原表（供阅读标注做词形还原）。
 
-## 重新生成
+## 下载原始数据（全新 clone 第一步）
+
+`raw/` 目录（约 875MB）不入库。已提交的 `wordlist.csv` / `surface_lemma.json` 能让主流程
+（评测/分级阅读标注）直接运行，但后台「自动定级 → 多词表达式/术语识别」运行时还需要
+`raw/stardict.db`（约 811MB）。全新 clone 后先拉取：
 
 ```bash
-# 主词表（wordlist.csv）
-uv run data/wordlists/process_ecdict.py
+uv run data/wordlists/download_raw.py
+```
 
-# 词形还原产物（surface_lemma.json）——分级阅读依赖
-uv run data/wordlists/build_surface_lemma.py
+脚本幂等（已下载/已解压则跳过），下载后按内置 SHA256 校验；若上游更新导致校验失败，
+先人工确认新版本无碍，再更新脚本内对应 `sha256`。
+
+## 重新生成（raw → 产物）
+
+```bash
+uv run data/wordlists/download_raw.py        # 1. 拉取 raw（已有则跳过）
+uv run data/wordlists/process_ecdict.py      # 2. raw → wordlist.csv
+uv run data/wordlists/build_surface_lemma.py # 3. raw → surface_lemma.json
 ```
 
 `surface_lemma.json` 是 `build_surface_lemma.py` 从 `raw/basewrd*.txt`（派生）+ `raw/lemma.en.txt`
