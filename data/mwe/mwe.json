@@ -6048,6 +6048,42 @@
       "gloss": "过去常常",
       "type": "phrasal_verb",
       "separable": false
+    },
+    {
+      "text": "ground state",
+      "gloss": "基态",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "port city",
+      "gloss": "港口城市",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space travel",
+      "gloss": "宇宙航行",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "video conferencing",
+      "gloss": "视频会议",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "act like",
+      "gloss": "如同",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "drug discovery",
+      "gloss": "新药研发",
+      "type": "phrasal_verb",
+      "separable": false
     }
   ]
 }

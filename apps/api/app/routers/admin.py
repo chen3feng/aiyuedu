@@ -110,7 +110,7 @@ def list_articles():
 
 @router.get("/articles/{reading_id}")
 def get_article(reading_id: str):
-    a = admin.get_article(reading_id)
+    a = admin.get_article_edit(reading_id)
     if a is None:
         raise HTTPException(status_code=404, detail="文章不存在")
     return a

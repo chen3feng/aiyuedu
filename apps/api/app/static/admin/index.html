@@ -89,6 +89,8 @@ const state = {
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
   aiLoading: false,     // AI 生成本文义进行中
+  glossSort: "appearance", // 生词注释列表排序：appearance=文中顺序，alpha=字母顺序
+  mwSort: "appearance",    // 多词表达式列表排序
   ai: { providers: [], default: null, editing: null },
 };
 
@@ -176,7 +178,13 @@ async function startEdit(id) {
     multiword: Object.entries(a.terms || {}).map(([text, gloss]) => ({ text, gloss, kind: "term" })),
     skip: a.skip || [],
     quizzes: a.quizzes || [] };
-  state.analyze = null;
+  // 后端已附带按已存 glosses 重建的生词表，打开即回显「生词中文注释」，无需再点「自动定级」
+  state.analyze = a.vocabulary !== undefined ? {
+    vocabulary: a.vocabulary || [],
+    word_count: a.word_count ?? 0,
+    new_word_count: a.new_word_count ?? 0,
+    new_word_rate: a.new_word_rate ?? 0,
+  } : null;
   renderArticles();
 }
 async function delArticle(id, title) {
@@ -209,6 +217,14 @@ function delGloss(lemma) {
   delete state.form.glosses[lemma];
   if (!state.form.skip.includes(lemma)) state.form.skip.push(lemma);
   if (state.analyze) state.analyze.vocabulary = state.analyze.vocabulary.filter((v) => v.lemma !== lemma);
+  renderForm();
+}
+function toggleGlossSort() {
+  state.glossSort = state.glossSort === "alpha" ? "appearance" : "alpha";
+  renderForm();
+}
+function toggleMwSort() {
+  state.mwSort = state.mwSort === "alpha" ? "appearance" : "alpha";
   renderForm();
 }
 
@@ -409,14 +425,24 @@ function renderForm() {
     <label><input type="checkbox" ${f.topics.includes(t.key) ? "checked" : ""}
       onchange="toggleTopic('${esc(t.key)}', this.checked)"> ${esc(t.label_zh)}</label>`).join("");
 
-  const glossRows = state.analyze ? state.analyze.vocabulary.map((v) => `
+  const glossRows = state.analyze ? (
+    state.glossSort === "alpha"
+      ? [...state.analyze.vocabulary].sort((a, b) =>
+          (a.word || a.lemma || "").toLowerCase().localeCompare((b.word || b.lemma || "").toLowerCase()))
+      : state.analyze.vocabulary
+  ).map((v) => `
     <div class="gloss-row">
       <div class="w" title="${esc(v.word)}">${esc(v.word)}${v.phonetic ? ` <span class="muted">${esc(v.phonetic)}</span>` : ""}</div>
       <input type="text" value="${esc(f.glosses[v.lemma] ?? "")}" oninput="setGloss('${esc(v.lemma)}', this.value)">
       <button class="danger small" onclick="delGloss('${esc(v.lemma)}')">删</button>
     </div>`).join("") : "";
 
-  const mwRows = f.multiword.map((m, i) => `
+  // 字母排序时保留原下标，确保 setMwKind/setMwGloss/delMw 仍指向 form.multiword 的正确项
+  const mwRows = (state.mwSort === "alpha"
+    ? f.multiword.map((m, i) => ({ m, i })).sort((x, y) =>
+        (x.m.text || "").toLowerCase().localeCompare((y.m.text || "").toLowerCase()))
+    : f.multiword.map((m, i) => ({ m, i }))
+  ).map(({ m, i }) => `
     <div class="gloss-row">
       <div class="w" title="${esc(m.text)}">${esc(m.text)}${m.tag ? ` <span class="muted">${esc(m.tag)}</span>` : ""}</div>
       <select onchange="setMwKind(${i}, this.value)" style="width:90px;flex-shrink:0">
@@ -479,13 +505,19 @@ function renderForm() {
             <div><div class="k">字数</div><div class="v">${state.analyze.word_count}</div></div>
             <div><div class="k">生词率</div><div class="v">${(state.analyze.new_word_rate * 100).toFixed(1)}%</div></div>
           </div>
-          ${glossRows ? `<label>生词中文注释（可手工改）</label>${glossRows}` : '<span class="muted">该级数下无生词</span>'}
+          ${glossRows ? `
+            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+              <label style="margin:0">生词中文注释（可手工改）</label>
+              <button class="small" onclick="toggleGlossSort()">${state.glossSort === "alpha" ? "按文中顺序" : "按字母顺序"}</button>
+            </div>
+            ${glossRows}` : '<span class="muted">该级数下无生词</span>'}
         </div>` : ""}
     </div>
 
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:8px">
         <strong>多词表达式（短语 / 术语）</strong>
+        <button class="small" onclick="toggleMwSort()">${state.mwSort === "alpha" ? "按文中顺序" : "按字母顺序"}</button>
       </div>
       <div class="muted" style="margin-bottom:10px">短语：并入全局短语库，计生词、进生词本；术语：仅本文行内注释，不计生词。</div>
       ${mwRows || '<div class="empty">暂无，点「自动定级」识别</div>'}

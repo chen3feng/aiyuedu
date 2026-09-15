@@ -27,6 +27,22 @@
         <text v-if="prefs.includes(tp.key)" class="check">✓</text>
       </view>
     </view>
+
+    <view class="card">
+      <view class="section-title">{{ t("settings.vocab") }}</view>
+      <view class="option">
+        <text class="label">{{ t("settings.vocabLabel") }}</text>
+        <input
+          class="vocab-input"
+          type="number"
+          v-model="vocabInput"
+          placeholder="3600"
+          @confirm="saveVocab"
+          @blur="saveVocab"
+        />
+      </view>
+      <view class="hint">{{ t("settings.vocabHint") }}</view>
+    </view>
   </view>
 </template>
 
@@ -53,22 +69,29 @@ const TOPICS = [
 ];
 
 const prefs = ref<string[]>([]);
+const vocab = ref<number | null>(null);
+const vocabInput = ref("");
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("settings.title") });
-  loadPrefs();
+  loadProfile();
 });
 
 function choose(value: LangSetting) {
   setLanguage(value);
 }
 
-async function loadPrefs() {
+async function loadProfile() {
   try {
     const p = await getProfile();
     prefs.value = p.topic_preferences || [];
+    vocab.value = p.vocab_size;
+    vocabInput.value = p.vocab_size != null ? String(p.vocab_size) : "";
   } catch {
-    /* 后端不可用时保持现状 */
+    // 后端不可用：回退本地缓存
+    const local = Number(uni.getStorageSync("vocab_size"));
+    vocab.value = local || null;
+    vocabInput.value = local ? String(local) : "";
   }
 }
 
@@ -77,6 +100,24 @@ function toggleTopic(key: string) {
   if (idx >= 0) prefs.value.splice(idx, 1);
   else prefs.value.push(key);
   saveProfile({ topic_preferences: prefs.value }).catch(() => {});
+}
+
+function saveVocab() {
+  const raw = vocabInput.value.trim();
+  if (raw === "") {
+    // 清空视为放弃修改，回退显示当前值
+    vocabInput.value = vocab.value != null ? String(vocab.value) : "";
+    return;
+  }
+  const v = Number(raw);
+  if (!Number.isInteger(v) || v < 0) {
+    vocabInput.value = vocab.value != null ? String(vocab.value) : "";
+    return;
+  }
+  vocab.value = v;
+  vocabInput.value = String(v);
+  uni.setStorageSync("vocab_size", v);
+  saveProfile({ vocab_size: v }).catch(() => {});
 }
 </script>
 
@@ -120,5 +161,21 @@ function toggleTopic(key: string) {
   font-size: 34rpx;
   color: #4f7cff;
   font-weight: 700;
+}
+.vocab-input {
+  width: 220rpx;
+  text-align: right;
+  font-size: 30rpx;
+  color: #33405f;
+  background: #f4f6fb;
+  border-radius: 12rpx;
+  padding: 8rpx 16rpx;
+}
+.hint {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #8a94ad;
+  line-height: 1.5;
+  padding: 0 20rpx 12rpx;
 }
 </style>

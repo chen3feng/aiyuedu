@@ -73,6 +73,8 @@ export default {
       speakAll: "全文朗读",
       stopSpeak: "停止朗读",
       vocabList: "生词表（{n} 个）",
+      sortAlpha: "按字母顺序",
+      sortAppearance: "按文中顺序",
       noGloss: "（暂无释义）",
       lemma: "原形：",
       speak: "发音",
@@ -96,5 +98,8 @@ export default {
     followSystem: "跟随系统",
     chinese: "中文",
     english: "English",
+    vocab: "词汇量",
+    vocabLabel: "我的词汇量",
+    vocabHint: "分级阅读按此词汇量判定生词；可手动修改，也可通过「词汇量评测」自动更新。",
   },
 };

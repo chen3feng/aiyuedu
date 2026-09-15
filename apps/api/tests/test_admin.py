@@ -205,6 +205,23 @@ def test_update_and_delete_article(isolated_data):
     assert admin.delete_article(article["id"]) is False
 
 
+def test_get_article_edit_rebuilds_vocabulary_from_stored_glosses(isolated_data):
+    article = admin.create_article(_valid_article(
+        glosses={"dinosaur": "恐龙", "odd number": "奇数"},
+        full_glosses={"dinosaur": "n. 恐龙"},
+        headwords={"dinosaur": {"word": "dinosaur", "phonetic": "/ˈdaɪnə/"}},
+    ))
+    out = admin.get_article_edit(article["id"])
+    assert out is not None
+    by_lemma = {v["lemma"]: v for v in out["vocabulary"]}
+    assert set(by_lemma) == {"dinosaur", "odd number"}  # 单词与短语键都回显
+    assert by_lemma["dinosaur"]["word"] == "dinosaur"
+    assert by_lemma["dinosaur"]["phonetic"] == "/ˈdaɪnə/"
+    assert by_lemma["dinosaur"]["full_gloss"] == "n. 恐龙"
+    assert out["word_count"] >= 1
+    assert "new_word_rate" in out
+
+
 def test_router_list_topics_includes_article_count(isolated_data):
     from app.routers import admin as admin_router
 

@@ -56,8 +56,13 @@
 
       <!-- 文末生词表 -->
       <view v-if="detail.vocabulary.length" class="vocab">
-        <view class="vocab-title">{{ t("reading.reader.vocabList", { n: detail.vocabulary.length }) }}</view>
-        <view v-for="(v, i) in detail.vocabulary" :key="i" class="vocab-item" @click="onVocab(v)">
+        <view class="vocab-head">
+          <view class="vocab-title">{{ t("reading.reader.vocabList", { n: detail.vocabulary.length }) }}</view>
+          <view class="vocab-sort" @click="toggleVocabSort">
+            {{ vocabSort === "alpha" ? t("reading.reader.sortAppearance") : t("reading.reader.sortAlpha") }}
+          </view>
+        </view>
+        <view v-for="(v, i) in sortedVocabulary" :key="i" class="vocab-item" @click="onVocab(v)">
           <view class="v-row">
             <text class="v-word">{{ v.word }}</text>
             <text v-if="v.phonetic" class="v-phonetic">{{ v.phonetic }}</text>
@@ -166,6 +171,18 @@ const detail = ref<ReadingDetail | null>(null);
 const loading = ref(false);
 const error = ref("");
 const activeWord = ref<ActiveWord | null>(null);
+// 生词表排序：appearance=文中出现顺序（默认），alpha=字母顺序，方便快速定位单词
+const vocabSort = ref<"appearance" | "alpha">("appearance");
+const sortedVocabulary = computed(() => {
+  const list = detail.value?.vocabulary || [];
+  if (vocabSort.value !== "alpha") return list;
+  return [...list].sort((a, b) =>
+    (a.word || a.lemma || "").toLowerCase().localeCompare((b.word || b.lemma || "").toLowerCase()),
+  );
+});
+function toggleVocabSort() {
+  vocabSort.value = vocabSort.value === "alpha" ? "appearance" : "alpha";
+}
 const playing = ref(false);
 const currentLine = ref(-1); // 朗读时高亮的当前句下标
 const instance = getCurrentInstance();
@@ -501,11 +518,24 @@ function finish() {
   border-top: 2rpx solid #eef0f6;
   padding-top: 24rpx;
 }
+.vocab-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
 .vocab-title {
   font-size: 30rpx;
   font-weight: 700;
   color: #1f2d50;
-  margin-bottom: 16rpx;
+}
+.vocab-sort {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: #4f7cff;
+  background: #eef2fb;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
 }
 .vocab-item {
   padding: 20rpx 16rpx;

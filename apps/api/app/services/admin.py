@@ -35,14 +35,16 @@ def analyze(body: str, level: int | None = None) -> dict:
         })
     terms = {m["text"]: m["gloss"] for m in multiword if m["kind"] == "term" and m["gloss"]}
     if level is None:
-        level = reading.suggest_level(body, terms=terms)["level"]
-    ann = reading.annotate(body, level, terms=terms)
+        level = reading.suggest_level(body, terms=terms)["level"]  # 文章难度标签（不改）
+    # 词表按统一基准 GLOSS_LEVEL 生成，覆盖所有 rank > GLOSS_LEVEL 的词；
+    # 阅读端再按用户词汇量现筛，故此处不必受文章难度影响。
+    ann = reading.annotate(body, reading.GLOSS_LEVEL, terms=terms)
     return {
         "level": level,
         "word_count": ann["word_count"],
         "new_word_count": ann["new_word_count"],
         "new_word_rate": ann["new_word_rate"],
-        "glosses": reading.build_glosses(body, level, terms=terms),  # 词族头 -> 自动词典义
+        "glosses": reading.build_glosses(body, reading.GLOSS_LEVEL, terms=terms),  # 词族头 -> 自动词典义
         "vocabulary": ann["vocabulary"],  # 逐词 {word,lemma,phonetic,gloss,full_gloss}
         "multiword": multiword,  # 多词表达式预览 [{text, gloss, kind, tag}]
     }
@@ -133,6 +135,41 @@ def delete_article(reading_id: str) -> bool:
 
 def get_article(reading_id: str) -> dict | None:
     return reading.get_reading(reading_id)
+
+
+def get_article_edit(reading_id: str) -> dict | None:
+    """取文章供后台编辑：附带按已存 glosses 重建的生词表与统计，打开即显示可手工改。
+
+    生词表逐条取自已存 `glosses` 的键（含单词与多词短语），保证后台「生词中文注释」
+    打开即回显；`word`/`phonetic` 优先取 `headwords` 覆盖，`full_gloss` 取 `full_glosses`。
+    统计与「自动定级」同口径（terms 不计生词、短语计生词）。
+    """
+    a = reading.get_reading(reading_id)
+    if a is None:
+        return None
+    level = a.get("target_level") or reading.DEFAULT_LEVEL
+    glosses = a.get("glosses") or {}
+    full_glosses = a.get("full_glosses") or {}
+    headwords = a.get("headwords") or {}
+    vocabulary = []
+    for lemma, gloss in glosses.items():
+        hw = headwords.get(lemma) or {}
+        vocabulary.append(
+            {
+                "word": hw.get("word") or lemma,
+                "lemma": lemma,
+                "phonetic": hw.get("phonetic") or "",
+                "gloss": gloss,
+                "full_gloss": full_glosses.get(lemma) or "",
+            }
+        )
+    st = reading.stats(a["body"], level, terms=a.get("terms"), skip=a.get("skip"))
+    out = dict(a)
+    out["vocabulary"] = vocabulary
+    out["word_count"] = st["word_count"]
+    out["new_word_count"] = st["new_word_count"]
+    out["new_word_rate"] = st["new_word_rate"]
+    return out
 
 
 def list_articles() -> list[dict]:

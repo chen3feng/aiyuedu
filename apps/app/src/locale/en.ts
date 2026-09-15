@@ -73,6 +73,8 @@ export default {
       speakAll: "Read aloud",
       stopSpeak: "Stop",
       vocabList: "Vocabulary ({n})",
+      sortAlpha: "Sort A–Z",
+      sortAppearance: "By appearance",
       noGloss: "(no gloss)",
       lemma: "Base form: ",
       speak: "Speak",
@@ -96,5 +98,8 @@ export default {
     followSystem: "Follow system",
     chinese: "中文",
     english: "English",
+    vocab: "Vocabulary size",
+    vocabLabel: "My vocabulary size",
+    vocabHint: "Graded reading decides new words by this size. Edit it manually, or update it via the Vocabulary Test.",
   },
 };

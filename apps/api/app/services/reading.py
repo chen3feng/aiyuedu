@@ -131,6 +131,10 @@ def _network_only(translation: str) -> bool:
 # 目标学生估算词汇量（design §2.1：初一男生 ~3600），可用 ?level= 覆盖
 DEFAULT_LEVEL = 3600
 
+# 材料生成基准词汇量：后台生成词表时按此统一基准判定「生词」（rank > GLOSS_LEVEL），
+# 覆盖各文章自动难度不一的问题；阅读端仍按用户自己的词汇量现筛现显。
+GLOSS_LEVEL = 2000
+
 # 句子切分：句末标点 + 空白（"9.58" 里的点后无空白，不会被误切）
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 # 词 token：数字（可含小数点与序数后缀 20th/21st/2nd/3rd，序数整体按数字处理，
