@@ -214,6 +214,51 @@ def _parse_json(text: str) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def generate_article(
+    outline: str,
+    extra_requirements: str = "",
+    target_level: int | None = None,
+) -> str:
+    """调用默认 AI 根据大纲和要求生成分级阅读文章正文。
+
+    返回纯文本（不含标题/markdown），失败抛 RuntimeError。
+    """
+    level_hint = ""
+    if target_level:
+        level_hint = (
+            f"词汇量控制在英语最常用 {target_level} 个词族范围内，"
+            f"超纲词不要超过全文词数的 3%。"
+        )
+    else:
+        level_hint = "词汇量控制在英语最常用 2000~4000 词族范围内，适合中国中小学生。"
+
+    prompt = (
+        "你是一位英语分级阅读作家，为中国中小学生撰写英语短文。\n"
+        "请根据以下要求，用标准英语撰写一篇分级阅读短文：\n\n"
+        f"- 词汇量级别要求：{level_hint}\n"
+        f"- 文章大纲：{outline}\n"
+        f"{'- 额外要求：' + extra_requirements if extra_requirements else ''}"
+        "\n要求：\n"
+        "1. 文章长度 150~350 词，适合做分级阅读\n"
+        "2. 语言自然流畅、有教育意义\n"
+        "3. 只输出英语正文，不要标题、不要 markdown 格式、不要任何额外说明\n"
+    )
+    return ai.chat([{"role": "user", "content": prompt}], temperature=0.8)
+
+
+def revise_article(body: str, suggestions: str) -> str:
+    """根据修改建议重写已生成的正文，返回修改后的完整正文。"""
+    prompt = (
+        "你是一位英语分级阅读编辑。下面是一篇已经生成好的英语分级阅读短文。\n"
+        "请根据修改建议对文章进行修改，保持原有的分级阅读风格与词汇难度，"
+        "输出修改后的完整正文。\n\n"
+        "【修改建议】\n" + suggestions + "\n\n"
+        "【原文】\n" + body + "\n\n"
+        "只输出修改后的完整英语正文，不要标题、不要 markdown 格式、不要任何额外说明。"
+    )
+    return ai.chat([{"role": "user", "content": prompt}], temperature=0.6)
+
+
 def ai_glosses(body: str, level: int | None = None) -> dict:
     """调用默认 AI 为本文生词/短语生成语境义（仅行内 ruby 用），词典义兜底。
 

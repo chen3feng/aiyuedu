@@ -63,6 +63,13 @@
   .toast.show { opacity: 1; }
   .toast.err { background: var(--danger); }
   .empty { color: var(--muted); text-align: center; padding: 30px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(20,28,50,.45);
+    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #fff; border-radius: 14px; padding: 24px; width: 100%;
+    max-width: 520px; box-shadow: 0 12px 40px rgba(20,28,50,.2); }
+  .modal h2 { margin: 0 0 16px; font-size: 16px; }
+  .modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 </style>
 </head>
 <body>
@@ -76,6 +83,18 @@
 </header>
 <main id="main"></main>
 <div class="toast" id="toast"></div>
+<div class="modal-overlay" id="gen-overlay" onclick="if(event.target===this)closeGenerate()">
+  <div class="modal">
+    <h2>AI 生成正文</h2>
+    <div class="field"><label>文章大纲</label>
+      <textarea id="gen-outline" placeholder="例如：一只小狐狸在森林里学会分享的故事"></textarea></div>
+    <div class="field"><label>额外要求（可选）</label>
+      <textarea id="gen-extra" placeholder="例如：包含对话、结尾有悬念"></textarea></div>
+    <div class="field"><label>期望词汇量级别（可选，如 2000）</label>
+      <input type="number" id="gen-level" placeholder="留空按 2000~4000 自动"></div>
+    <div id="gen-result"></div>
+  </div>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -89,6 +108,8 @@ const state = {
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
   aiLoading: false,     // AI 生成本文义进行中
+  genLoading: false,    // AI 生成/修改正文进行中
+  genBody: "",          // 已生成正文（预览用，确认后才写入 form）
   glossSort: "appearance", // 生词注释列表排序：appearance=文中顺序，alpha=字母顺序
   mwSort: "appearance",    // 多词表达式列表排序
   ai: { providers: [], default: null, editing: null },
@@ -273,6 +294,90 @@ async function aiGlossBody() {
     state.aiLoading = false;
     renderForm();
   }
+}
+
+function openGenerate() {
+  state.genBody = "";
+  $("gen-outline").value = "";
+  $("gen-extra").value = "";
+  $("gen-level").value = state.form.target_level ?? "";
+  $("gen-overlay").classList.add("show");
+  renderGenResult();
+}
+function closeGenerate() {
+  if (state.genLoading) return;
+  $("gen-overlay").classList.remove("show");
+}
+function renderGenResult() {
+  const r = $("gen-result");
+  if (state.genLoading) {
+    r.innerHTML = `<div class="field"><div class="muted">AI 生成中，请稍候…</div></div>`;
+    return;
+  }
+  if (!state.genBody) {
+    r.innerHTML = `
+      <div class="actions">
+        <button onclick="closeGenerate()">取消</button>
+        <button class="primary" onclick="doGenerate()">生成</button>
+      </div>`;
+    return;
+  }
+  r.innerHTML = `
+    <div class="field"><label>生成预览</label>
+      <textarea readonly style="min-height:220px;background:#fafbfe">${esc(state.genBody)}</textarea></div>
+    <div class="field"><label>修改建议（可选）</label>
+      <textarea id="gen-suggestions" placeholder="例如：把主角改成一只猫、结尾更温暖"></textarea></div>
+    <div class="row" style="gap:8px;margin-bottom:14px">
+      <button onclick="doGenerate()">再次生成</button>
+      <button class="primary" onclick="doRevise()">根据建议修改</button>
+    </div>
+    <div class="actions">
+      <button onclick="closeGenerate()">取消</button>
+      <button class="primary" onclick="applyGenerated()">完成</button>
+    </div>`;
+}
+async function doGenerate() {
+  const outline = $("gen-outline").value.trim();
+  if (!outline) return toast("请填写文章大纲", true);
+  const extra = $("gen-extra").value.trim();
+  const lv = $("gen-level").value.trim();
+  const target_level = lv ? Number(lv) : null;
+  state.genLoading = true;
+  renderGenResult();
+  try {
+    const r = await api("/articles/generate", "POST",
+      { outline, extra_requirements: extra, target_level });
+    state.genBody = r.body;
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    state.genLoading = false;
+    renderGenResult();
+  }
+}
+async function doRevise() {
+  const suggestions = $("gen-suggestions").value.trim();
+  if (!suggestions) return toast("请填写修改建议", true);
+  state.genLoading = true;
+  renderGenResult();
+  try {
+    const r = await api("/articles/revise", "POST",
+      { body: state.genBody, suggestions });
+    state.genBody = r.body;
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    state.genLoading = false;
+    renderGenResult();
+  }
+}
+function applyGenerated() {
+  state.form.body = state.genBody;
+  const lv = $("gen-level").value.trim();
+  if (lv) state.form.target_level = Number(lv);
+  $("gen-overlay").classList.remove("show");
+  renderForm();
+  toast("正文已生成，请补充标题/主题后保存");
 }
 
 function validateQuizzes() {
@@ -486,7 +591,9 @@ function renderForm() {
         <input type="text" value="${esc(f.title)}" oninput="setField('title',this.value)"></div>
       <div class="field"><label>副标题（可选）</label>
         <input type="text" value="${esc(f.subtitle)}" oninput="setField('subtitle',this.value)"></div>
-      <div class="field"><label>正文</label>
+      <div class="field"><label>正文
+        <button class="small" style="margin-left:8px" onclick="openGenerate()">AI 生成正文</button>
+      </label>
         <textarea oninput="setField('body',this.value)">${esc(f.body)}</textarea></div>
       <div class="field"><label>主题（可多选）</label>
         <div class="checkbox-list">${topicChecks || '<span class="muted">无主题，请先到「主题管理」添加</span>'}</div></div>

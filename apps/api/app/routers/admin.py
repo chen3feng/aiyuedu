@@ -49,6 +49,17 @@ class AnalyzeIn(BaseModel):
     level: int | None = Field(None, ge=0)
 
 
+class GenerateIn(BaseModel):
+    outline: str = ""
+    extra_requirements: str = ""
+    target_level: int | None = Field(None, ge=0)
+
+
+class ReviseIn(BaseModel):
+    body: str = ""
+    suggestions: str = ""
+
+
 class AIProviderIn(BaseModel):
     name: str
     base_url: str
@@ -125,6 +136,32 @@ def analyze_article(payload: AnalyzeIn):
 def ai_glosses(payload: AIGlossIn):
     try:
         return admin.ai_glosses(payload.body, payload.level)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/articles/generate")
+def generate_article(payload: GenerateIn):
+    if not payload.outline.strip():
+        raise HTTPException(status_code=422, detail="大纲不能为空")
+    try:
+        return {"body": admin.generate_article(
+            payload.outline.strip(),
+            payload.extra_requirements.strip(),
+            payload.target_level,
+        )}
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/articles/revise")
+def revise_article(payload: ReviseIn):
+    if not payload.body.strip():
+        raise HTTPException(status_code=422, detail="正文不能为空")
+    if not payload.suggestions.strip():
+        raise HTTPException(status_code=422, detail="修改建议不能为空")
+    try:
+        return {"body": admin.revise_article(payload.body.strip(), payload.suggestions.strip())}
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
