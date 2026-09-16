@@ -1,0 +1,10 @@
+# 统一换行符：文本文件在仓库（index）内归一为 LF。
+# 解决 Python 重写数据文件（JSON/CSV）时用 LF、与仓库 CRLF 不一致导致的整文件 diff。
+* text=auto
+
+# 二进制文件不做归一化
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
