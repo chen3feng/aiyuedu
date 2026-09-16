@@ -15,6 +15,8 @@ from ..config import settings
 
 MAX_NGRAM = 5  # 最多尝试 5 词连读（更长短语罕见，省查询）
 _WORD_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)*")
+# 扫描分词：词 / 非词交替；非空白标点（逗号等）作为硬边界，短语不得跨过。
+_SCAN_TOKEN_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)*|[^A-Za-z]+")
 _NOISE_TAG = "[地名]"  # 纯地名（专名），阅读端已按专有名词处理，跳过
 
 # 虚词/功能词开头（冠词、介词、连词、代词、限定词、助动词）的多词条不是术语，
@@ -91,8 +93,15 @@ def scan_multiword(body: str) -> list[dict]:
     - 首词大写（专名短语，如 United States）；
     - 含 [地名] 的（纯地名噪声）。
     数字本就不被 _WORD_RE 匹配，天然跳过。
+    非空白标点（逗号等）为硬边界，n-gram 不跨过（"rice, noodles" 不误配 "rice noodles"）。
     """
-    words = _WORD_RE.findall(body)
+    words: list[str | None] = []
+    for tok in _SCAN_TOKEN_RE.findall(body):
+        if _WORD_RE.fullmatch(tok):
+            words.append(tok)
+        elif tok.strip():
+            words.append(None)  # 非空白标点：硬边界
+        # 纯空白：不插入，短语可跨空白
     n = len(words)
     if n < 2:
         return []
@@ -110,15 +119,20 @@ def scan_multiword(body: str) -> list[dict]:
         results: list[dict] = []
         i = 0
         while i < n:
-            # 专名短语起点跳过；虚词开头（"a chain"/"the last"/"in the sky"）也不是术语，跳过
-            if words[i][0].isupper() or words[i].lower() in _FUNCTION_FIRST:
+            w = words[i]
+            # 硬边界/专名短语起点跳过；虚词开头（"a chain"/"the last"/"in the sky"）也不是术语，跳过
+            if w is None or w[0].isupper() or w.lower() in _FUNCTION_FIRST:
                 i += 1
                 continue
             best: dict | None = None
+            best_len = 0
             for length in range(MAX_NGRAM, 1, -1):  # 最长优先
                 if i + length > n:
                     continue
-                text = " ".join(w.lower() for w in words[i : i + length])
+                window = words[i : i + length]
+                if any(x is None for x in window):  # 跨硬边界，不试
+                    continue
+                text = " ".join(x.lower() for x in window)
                 row = _look(text)
                 if not (row and row[0]):  # 无词条或无释义
                     continue
@@ -132,6 +146,7 @@ def scan_multiword(body: str) -> list[dict]:
                     "kind": "phrase" if "v" in pos_first else "term",
                     "pos_first": pos_first,
                 }
+                best_len = length
                 break
             if best is None:
                 i += 1
@@ -140,7 +155,7 @@ def scan_multiword(body: str) -> list[dict]:
                 i += 1
                 continue
             results.append(best)
-            i += len(best["text"].split())
+            i += best_len
         return results
     except sqlite3.Error:
         return []

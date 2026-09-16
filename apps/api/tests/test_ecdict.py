@@ -82,6 +82,12 @@ def test_scan_skips_uppercase_first_word(fake_db):
     assert not any("united" in m["text"] for m in items)
 
 
+def test_scan_does_not_span_punctuation(fake_db):
+    # 非空白标点为硬边界：列表里的 "throw, up" 不是 "throw up"，不得误配
+    items = ecdict.scan_multiword("Please throw, up, and away.")
+    assert not any(m["text"] == "throw up" for m in items)
+
+
 def test_scan_skips_function_word_first(fake_db):
     # 冠词/虚词开头（"a chain"/"the last"）不是术语；跳过虚词后实义词仍可匹配
     # （"the solar system" 跳过 the 后命中 "solar system"）。

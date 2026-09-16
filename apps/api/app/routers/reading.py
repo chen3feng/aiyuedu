@@ -63,6 +63,7 @@ def get_reading(
     ann = reading.annotate(
         r["body"], level, r.get("glosses"), r.get("full_glosses"), r.get("headwords"), r.get("terms"),
         r.get("skip"),
+        only_glosses=True,
     )
     rtopics = _topics_of(r)
     return {

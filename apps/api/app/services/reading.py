@@ -313,74 +313,59 @@ def _classify(text: str, level: int) -> dict:
     return {"w": text, "known": False, "lemma": head, "gloss": "", "full_gloss": ""}
 
 
-def _merge_spans(a: list, b: list) -> list:
-    """合并全局短语 span 与文章术语 span：起点升序、同起点长者优先，术语优先于全局短语。
-
-    两个输入各自已不重叠；合并后保证整体不重叠。
-    """
-    combined = sorted(b + a, key=lambda s: (s[0], -(s[1] - s[0])))
-    result = []
-    last_end = -1
-    for s in combined:
-        if s[0] < last_end:
-            continue
-        result.append(s)
-        last_end = s[1]
-    return result
-
-
 def _units(sentence: str, level: int, terms: dict | None = None) -> list[dict]:
-    """把一句切成一列「渲染单元」：punct / num / word / mwe / term。
+    """把一句切成一列「渲染单元」：punct / num / word / term。
 
-    word 单元是 _classify 的结果（已判已知/生词）；mwe 单元是一个多词短语整体，
-    含 {kind, w(原文表面), lemma(短语), gloss, type}，一律按「生词」对待（短语暂无词频）；
-    term 单元是文章级术语整体，{kind, w, lemma, gloss}，不计生词、不进生词表。
-    多词匹配先于单词分类，命中的 span 吃掉内部 token、不再逐词注释。
+    word 单元是 _classify 的结果（已判已知/生词）；term 单元是文章级术语整体，
+    {kind, w, lemma, gloss}，不计生词、不进生词表。多词匹配先于单词分类，命中的
+    span 吃掉内部 token、不再逐词注释。
+
+    只匹配文章级术语（terms）；全局短语库（mwe.json）不再驱动阅读端标注，避免作者
+    未选定的短语（如 "work well"）被误注。多词匹配不跨非空白标点：逗号/句号等视为
+    硬边界，短语只能横跨纯空白（如 "cooking oil" 可跨空格，"rice, noodles" 不会误配
+    "rice noodles"）。渲染时整段 span 跳过，避免内部标点被重复输出。
     """
     tokens = _tokenize(sentence)
     word_pos = [k for k, t in enumerate(tokens) if t["kind"] == "word"]
-    lower_words = [tokens[k]["text"].lower() for k in word_pos]
-    spans = mwe.match_spans(lower_words)
-    if terms:
-        spans = _merge_spans(spans, mwe.match_terms(lower_words, terms))
-    span_by_start = {s: (e, en) for s, e, en in spans}
-    # span 内部词（被 span 消费但非起点），循环时跳过
-    interior = set()
-    for s, e, _ in spans:
-        interior.update(range(s + 1, e))
+    # 匹配序列：词 -> 小写文本；非空白标点 -> 空串哨兵（trie 无法匹配，天然断词）。
+    seg: list[tuple] = []  # (text_or_None, token_start, token_end)
+    for idx, k in enumerate(word_pos):
+        if idx > 0:
+            gap = tokens[word_pos[idx - 1] + 1 : k]
+            if any(g["text"].strip() for g in gap):
+                seg.append((None, -1, -1))
+        seg.append((tokens[k]["text"].lower(), k, k + 1))
+    match_words = ["" if s[0] is None else s[0] for s in seg]
+    # 只匹配文章级术语；全局短语库不参与阅读端 ruby（见 docstring）。
+    spans = mwe.match_terms(match_words, terms) if terms else []
+    # span 的 seg 下标 -> 覆盖的 token 区间 [start, end)，渲染时整段跳过、避免内部标点重复
+    span_by_start_tok: dict[int, tuple[int, dict]] = {}
+    for s, e, en in spans:
+        span_by_start_tok[seg[s][1]] = (seg[e - 1][2], en)
 
     units = []
-    wi = 0  # 当前 word 下标（word_pos 的索引）
-    for tok in tokens:
+    ti = 0
+    n = len(tokens)
+    while ti < n:
+        tok = tokens[ti]
         if tok["kind"] == "punct":
             units.append({"kind": "punct", "w": tok["text"]})
+            ti += 1
             continue
-        if wi in interior:
-            wi += 1
-            continue  # 已被短语/术语消费，不再逐词处理
-        if wi in span_by_start:
-            e, en = span_by_start[wi]
-            # 原文表面 = 从首词 token 到末词 token 的所有 token 文本（含内部空格/标点）
-            surface = "".join(t["text"] for t in tokens[word_pos[wi] : word_pos[e - 1] + 1])
+        if ti in span_by_start_tok:
+            et, en = span_by_start_tok[ti]
+            # 原文表面 = span 覆盖的全部 token 文本（仅空白间隙，无硬标点）
+            surface = "".join(t["text"] for t in tokens[ti:et])
             # 短语/术语的释义可能来自全局短语库或文章 terms 的旧存储（含词性前缀/多义项），
             # 行内 ruby 一律用短义（short_gloss 兜底原义）。
             g = short_gloss(en["gloss"]) or en["gloss"]
-            if en["type"] == "term":
-                units.append({"kind": "term", "w": surface, "lemma": en["text"], "gloss": g})
-            else:
-                units.append({
-                    "kind": "mwe",
-                    "w": surface,
-                    "lemma": en["text"],
-                    "gloss": g,
-                    "type": en["type"],
-                })
-            wi += 1
+            units.append({"kind": "term", "w": surface, "lemma": en["text"], "gloss": g})
+            ti = et
             continue
         entry = _classify(tok["text"], level)
         entry["kind"] = "word"
         units.append(entry)
-        wi += 1
+        ti += 1
     return units
 
 
@@ -424,11 +409,18 @@ def annotate(
     headwords: dict | None = None,
     terms: dict | None = None,
     skip: list | None = None,
+    only_glosses: bool = False,
 ) -> dict:
     """逐句切分并逐词标注：每行附 ruby 标注 HTML + 词级 token；文末生词表（完整意思）。
 
     每个生词只在**首次出现**时加 `<ruby>` 中文注释，之后复现不再注释（鼓励回忆，
     避免满篇注音）。生词表按首次出现顺序去重列出，`word` 为展示用原型。
+
+    两种注音口径：
+    - `only_glosses=False`（后台「自动定级」）：按 level 判生词，`glosses` 提供语境义、
+      词典兜底（用于自动生成 glosses 供作者再手工改）。
+    - `only_glosses=True`（读者端）：只注 `glosses`/`terms` 中作者**显式选定**的词/短语，
+      无词典兜底、不按 level 自动补注（避免非作者选定的词被误注）。
 
     - `glosses`：词族头 -> 本文最贴切的语境义（行内 `<ruby>` 只标这一义）。
     - `full_glosses`：词族头 -> 完整意思覆盖（派生词「词面义 ≠ 词族头义」时用，如
@@ -472,37 +464,20 @@ def annotate(
                     f"<rt>{_html.escape(u['gloss'], quote=False)}</rt></ruby>"
                 )
                 continue
-            if kind == "mwe":
-                # 多词短语：整段一个生词单元，只注一次义
-                word_count += 1
-                new_count += 1
-                lemma = u["lemma"]
-                words.append({
-                    "w": u["w"], "known": False, "lemma": lemma,
-                    "gloss": u["gloss"], "phrase": True,
-                })
-                if lemma not in vocab:
-                    vocab[lemma] = {
-                        "word": lemma, "lemma": lemma, "phonetic": "",
-                        "gloss": u["gloss"], "full_gloss": u["gloss"], "phrase": True,
-                    }
-                    html_parts.append(
-                        f"<ruby>{_html.escape(u['w'], quote=False)}"
-                        f"<rt>{_html.escape(u['gloss'], quote=False)}</rt></ruby>"
-                    )
-                else:
-                    html_parts.append(_html.escape(u["w"], quote=False))
-                continue
             # 单词
             words.append(u)
             word_count += 1
-            if u["known"]:
-                html_parts.append(_html.escape(u["w"], quote=False))
-                continue
             head = u.get("lemma") or u["w"].lower()
             if head in skip_set:
-                # 后台手工删掉的生词：按已知处理，不注音、不进生词表、不计生词
+                # 后台手工删掉的生词：按已知处理，不进生词表
                 u["known"] = True
+                html_parts.append(_html.escape(u["w"], quote=False))
+                continue
+            # 注音口径：only_glosses（读者端）只注 glosses 已收录的词；否则按 level 判生词。
+            if only_glosses and head not in glosses:
+                html_parts.append(_html.escape(u["w"], quote=False))
+                continue
+            if not only_glosses and u["known"]:
                 html_parts.append(_html.escape(u["w"], quote=False))
                 continue
             new_count += 1

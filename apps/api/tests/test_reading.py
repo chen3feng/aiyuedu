@@ -368,6 +368,37 @@ def test_annotate_ruby_only_first_occurrence():
     assert html.count("robot") == 2          # 两次都保留原文
 
 
+def test_annotate_term_does_not_span_comma():
+    # 术语/多词不得跨非空白标点：列表里的 "rice, noodles" 不是 "rice noodles"
+    ann = reading.annotate(
+        "I ate rice, noodles, and bread.", 3600, terms={"rice noodles": "米粉"}
+    )
+    html = ann["lines"][0]["html"]
+    assert "<ruby>rice" not in html  # 不应把 rice+noodles 合成一个术语
+    assert ", ," not in html          # 不得出现双逗号
+
+
+def test_annotate_adjacent_term_has_no_double_space():
+    # 仅空白分隔的相邻术语应整体注音，且不产生双空格（此前 surface 与内部空格重复输出）
+    ann = reading.annotate(
+        "I cook with cooking oil daily.", 3600, terms={"cooking oil": "食用油"}
+    )
+    html = ann["lines"][0]["html"]
+    assert "<ruby>cooking oil<rt>食用油</rt></ruby>" in html
+    assert "  " not in html  # 无双空格
+
+
+def test_annotate_only_glosses_skips_uncurated_new_word():
+    # 读者端（only_glosses）：词表外生词若不进 glosses，不注 ruby、不进生词表
+    ann = reading.annotate(
+        "A dinosaur and a quokka walked.", 100, {"dinosaur": "恐龙"}, only_glosses=True
+    )
+    html = ann["lines"][0]["html"]
+    assert "<ruby>dinosaur" in html    # 在 glosses → 注
+    assert "<ruby>quokka" not in html  # 不在 glosses → 不注（即便它是生词）
+    assert "quokka" not in {v["lemma"] for v in ann["vocabulary"]}
+
+
 def test_annotate_defaults_without_glosses():
     # 无 glosses 时：ruby 用词典义（gloss 裁剪版），vocabulary 仍带完整义
     ann = reading.annotate("A dinosaur walked.", 100)
@@ -453,28 +484,27 @@ def test_list_readings_level_defaults_to_user_vocab(tmp_path, monkeypatch):
 
 
 # ---------- 多词短语（MWE）标注 ----------
+# 阅读端不再匹配全局短语库（mwe.json），只匹配文章级术语（terms）。
+# 全局短语仅用于后台「自动定级」提词参考，避免作者未选定的短语（如 "work well"）被误注。
 
-def test_annotate_glosses_phrase_as_one_unit():
+def test_global_phrase_not_annotated_in_reading():
+    # "take over" 是全局短语库里的短语，但阅读端不注（除非作者把它加进 terms）
     ann = reading.annotate("I will take over the company.", 3600)
     html = ann["lines"][0]["html"]
-    assert "<ruby>take over<rt>" in html
-    assert "<ruby>take<rt>" not in html  # take 不再单独注释
-    lemmas = {v["lemma"] for v in ann["vocabulary"]}
-    assert "take over" in lemmas
+    assert "<ruby>take over" not in html
 
 
-def test_annotate_separable_phrase_surface():
+def test_separable_phrase_not_annotated_in_reading():
+    # "take it apart" 是可分离短语，同样不注
     ann = reading.annotate("Take it apart now.", 3600)
     html = ann["lines"][0]["html"]
-    assert "<ruby>Take it apart<rt>拆开</rt></ruby>" in html
-    voc = {v["lemma"]: v for v in ann["vocabulary"]}
-    assert voc["take apart"]["gloss"] == "拆开"
+    assert "<ruby>Take" not in html
 
 
-def test_stats_counts_phrase_as_one_word():
+def test_stats_counts_phrase_words_individually():
+    # 全局短语不再合并成一个词：throw + up 各算一个词
     st = reading.stats("I will throw up now.", 3600)
-    assert st["word_count"] == 4
-    assert st["new_word_count"] == 1
+    assert st["word_count"] == 5
 
 
 # ---------- 文章级术语（term）标注 ----------
