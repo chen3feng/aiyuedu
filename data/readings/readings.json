@@ -6596,5 +6596,41 @@
         "explanation_en": "Combining multiple high-wattage appliances on one power strip can cause electrical overload, tripping breakers or creating a fire hazard."
       }
     ]
+  },
+  {
+    "id": "r056",
+    "title": "The Six Major Nutrients",
+    "subtitle": "",
+    "topics": [
+      "science"
+    ],
+    "target_level": 4500,
+    "glosses": {
+      "nutrient": "营养的",
+      "carbohydrate": "碳水化合物",
+      "protein": "蛋白质",
+      "vitamin": "维生素",
+      "mineral": "矿物",
+      "organ": "器官",
+      "gum": "胶质",
+      "calcium": "钙",
+      "oxygen": "氧",
+      "temperature": "温度",
+      "dizzy": "晕眩的",
+      "candy": "糖果",
+      "junk": "垃圾"
+    },
+    "full_glosses": {},
+    "headwords": {},
+    "terms": {
+      "rice noodles": "米粉",
+      "cooking oil": "食用油",
+      "too much": "太多",
+      "full of": "充满",
+      "balanced diet": "均衡饮食"
+    },
+    "skip": [],
+    "body": "Your body needs six important nutrients to work well. They are carbohydrates, proteins, fats, vitamins, minerals, and water.\n\nCarbohydrates give your body energy. You can find them in rice, noodles, bread, and potatoes. If you do not get enough, you may feel tired and weak.\n\nProteins help your body grow and repair itself. They are in meat, fish, eggs, beans, and milk. Without enough protein, children may grow slowly, and muscles may become weak.\n\nFats also give energy and help keep your body warm. They protect your organs. Nuts, seeds, fish, and cooking oil have fats. But too much fat is not good.\n\nVitamins help your body use food and fight sickness. Fruits and vegetables are full of vitamins. If you lack vitamins, you may have problems with your eyes, skin, or gums.\n\nMinerals, such as calcium and iron, are very important. Calcium makes bones and teeth strong. Iron helps your blood carry oxygen. Milk, green vegetables, and meat give you these minerals. If you lack them, your bones may be weak, or you may feel very tired.\n\nWater is also a nutrient. It carries things around your body, controls your temperature, and removes waste. If you do not drink enough water, you may feel thirsty, dizzy, or sick.\n\nTo get all six nutrients, eat many different foods every day. Choose rice, vegetables, fruit, eggs, milk, beans, and fish. Drink enough water. Eat less candy and junk food. A balanced diet helps you grow, learn, and stay healthy.",
+    "quizzes": []
   }
 ]
