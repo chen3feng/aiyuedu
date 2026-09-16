@@ -6623,7 +6623,6 @@
     "full_glosses": {},
     "headwords": {},
     "terms": {
-      "rice noodles": "米粉",
       "cooking oil": "食用油",
       "too much": "太多",
       "full of": "充满",
@@ -6631,6 +6630,40 @@
     },
     "skip": [],
     "body": "Your body needs six important nutrients to work well. They are carbohydrates, proteins, fats, vitamins, minerals, and water.\n\nCarbohydrates give your body energy. You can find them in rice, noodles, bread, and potatoes. If you do not get enough, you may feel tired and weak.\n\nProteins help your body grow and repair itself. They are in meat, fish, eggs, beans, and milk. Without enough protein, children may grow slowly, and muscles may become weak.\n\nFats also give energy and help keep your body warm. They protect your organs. Nuts, seeds, fish, and cooking oil have fats. But too much fat is not good.\n\nVitamins help your body use food and fight sickness. Fruits and vegetables are full of vitamins. If you lack vitamins, you may have problems with your eyes, skin, or gums.\n\nMinerals, such as calcium and iron, are very important. Calcium makes bones and teeth strong. Iron helps your blood carry oxygen. Milk, green vegetables, and meat give you these minerals. If you lack them, your bones may be weak, or you may feel very tired.\n\nWater is also a nutrient. It carries things around your body, controls your temperature, and removes waste. If you do not drink enough water, you may feel thirsty, dizzy, or sick.\n\nTo get all six nutrients, eat many different foods every day. Choose rice, vegetables, fruit, eggs, milk, beans, and fish. Drink enough water. Eat less candy and junk food. A balanced diet helps you grow, learn, and stay healthy.",
+    "quizzes": []
+  },
+  {
+    "id": "r057",
+    "title": "Proteins: The Amazing Machines of Life",
+    "subtitle": "",
+    "topics": [
+      "science"
+    ],
+    "target_level": 3000,
+    "glosses": {
+      "protein": "蛋白质",
+      "molecule": "分子",
+      "cell": "细胞",
+      "gene": "基因",
+      "enzyme": "酶",
+      "oxygen": "氧",
+      "germ": "病菌",
+      "predict": "预测"
+    },
+    "full_glosses": {},
+    "headwords": {},
+    "terms": {
+      "living thing": "生物",
+      "amino acids": "氨基酸",
+      "kinds of": "各种各样的",
+      "chemical reactions": "化学反应",
+      "essential amino acids": "必需氨基酸",
+      "folds into": "折叠为",
+      "special shape": "特殊形式",
+      "recent years": "近些年"
+    },
+    "skip": [],
+    "body": "Proteins are important molecules in every living thing. They are made of smaller units called amino acids. There are about twenty common amino acids. Cells join them in different orders to build many kinds of proteins. This order is decided by our genes.\n\nProteins do many jobs. Some help chemical reactions happen. These are enzymes. Some build muscles, skin, and hair. Some carry oxygen in the blood. Others fight germs and keep us healthy.\n\nPeople need protein in food to grow and stay well. Our bodies can make some amino acids, but not all. The ones we cannot make are called essential amino acids. We must get them from foods like eggs, milk, beans, fish, and meat. Eating different foods helps us get all of them.\n\nA protein is not just a long chain. It folds into a special shape. The shape helps it do its job. If the shape changes, the protein may stop working.\n\nScientists have long wanted to know how proteins fold. In recent years, an AI program called AlphaFold has predicted the shapes of many proteins. This helps doctors and scientists understand life and design new medicines.",
     "quizzes": []
   }
 ]
