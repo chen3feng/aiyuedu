@@ -16,6 +16,67 @@ function stopAudio(): void {
   }
 }
 
+// ---------- 屏幕常亮：播放期间防息屏（Screen Wake Lock API） ----------
+// 阅读语音（尤其全文朗读）耗时较长，期间保持屏幕常亮；结束/停止时释放。
+// 浏览器不支持或用户拒绝时静默降级（屏幕会照常暗下，不影响功能）。
+type WakeLockSentinel = { released?: boolean; release: () => Promise<void> };
+
+let wakeLock: WakeLockSentinel | null = null;
+let wakeDesired = false;
+
+function releaseWake(): void {
+  wakeDesired = false;
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
+
+async function acquireWake(): Promise<void> {
+  // #ifdef H5
+  wakeDesired = true;
+  try {
+    const nav = navigator as Navigator & {
+      wakeLock?: { request: (type: "screen") => Promise<WakeLockSentinel> };
+    };
+    if (nav.wakeLock) {
+      const lock = await nav.wakeLock.request("screen");
+      if (wakeDesired) {
+        wakeLock = lock;
+      } else {
+        lock.release().catch(() => {});
+      }
+    }
+  } catch {
+    // 忽略：不支持 / 权限拒绝 / 页面不可见
+  }
+  // #endif
+}
+
+// 结束回调统一收口：先释放常亮再调业务 onEnd。
+function finish(onEnd?: () => void): () => void {
+  return () => {
+    releaseWake();
+    onEnd?.();
+  };
+}
+
+// 切后台时浏览器自动释放 wake lock；回到前台若仍在播放则重新申请。
+// #ifdef H5
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (
+      document.visibilityState === "visible" &&
+      wakeDesired &&
+      (!wakeLock || wakeLock.released)
+    ) {
+      wakeLock = null;
+      acquireWake();
+    }
+  });
+}
+// #endif
+
 // 浏览器 TTS（回退档 / 未来免费试用档）
 function browserSpeak(text: string, lang: string, onEnd?: () => void): boolean {
   // #ifdef H5
@@ -123,12 +184,14 @@ function playUrl(url: string, fallback: () => boolean, onEnd?: () => void): bool
 
 export function speak(text: string, lang = "en-US"): boolean {
   if (!text) return false;
-  return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang));
+  acquireWake();
+  return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang, finish()), finish());
 }
 
 export function speakLong(text: string, lang = "en-US", onEnd?: () => void): boolean {
   if (!text) return false;
-  return playUrl(ttsUrl(text, lang), () => browserSpeakLong(text, lang, onEnd), onEnd);
+  acquireWake();
+  return playUrl(ttsUrl(text, lang), () => browserSpeakLong(text, lang, finish(onEnd)), finish(onEnd));
 }
 
 // 逐句朗读：后端 edge-tts 每句一个音频、顺序播放，onLine 回调当前句下标（供高亮 + 滚屏）。
@@ -145,13 +208,15 @@ export function speakLines(
     onEnd?.();
     return true;
   }
+  acquireWake();
   stopAudio();
+  const done = finish(onEnd); // 释放常亮 + 业务回调，统一只走一次
   // 并行预取：new Audio(url) 立即触发加载，播放时无网络空档
   const audios = sentences.map((s) => new Audio(ttsUrl(s, lang)));
   let i = 0;
   const advance = () => {
     if (i >= audios.length) {
-      onEnd?.();
+      done();
       return;
     }
     const idx = i++;
@@ -163,7 +228,7 @@ export function speakLines(
       settled = true;
       if (idx === 0) {
         stopAudio();
-        browserSpeakLines(sentences, lang, onLine, onEnd);
+        browserSpeakLines(sentences, lang, onLine, done);
       } else {
         advance();
       }
@@ -188,6 +253,7 @@ export function speakLines(
 
 // 停止朗读（后端音频 + 浏览器 TTS 都停）
 export function stopSpeak(): void {
+  releaseWake();
   stopAudio();
   // #ifdef H5
   if (typeof window !== "undefined" && "speechSynthesis" in window) {
