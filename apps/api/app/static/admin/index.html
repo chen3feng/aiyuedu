@@ -67,9 +67,12 @@
     display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
   .modal-overlay.show { display: flex; }
   .modal { background: #fff; border-radius: 14px; padding: 24px; width: 100%;
-    max-width: 520px; box-shadow: 0 12px 40px rgba(20,28,50,.2); }
-  .modal h2 { margin: 0 0 16px; font-size: 16px; }
-  .modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    max-width: 520px; box-shadow: 0 12px 40px rgba(20,28,50,.2);
+    max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
+  .modal h2 { margin: 0 0 16px; font-size: 16px; flex-shrink: 0; }
+  .modal-body { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .modal .actions { display: flex; justify-content: flex-end; gap: 10px;
+    margin-top: 18px; flex-shrink: 0; background: #fff; padding-top: 8px; }
 </style>
 </head>
 <body>
@@ -86,13 +89,15 @@
 <div class="modal-overlay" id="gen-overlay" onclick="if(event.target===this)closeGenerate()">
   <div class="modal">
     <h2>AI 生成正文</h2>
-    <div class="field"><label>文章大纲</label>
-      <textarea id="gen-outline" placeholder="例如：一只小狐狸在森林里学会分享的故事"></textarea></div>
-    <div class="field"><label>额外要求（可选）</label>
-      <textarea id="gen-extra" placeholder="例如：包含对话、结尾有悬念"></textarea></div>
-    <div class="field"><label>期望词汇量级别（可选，如 2000）</label>
-      <input type="number" id="gen-level" placeholder="留空按 2000~4000 自动"></div>
-    <div id="gen-result"></div>
+    <div class="modal-body">
+      <div class="field"><label>文章大纲</label>
+        <textarea id="gen-outline" placeholder="例如：一只小狐狸在森林里学会分享的故事"></textarea></div>
+      <div class="field"><label>额外要求（可选）</label>
+        <textarea id="gen-extra" placeholder="例如：包含对话、结尾有悬念"></textarea></div>
+      <div class="field"><label>期望词汇量级别（可选，如 2000）</label>
+        <input type="number" id="gen-level" placeholder="留空按 2000~4000 自动"></div>
+      <div id="gen-result"></div>
+    </div>
   </div>
 </div>
 
