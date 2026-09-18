@@ -87,7 +87,8 @@
     ],
     "topics": [
       "science"
-    ]
+    ],
+    "title_zh": "天空为什么是蓝色"
   },
   {
     "id": "r002",
@@ -176,7 +177,8 @@
     ],
     "topics": [
       "science"
-    ]
+    ],
+    "title_zh": "米娅的月球之旅"
   },
   {
     "id": "r003",
@@ -264,7 +266,8 @@
     ],
     "topics": [
       "sports"
-    ]
+    ],
+    "title_zh": "利奥的第一场足球赛"
   },
   {
     "id": "r004",
@@ -361,7 +364,8 @@
     ],
     "topics": [
       "sports"
-    ]
+    ],
+    "title_zh": "地球上跑得最快的人"
   },
   {
     "id": "r005",
@@ -460,7 +464,8 @@
     ],
     "topics": [
       "history"
-    ]
+    ],
+    "title_zh": "莱特兄弟造飞机"
   },
   {
     "id": "r006",
@@ -560,7 +565,8 @@
         "explanation_zh": "蔡伦尝试用树皮、旧布、渔网等材料造纸。",
         "explanation_en": "Cai Lun made paper from tree bark, old cloth, and fishing nets."
       }
-    ]
+    ],
+    "title_zh": "蔡伦造纸的故事"
   },
   {
     "id": "r007",
@@ -656,7 +662,8 @@
     ],
     "topics": [
       "adventure"
-    ]
+    ],
+    "title_zh": "阁楼里的旧地图秘密"
   },
   {
     "id": "r008",
@@ -747,7 +754,8 @@
     ],
     "topics": [
       "adventure"
-    ]
+    ],
+    "title_zh": "阁楼里的机器人"
   },
   {
     "id": "r009",
@@ -840,7 +848,8 @@
         "explanation_zh": "电影里宇航员靠种土豆求生，直到救援队到来。",
         "explanation_en": "In The Martian, the astronaut grows potatoes to survive until rescue arrives."
       }
-    ]
+    ],
+    "title_zh": "火星探索之旅"
   },
   {
     "id": "r010",
@@ -950,7 +959,8 @@
         "explanation_zh": "宇航员通过种土豆生存） 接下来你想阅读哪个主题？ 深海探索：未知的蓝色世界 人工智能：机器会思考吗？",
         "explanation_en": "...grow potatoes to survive..."
       }
-    ]
+    ],
+    "title_zh": "火星探索寻找第二个家"
   },
   {
     "id": "r011",
@@ -1050,7 +1060,8 @@
         "explanation_zh": "中国的系统是北斗系统，Galileo是欧洲的",
         "explanation_en": "China has built... BeiDou (BDS) system"
       }
-    ]
+    ],
+    "title_zh": "卫星导航太空指南针"
   },
   {
     "id": "r012",
@@ -1166,7 +1177,8 @@
         "explanation_zh": "可再生能源清洁且源源不断） 接下来你想阅读哪一个主题？ 量子计算：下一代超级大脑 自动驾驶：无需手的未来出行",
         "explanation_en": "renewable energy—clean energy that comes from nature and never runs out"
       }
-    ]
+    ],
+    "title_zh": "未来绿色能源"
   },
   {
     "id": "r013",
@@ -1292,7 +1304,8 @@
         "explanation_zh": "能够极大加速新药研发",
         "explanation_en": "design new life-saving drugs in days instead of years"
       }
-    ]
+    ],
+    "title_zh": "量子计算机下一代超级大脑"
   },
   {
     "id": "r014",
@@ -1416,7 +1429,8 @@
         "explanation_zh": "储能系统在风大时储存多余能量，在风小时释放，从而保证供电稳定",
         "explanation_en": "(True or False) 3. Energy storage systems can store extra energy when the wind blows strong and release it when the wind stops."
       }
-    ]
+    ],
+    "title_zh": "风车转出清洁电"
   },
   {
     "id": "r015",
@@ -1548,7 +1562,8 @@
         "explanation_zh": "熔盐储能系统能在夜间继续发电",
         "explanation_en": "When darkness falls, this super-hot salt is used to boil water and generate electricity around the clock"
       }
-    ]
+    ],
+    "title_zh": "太阳发电的储能智慧"
   },
   {
     "id": "r016",
@@ -1665,7 +1680,8 @@
         "explanation_zh": "AI 大发展带来的巨型数据中心需要大量电力，给现代电网带来了全新的挑战",
         "explanation_en": "(True or False) Massive data centers running artificial intelligence are currently creating a huge new demand for electricity."
       }
-    ]
+    ],
+    "title_zh": "点亮世界的隐形电网"
   },
   {
     "id": "r017",
@@ -1816,7 +1832,8 @@
         "explanation_zh": "文中指出尽管尚未完全商业化成功，但它对彻底解决人类能源和气候危机具有极其重大的意义",
         "explanation_en": "(True or False) Even though controlled nuclear fusion has not yet succeeded as a commercial power source, it is of great significance because it could solve Earth's energy and climate crises forever."
       }
-    ]
+    ],
+    "title_zh": "人造太阳终极能源梦"
   },
   {
     "id": "r018",
@@ -1925,7 +1942,8 @@
         "explanation_zh": "造父变星的光变周期与真实光度直接相关，从而可以用来测量距离",
         "explanation_en": "(True or False) 3. Cepheid variable stars change in brightness at a rate related to their true luminosity, which helps scientists measure interstellar distances."
       }
-    ]
+    ],
+    "title_zh": "宇宙到底有多远"
   },
   {
     "id": "r019",
@@ -2035,7 +2053,8 @@
         "explanation_zh": "July 纪念尤利乌斯·恺撒，August 纪念第一位罗马皇帝奥古斯都",
         "explanation_en": "(True or False) The months of July and August are named after famous Roman rulers, Julius Caesar and Augustus."
       }
-    ]
+    ],
+    "title_zh": "罗马神话里的月份名字"
   },
   {
     "id": "r020",
@@ -2142,7 +2161,8 @@
         "explanation_zh": "根据国际标准（ISO）以及中国和欧洲大部分地区，星期一被定为一周的第一天",
         "explanation_en": "(True or False) In international standards and countries like China, Monday is officially treated as the first day of the week."
       }
-    ]
+    ],
+    "title_zh": "星期名字的由来"
   },
   {
     "id": "r021",
@@ -2249,7 +2269,8 @@
         "explanation_zh": "南北半球的季节是完全相反的，北半球是夏天时，南半球则是冬天",
         "explanation_en": "(True or False) When it is summer in the Northern Hemisphere, the Southern Hemisphere is experiencing winter at the same time."
       }
-    ]
+    ],
+    "title_zh": "地球倾斜与四季的秘密"
   },
   {
     "id": "r022",
@@ -2353,7 +2374,8 @@
         "explanation_zh": "传说奥古斯都为了让自己的月份 August 和恺撒的 July 一样长，从二月偷走了一天",
         "explanation_en": "(True or False) Emperor Augustus took a day from February so his month (August) would not be shorter than Julius Caesar's month (July)."
       }
-    ]
+    ],
+    "title_zh": "月份天数为何不一样"
   },
   {
     "id": "r023",
@@ -2474,7 +2496,8 @@
         "explanation_zh": "SpaceX 的“星舰”是目前建造的最大、推力最强的火箭，旨在将人类送往火星",
         "explanation_en": "(True or False) SpaceX's Starship is currently the largest and most powerful rocket ever built, designed to help humans reach Mars."
       }
-    ]
+    ],
+    "title_zh": "火箭从烟花到星辰"
   },
   {
     "id": "r024",
@@ -2583,7 +2606,8 @@
         "explanation_zh": "尽管存在时代局限性，但他依然广受尊敬，中国许多地方如徐霞客镇均以他的名字命名",
         "explanation_en": "(True or False) Despite historical limitations, Xu Xiake's achievements are so widely recognized that places like Xu Xiake Town are named in his honor."
       }
-    ]
+    ],
+    "title_zh": "徐霞客用双脚丈量中国"
   },
   {
     "id": "r025",
@@ -2688,7 +2712,8 @@
         "explanation_zh": "像《黑神话：悟空》这样的现代化游戏展示了四大名著在现代流行文化中的巨大影响力",
         "explanation_en": "(True or False) Modern video games like Black Myth: Wukong show the lasting influence of classic Chinese literature in global pop culture."
       }
-    ]
+    ],
+    "title_zh": "中国四大名著"
   },
   {
     "id": "r026",
@@ -2792,7 +2817,8 @@
         "explanation_zh": "玄奘撰写的《大唐西域记》为后世考古学家重新发现印度和中亚的古迹提供了极具价值的历史地理依据",
         "explanation_en": "(True or False) Modern archaeologists have used Xuanzang's book, Great Tang Records on the Western Regions, to locate and rediscover lost ancient sites in India and Central Asia."
       }
-    ]
+    ],
+    "title_zh": "玄奘西行真相"
   },
   {
     "id": "r027",
@@ -2900,7 +2926,8 @@
         "explanation_zh": "鉴真不仅传播佛法，还将唐朝的建筑、雕塑、医药和书法带到了日本",
         "explanation_en": "(True or False) Besides Buddhist teachings, Master Jianzhen also introduced advanced Chinese medicine, architecture, and calligraphy to Japan."
       }
-    ]
+    ],
+    "title_zh": "鉴真东渡六次终成"
   },
   {
     "id": "r028",
@@ -3009,7 +3036,8 @@
         "explanation_zh": "1963年8月28日，他在华盛顿林肯纪念堂前发表了著名的《我有一个梦想》演讲",
         "explanation_en": "(True or False) Dr. King delivered his iconic \"I Have a Dream\" speech at the Lincoln Memorial during the March on Washington in 1963."
       }
-    ]
+    ],
+    "title_zh": "马丁路德金我有一个梦想"
   },
   {
     "id": "r029",
@@ -3121,7 +3149,8 @@
         "explanation_zh": "文中指出1783年签署的《巴黎条约》标志着战争的正式结束，英国正式承认美国独立",
         "explanation_en": "(True or False) The Treaty of Paris in 1783 officially ended the war and forced Great Britain to recognize the independence of the United States."
       }
-    ]
+    ],
+    "title_zh": "美国独立战争"
   },
   {
     "id": "r030",
@@ -3239,7 +3268,8 @@
         "explanation_zh": "文中指出“恐怖统治”时期罗伯斯庇尔等激进派的极端主义导致大量处决，揭示了极端狂热对自由理想的反噬与危害",
         "explanation_en": "(True or False) The Reign of Terror showed that revolutionary fanaticism could lead to violence and tyranny, harming the very ideals of freedom it claimed to protect."
       }
-    ]
+    ],
+    "title_zh": "法国大革命风云"
   },
   {
     "id": "r031",
@@ -3347,7 +3377,8 @@
         "explanation_zh": "文中指出被称作“王名圈”cartouches 的椭圆形环包含皇室成员名字的拼音",
         "explanation_en": "(True or False) The oval rings found in hieroglyphic inscriptions, called cartouches, were used to highlight the phonetic names of royal figures."
       }
-    ]
+    ],
+    "title_zh": "罗塞塔石碑解锁古埃及"
   },
   {
     "id": "r032",
@@ -3452,7 +3483,8 @@
         "explanation_zh": "贝聿铭的现代设计最初公布时曾引发剧烈争议，但最终凭借出色的设计赢得了世界赞誉",
         "explanation_en": "(True or False) The Louvre Pyramid was immediately welcomed by everyone in Paris without any public controversy when its design was first announced."
       }
-    ]
+    ],
+    "title_zh": "卢浮宫玻璃金字塔"
   },
   {
     "id": "r033",
@@ -3563,7 +3595,8 @@
         "explanation_zh": "文中指出玛丽·居里（居里夫人）是第一位凭自身杰出科学贡献入祀先贤祠的女性",
         "explanation_en": "(True or False) Marie Curie was the first woman to be buried in the Panthéon on her own merits for her extraordinary scientific contributions."
       }
-    ]
+    ],
+    "title_zh": "先贤祠里的巨人"
   },
   {
     "id": "r034",
@@ -3671,7 +3704,8 @@
         "explanation_zh": "文中明确指出中国武侠小说的萌芽可以追溯到晋代的《搜神记》与唐代的唐传奇",
         "explanation_en": "(True or False) The roots of Chinese Wuxia fiction can be traced back to early ancient texts like Soushen Ji and Tang Dynasty tales (Tang Chuanqi"
       }
-    ]
+    ],
+    "title_zh": "中国武侠小说传奇"
   },
   {
     "id": "r035",
@@ -3822,7 +3856,8 @@
         "explanation_zh": "文中指出如果电网电力主要来自煤电，纯电动车的“零排放”在全生命周期视角下实际上是将尾气排放转移到了发电端",
         "explanation_en": "(True or False) If an electric vehicle relies entirely on electricity generated by coal-fired power plants, its lifecycle carbon emissions are simply shifted rather than completely eliminated."
       }
-    ]
+    ],
+    "title_zh": "新能源汽车百年变革"
   },
   {
     "id": "r036",
@@ -3965,7 +4000,8 @@
         "explanation_zh": "文中指出熔盐储能可以储存高达500°C以上的热量，在夜间释放蒸汽带动汽轮机，实现太阳能连续发电",
         "explanation_en": "(True or False) Concentrated Solar Power (CSP) plants can use molten salt thermal storage to continue generating electricity even after the sun sets."
       }
-    ]
+    ],
+    "title_zh": "巨型充电宝平衡绿色能源"
   },
   {
     "id": "r037",
@@ -4203,7 +4239,8 @@
         "explanation_zh": "文中指出智能体（AI Agent）超越了简单对话，具备目标拆解、规划和调用工具独立完成任务的能力",
         "explanation_en": "(True or False) An AI Agent differs from a basic chatbot because it can autonomously break down goals, plan steps, and call external tools to execute tasks."
       }
-    ]
+    ],
+    "title_zh": "人工智能从梦想到现实"
   },
   {
     "id": "r038",
@@ -4329,7 +4366,8 @@
         "explanation_zh": "文中指出凡尔纳具备惊人的科学预见力，成功预言了电力潜艇、登月飞行及海底潜水等近现代科技成果",
         "explanation_en": "(True or False) Jules Verne's novels accurately predicted several modern technological achievements, including electric submarines and lunar spaceflight."
       }
-    ]
+    ],
+    "title_zh": "科幻之父凡尔纳"
   },
   {
     "id": "r039",
@@ -4517,7 +4555,8 @@
         "explanation_zh": "",
         "explanation_en": "The complete canon comprises 4 novels and 56 short stories collected across 5 volumes."
       }
-    ]
+    ],
+    "title_zh": "福尔摩斯探案全集"
   },
   {
     "id": "r040",
@@ -4712,7 +4751,8 @@
         "explanation_zh": "StG 44开创了中间型威力枪弹与突击步枪的概念，是现代突击步枪的鼻祖",
         "explanation_en": "(True or False) The German StG 44 is widely recognized as the world's first true assault rifle, firing an intermediate cartridge."
       }
-    ]
+    ],
+    "title_zh": "枪炮千年进化史"
   },
   {
     "id": "r041",
@@ -4892,7 +4932,8 @@
         "explanation_zh": "",
         "explanation_en": "Standard atomic clocks rely on outer-shell electron transitions. It is the theoretical nuclear clock that targets the atomic nucleus."
       }
-    ]
+    ],
+    "title_zh": "时间的故事"
   },
   {
     "id": "r042",
@@ -5046,7 +5087,8 @@
         "explanation_zh": "",
         "explanation_en": "Ole Rømer derived the speed of light from astronomical observations of the eclipses of Jupiter's moon, Io. It was Hippolyte Fizeau who later used a mechanical toothed wheel."
       }
-    ]
+    ],
+    "title_zh": "光速测量传奇"
   },
   {
     "id": "r043",
@@ -5186,7 +5228,8 @@
         "explanation_zh": "",
         "explanation_en": "Kepler's First Law of Planetary Motion demonstrated that planetary orbits are ellipses with the Sun at one focus."
       }
-    ]
+    ],
+    "title_zh": "太阳如何成为宇宙中心"
   },
   {
     "id": "r044",
@@ -5325,7 +5368,8 @@
         "explanation_zh": "",
         "explanation_en": "Hans Lippershey filed the first patent in Holland in 1608; Galileo reconstructed and improved the telescope independently in Italy a year later."
       }
-    ]
+    ],
+    "title_zh": "望远镜的宇宙探索史"
   },
   {
     "id": "r045",
@@ -5431,7 +5475,8 @@
     },
     "skip": [],
     "body": "Adaptive Optics (AO) is a real-time feedback technology used in ground-based observatories to eliminate the blurring effect caused by Earth's atmosphere. When starlight travels through the atmosphere, temperature and density fluctuations mix pockets of air with different refractive indices. This distorts the flat wavefronts of starlight into jagged, irregular surfaces—a phenomenon astronomers call atmospheric \"seeing.\" Adaptive Optics measures these wavefront distortions hundreds to thousands of times per second and applies inverse physical deformations to a flexible mirror to restore razor-sharp image clarity. The layout of laser guide star AO system at Subaru Telescope. AO... A modern Laser Guide Star AO setup on a major ground-based observatory. Source: ResearchGate The Closed-Loop Feedback Architecture An AO system operates as a continuous, high-speed closed loop consisting of four primary components: Adaptive Optics Feedback Loop Light Collection: Distorted starlight enters the main telescope aperture and strikes a Deformable Mirror (DM) Sampling: A beam splitter directs a fraction of the reflected light toward a Wavefront Sensor (WFS) while sending the corrected science light to the astronomical instruments. Measurement: The Wavefront Sensor (most commonly a Shack-Hartmann sensor ) splits the incoming beam using an array of tiny micro-lenses. Each microlense focuses light onto a small focal spot; by tracking the displacement of these spots relative to their ideal reference positions, the sensor calculates local tilt vectors across the entire wavefront. Real-Time Computation: High-speed processors convert the spatial slope measurements into a digital phase map using matrix operations. The computer determines the exact mirror shape required to counteract the phase error. Correction: Signals are sent to the actuators beneath the Deformable Mirror, updating its physical shape at rates between Hz and Hz —faster than the atmospheric turbulence shifts. The Role of Deformable Mirrors (DMs) The Deformable Mirror acts as the primary corrective element. Unlike rigid glass primary mirrors, a DM features a thin, flexible reflective faceplate (often less than a millimeter thick) mounted atop a high-density grid of precision actuators. Deformable Mirror Mechanism [Flexible Reflective Faceplate ] [Act1 ] [Act2 ] [Act3 ] [Act4 ] (Piezoelectric / MEMS) Rigid Support Substrate Actuator Technologies: Piezoelectric Actuators: Ceramics that expand or contract in response to microscopic voltage changes, exerting physical pushes and pulls on the mirror backplate. Voice Coils (Secondary AO Mirrors): Electromagnetic actuators similar to loudspeaker coils. Some modern giant telescopes (like the Very Large Telescope and Large Binocular Telescope) use deformable secondary mirrors supported by over 1,000 magnetic voice coils levitating a ultra-thin shell. MEMS (Micro-Electro-Mechanical Systems): Silicon-based miniature arrays used in ultra-high-order \"Extreme AO\" systems for exoplanet imaging. By pushing regions of the mirror forward where the incoming light wavefront is delayed, and pulling back where the wavefront is advanced, the mirror reflects a perfectly flat, coherent wave phase toward the camera. Laser Guide Stars (LGS): Creating Artificial Calibration Points To measure wavefront distortion, the Wavefront Sensor needs a bright, point-like light source—a Guide Star —located immediately adjacent to the target object. Because bright natural stars cover less than 1% of the night sky (creating a severe \"sky coverage\" limitation), astronomers create artificial point sources high in the atmosphere using Laser Guide Stars (LGS) Laser Guide Star Types 1. Sodium Layer Resonance Lasers (80–105 km) The Physics: Micrometeorites vaporize upon entering Earth's upper atmosphere, leaving behind a thin layer of free sodium atoms in the mesosphere at an altitude of roughly km miles Laser Operation: Observatories project a high-power laser tuned precisely to the nm sodium D2 resonance line (yellow-orange light). Mechanism: The laser excites the sodium atoms, causing them to fluoresce and glow. From the ground, this tiny excited patch of the mesosphere acts as an artificial guide star sitting well above the turbulent troposphere. 2. Rayleigh Scattering Lasers (15–20 km) The Physics: Ultraviolet or green lasers are pulsed into the lower atmosphere, scattering off atmospheric nitrogen and oxygen molecules via Rayleigh scattering. Mechanism: By using electronic range-gating on the wavefront sensor, astronomers capture only the scattered light returning from a specific distance (e.g., km altitude), creating a lower-altitude artificial reference point. Limitations and Advanced AO Techniques While standard single-conjugate AO drastically improves resolution, it faces physical constraints: Anisoplanatism: Turbulence varies depending on viewing angle. A single guide star corrects light within a tiny angular patch (the isoplanatic angle, often just a few arcseconds wide). Focus Anisoplanatism (Cone Effect): Because a Laser Guide Star is created at a finite altitude (km ) rather than at infinity like a real star, its light travels back in a cone shape, missing atmospheric turbulence in the outer regions of the telescope's aperture cone. Advanced Solutions: Multi-Conjugate Adaptive Optics (MCAO): Projects multiple laser guide stars across a field of view and uses several deformable mirrors conjugated to different atmospheric layer heights (e.g., km km km ). This reconstructs a 3D tomographic map of atmospheric turbulence, achieving wide-field diffraction-limited imaging. Extreme Adaptive Optics (ExAO): Utilizes tens of thousands of actuators running at ultra-high speed (kHz ) specifically to suppress scattered starlight, enabling direct imaging and spectroscopy of faint exoplanets orbiting bright host stars. Key Technical Summary Component Function Key Specification Wavefront Sensor Measures local phase distortions Shack-Hartmann or Pyramid configuration Real-Time Computer Reconstructs wavefront and calculates shape vectors Sub-millisecond latency (Hz Deformable Mirror Physically compensates wavefront errors to actuators; sub-micron precision Sodium Laser Excites mesospheric sodium at km nm wavelength; W power Take this topic further: Compare Adaptive Optics with Space Telescopes",
-    "quizzes": []
+    "quizzes": [],
+    "title_zh": "给星星擦亮眼睛"
   },
   {
     "id": "r046",
@@ -5547,7 +5592,8 @@
         "explanation_zh": "",
         "explanation_en": "Qi Jiguang bypassed corrupt existing military units and recruited hardworking miners and farmers directly from Yiwu, Zhejiang."
       }
-    ]
+    ],
+    "title_zh": "戚继光抗倭筑长城"
   },
   {
     "id": "r047",
@@ -5676,7 +5722,8 @@
         "explanation_zh": "",
         "explanation_en": "Yue Fei won the Battle of Yancheng; he was recalled while victorious and executed on fabricated treason charges by court rivals."
       }
-    ]
+    ],
+    "title_zh": "岳飞精忠报国传"
   },
   {
     "id": "r048",
@@ -5805,7 +5852,8 @@
         "explanation_zh": "",
         "explanation_en": "Yu Qian strongly opposed fleeing south, famously threatening to execute anyone who advocated abandoning Beijing."
       }
-    ]
+    ],
+    "title_zh": "于谦大明救时英雄"
   },
   {
     "id": "r049",
@@ -5929,7 +5977,8 @@
         "explanation_zh": "",
         "explanation_en": "Archimedes used geometric polygons inscribed and circumscribed around a circle, hundreds of years before calculus was invented."
       }
-    ]
+    ],
+    "title_zh": "圆周率的历史"
   },
   {
     "id": "r050",
@@ -6058,7 +6107,8 @@
         "explanation_zh": "",
         "explanation_en": "Euler produced over half of his total academic output after becoming blind, relying on his extraordinary mental calculation abilities and dictating to scribes."
       }
-    ]
+    ],
+    "title_zh": "数学王子欧拉"
   },
   {
     "id": "r051",
@@ -6193,7 +6243,8 @@
         "explanation_zh": "",
         "explanation_en": "Modern historians agree that Newton and Leibniz invented calculus independently; Newton created it first, but Leibniz published first."
       }
-    ]
+    ],
+    "title_zh": "微积分诞生记"
   },
   {
     "id": "r052",
@@ -6321,7 +6372,8 @@
         "explanation_zh": "",
         "explanation_en": "Android is built directly on top of a modified version of the Linux kernel."
       }
-    ]
+    ],
+    "title_zh": "一个爱好改变世界"
   },
   {
     "id": "r053",
@@ -6465,7 +6517,8 @@
         "explanation_zh": "",
         "explanation_en": "Ancient victors were awarded a sacred olive wreath (kotinos ); financial rewards or civic privileges came later from their home city-states, not the Olympic sanctuary."
       }
-    ]
+    ],
+    "title_zh": "奥运会的起源与传承"
   },
   {
     "id": "r054",
@@ -6625,7 +6678,8 @@
         "explanation_zh": "",
         "explanation_en": "Any human-made object placed in stable orbit around a celestial body—including inhabited space stations—is an artificial satellite."
       }
-    ]
+    ],
+    "title_zh": "人造卫星天空之眼"
   },
   {
     "id": "r055",
@@ -6780,7 +6834,8 @@
         "explanation_zh": "",
         "explanation_en": "Combining multiple high-wattage appliances on one power strip can cause electrical overload, tripping breakers or creating a fire hazard."
       }
-    ]
+    ],
+    "title_zh": "家电让生活更轻松"
   },
   {
     "id": "r056",
@@ -6815,7 +6870,8 @@
     },
     "skip": [],
     "body": "Your body needs six important nutrients to work well. They are carbohydrates, proteins, fats, vitamins, minerals, and water.\n\nCarbohydrates give your body energy. You can find them in rice, noodles, bread, and potatoes. If you do not get enough, you may feel tired and weak.\n\nProteins help your body grow and repair itself. They are in meat, fish, eggs, beans, and milk. Without enough protein, children may grow slowly, and muscles may become weak.\n\nFats also give energy and help keep your body warm. They protect your organs. Nuts, seeds, fish, and cooking oil have fats. But too much fat is not good.\n\nVitamins help your body use food and fight sickness. Fruits and vegetables are full of vitamins. If you lack vitamins, you may have problems with your eyes, skin, or gums.\n\nMinerals, such as calcium and iron, are very important. Calcium makes bones and teeth strong. Iron helps your blood carry oxygen. Milk, green vegetables, and meat give you these minerals. If you lack them, your bones may be weak, or you may feel very tired.\n\nWater is also a nutrient. It carries things around your body, controls your temperature, and removes waste. If you do not drink enough water, you may feel thirsty, dizzy, or sick.\n\nTo get all six nutrients, eat many different foods every day. Choose rice, vegetables, fruit, eggs, milk, beans, and fish. Drink enough water. Eat less candy and junk food. A balanced diet helps you grow, learn, and stay healthy.",
-    "quizzes": []
+    "quizzes": [],
+    "title_zh": "身体必需的六大营养"
   },
   {
     "id": "r057",
@@ -6849,6 +6905,7 @@
     },
     "skip": [],
     "body": "Proteins are important molecules in every living thing. They are made of smaller units called amino acids. There are about twenty common amino acids. Cells join them in different orders to build many kinds of proteins. This order is decided by our genes.\n\nProteins do many jobs. Some help chemical reactions happen. These are enzymes. Some build muscles, skin, and hair. Some carry oxygen in the blood. Others fight germs and keep us healthy.\n\nPeople need protein in food to grow and stay well. Our bodies can make some amino acids, but not all. The ones we cannot make are called essential amino acids. We must get them from foods like eggs, milk, beans, fish, and meat. Eating different foods helps us get all of them.\n\nA protein is not just a long chain. It folds into a special shape. The shape helps it do its job. If the shape changes, the protein may stop working.\n\nScientists have long wanted to know how proteins fold. In recent years, an AI program called AlphaFold has predicted the shapes of many proteins. This helps doctors and scientists understand life and design new medicines.",
-    "quizzes": []
+    "quizzes": [],
+    "title_zh": "蛋白质生命的奇妙机器"
   }
 ]

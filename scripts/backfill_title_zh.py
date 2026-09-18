@@ -34,6 +34,9 @@ PROMPT_TMPL = (
     "你是一名英语分级阅读编辑。下面是一篇分级阅读文章的标题 + 开头 200 字。"
     "请给这篇起一个**简洁、有吸引力**的中文标题（≤14 字，适合小学生阅读）。\n"
     "**只输出中文标题本身**，不要任何标点 / 引号 / 解释 / 翻译。\n\n"
+    "**结构要求**：如果英文标题含 `:`（冒号分隔主副标题），中文必须保留这个结构——"
+    "主标题用 `：`（中文全角冒号）与副标题分隔，例如 `主标题：副标题`。\n"
+    "如果英文没有冒号，中文也不要加。\n\n"
     "【标题】{title}\n"
     "【开头】{body}"
 )
@@ -93,6 +96,22 @@ def clean_title(raw: str) -> str:
     return s.strip()
 
 
+def ensure_colon(english_title: str, chinese_title: str) -> str:
+    """如果英文有冒号、中文没有，按 ~40% 位置补 `：`**。
+    AI prompt 已要求保留冒号结构，但小模型偶有遗漏，本兜底保证一致性。
+    """
+    if ":" not in english_title:
+        return chinese_title
+    if "：" in chinese_title or ":" in chinese_title:
+        return chinese_title
+    n = len(chinese_title)
+    if n < 4:
+        return chinese_title
+    # 主标题约占 40%；至少保留 2 字在冒号两侧
+    split = max(2, min(n - 2, int(n * 0.4)))
+    return chinese_title[:split] + "：" + chinese_title[split:]
+
+
 def backfill(dry_run: bool = False) -> None:
     if not READINGS_PATH.exists():
         sys.exit(f"not found: {READINGS_PATH}")
@@ -127,6 +146,8 @@ def backfill(dry_run: bool = False) -> None:
             print(f"  [{r['id']}] 跳过：'{title_zh[:50]}'")
             failed += 1
             continue
+        # 兜底：英文有冒号时，中文没冒号自动补 `：`
+        title_zh = ensure_colon(r.get("title", ""), title_zh)
         r["title_zh"] = title_zh
         done += 1
         elapsed = time.time() - t0
