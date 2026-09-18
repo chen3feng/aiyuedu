@@ -89,6 +89,8 @@ def _build_prompt(prompt_meta: dict | None, target_words: int | None, original: 
         "中文直译 / 动词搭配 / 介词 错误\n"
         "- 每条错误给出「这条错在哪 + 一句话规则 + 最小修复」\n"
         '- 给出 "corrected"（最小修复）和 "polished"（更自然的表达）\n'
+        '- 每句的 "polished_reason" 必须说明润色理由（如：用 walk through 更贴合、'
+        '避免重复用词、把直接意译改成英文习惯表达等），中文一句话\n'
         '- 全文批完后给 "summary_table"：按错误类别列学生实例 + 应掌握规则\n'
         '- 最后 "praise" 一句话肯定孩子的亮点（中文）\n'
         "- **只输出 JSON**，不要任何解释文字、不要 markdown 围栏\n\n"
@@ -106,7 +108,8 @@ def _build_prompt(prompt_meta: dict | None, target_words: int | None, original: 
         "        }\n"
         "      ],\n"
         '      "corrected": "<最小修复后的整句>",\n'
-        '      "polished": "<更自然的润色版>"\n'
+        '      "polished": "<更自然的润色版>",\n'
+        '      "polished_reason": "<为什么这样润色更好，一句话中文（如：用 walk through 比 walk in 更贴合漫步田野的意境；将 while 改为 and 表并列更清晰）>"\n'
         "    }\n"
         "  ],\n"
         '  "summary_table": [\n'

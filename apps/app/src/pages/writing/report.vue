@@ -3,7 +3,7 @@
     <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
     <view v-else-if="error" class="error">{{ error }}</view>
     <view v-else-if="essay">
-      <!-- 题目 / 字数 -->
+      <!-- 顶部：题目标题 + 字数 -->
       <view class="header">
         <text class="title">{{ promptTitle(essay) }}</text>
         <view class="meta-row">
@@ -19,84 +19,145 @@
         <text class="banner-body">{{ essay.reason }}</text>
       </view>
 
-      <!-- 原文 -->
-      <view class="card">
-        <text class="card-label">{{ t("writing.composeTitle") }}</text>
-        <text class="original">{{ essay.original }}</text>
-      </view>
-
-      <!-- 逐句批改 -->
-      <view v-if="essay.report?.sentences?.length" class="card">
-        <text class="card-label">{{ t("writing.reportTitle") }}</text>
-        <view
-          v-for="s in essay.report.sentences"
-          :key="s.index"
-          class="sentence-block"
-        >
-          <view class="s-header">
-            <text class="s-index">#{{ s.index }}</text>
-            <text class="s-original">{{ s.original }}</text>
+      <!-- 阶段一：逐句分屏 -->
+      <view v-if="sentences.length && phase === 'sentences'" class="sentence-screen">
+        <view class="progress">
+          <view class="dots">
+            <view
+              v-for="(s, i) in sentences"
+              :key="s.index"
+              class="dot"
+              :class="{ active: i === currentIdx, done: i < currentIdx, has_err: (s.errors?.length || 0) > 0 }"
+              @click="goTo(i)"
+            ></view>
           </view>
-          <view v-if="s.errors?.length" class="errors">
-            <view v-for="(e, i) in s.errors" :key="i" class="error-row">
+          <text class="progress-text">{{ currentIdx + 1 }} / {{ sentences.length }}</text>
+        </view>
+
+        <view class="card">
+          <view class="s-header">
+            <text class="s-index">#{{ currentSentence.index }}</text>
+            <text class="s-original">{{ currentSentence.original }}</text>
+          </view>
+
+          <view v-if="currentSentence.errors?.length" class="errors">
+            <view v-for="(e, i) in currentSentence.errors" :key="i" class="error-row">
               <text class="cb">{{ categoryLabel(e.category) }}</text>
               <text class="ce">{{ e.explanation }}</text>
               <text v-if="e.fix" class="cf">→ {{ e.fix }}</text>
             </view>
           </view>
-          <view v-if="s.corrected" class="alt-row">
+          <view v-else class="ok-row">
+            <text class="ok-icon">✓</text>
+            <text class="ok-text">{{ noErrorText }}</text>
+          </view>
+
+          <view v-if="currentSentence.corrected" class="alt-row">
             <text class="alt-label">{{ t("writing.corrected") }}：</text>
-            <text class="alt-text corrected">{{ s.corrected }}</text>
+            <text class="alt-text corrected">{{ currentSentence.corrected }}</text>
           </view>
-          <view v-if="s.polished" class="alt-row">
+          <view v-if="currentSentence.polished" class="alt-row">
             <text class="alt-label">{{ t("writing.polished") }}：</text>
-            <text class="alt-text polished">{{ s.polished }}</text>
+            <text class="alt-text polished">{{ currentSentence.polished }}</text>
+            <button
+              class="speak-btn"
+              :class="{ playing: speakingIdx === currentIdx }"
+              @click="onSpeakSentence(currentIdx)"
+            >
+              {{ speakingIdx === currentIdx ? "■ 停止" : "🔊 朗读" }}
+            </button>
           </view>
+          <view v-if="currentSentence.polished_reason" class="reason-row">
+            <text class="reason-label">💡 {{ t("writing.polishedReason") }}</text>
+            <text class="reason-text">{{ currentSentence.polished_reason }}</text>
+          </view>
+        </view>
+
+        <view class="nav-row">
+          <button class="btn-secondary" :disabled="currentIdx === 0" @click="prev">
+            ← {{ t("writing.prevSentence") }}
+          </button>
+          <button v-if="currentIdx < sentences.length - 1" class="btn-primary" @click="next">
+            {{ t("writing.nextSentence") }} →
+          </button>
+          <button v-else class="btn-primary" @click="goSummary">
+            {{ t("writing.viewSummary") }} →
+          </button>
         </view>
       </view>
 
-      <!-- 常见错误类型表 -->
-      <view v-if="essay.report?.summary_table?.length" class="card">
-        <text class="card-label">{{ t("writing.summaryTable") }}</text>
-        <view class="table">
-          <view class="thead">
-            <text class="th col-cat">类别</text>
-            <text class="th col-ex">学生实例</text>
-            <text class="th col-rule">应掌握</text>
+      <!-- 阶段二：总结 + 全文朗读 -->
+      <view v-else-if="sentences.length && phase === 'summary'" class="summary-screen">
+        <view class="card">
+          <text class="card-label">{{ t("writing.fullPolishedTitle") }}</text>
+          <text class="polished-full">{{ fullPolishedText }}</text>
+          <button
+            class="speak-btn-big"
+            :class="{ playing: speakingAll }"
+            @click="onSpeakAll"
+          >
+            {{ speakingAll ? "■ 停止朗读" : "🔊 " + t("writing.listenFull") }}
+          </button>
+        </view>
+
+        <view v-if="essay.report?.summary_table?.length" class="card">
+          <text class="card-label">{{ t("writing.summaryTable") }}</text>
+          <view class="table">
+            <view class="thead">
+              <text class="th col-cat">类别</text>
+              <text class="th col-ex">学生实例</text>
+              <text class="th col-rule">应掌握</text>
+            </view>
+            <view v-for="(r, i) in essay.report.summary_table" :key="i" class="tr">
+              <text class="td col-cat">{{ r.category }}</text>
+              <text class="td col-ex">{{ (r.examples || []).join("；") }}</text>
+              <text class="td col-rule">{{ r.rule }}</text>
+            </view>
           </view>
-          <view v-for="(r, i) in essay.report.summary_table" :key="i" class="tr">
-            <text class="td col-cat">{{ r.category }}</text>
-            <text class="td col-ex">{{ (r.examples || []).join("；") }}</text>
-            <text class="td col-rule">{{ r.rule }}</text>
-          </view>
+        </view>
+
+        <view v-if="essay.report?.praise" class="card praise-card">
+          <text class="praise-label">{{ t("writing.praise") }}</text>
+          <text class="praise-text">{{ essay.report.praise }}</text>
+        </view>
+
+        <view class="nav-row">
+          <button class="btn-secondary" @click="goSentence(sentences.length - 1)">
+            ← {{ t("writing.reviewSentences") }}
+          </button>
+          <button class="btn-primary" @click="goList">{{ t("writing.backToList") }}</button>
         </view>
       </view>
 
-      <!-- 表扬 -->
-      <view v-if="essay.report?.praise" class="card praise-card">
-        <text class="praise-label">{{ t("writing.praise") }}</text>
-        <text class="praise-text">{{ essay.report.praise }}</text>
+      <!-- 没有任何句子的报告（AI 整体失败）：直接展示原文 + 横幅，不进入逐句 -->
+      <view v-else class="card">
+        <text class="card-label">{{ t("writing.composeTitle") }}</text>
+        <text class="original">{{ essay.original }}</text>
       </view>
 
-      <view class="actions">
-        <button class="btn-secondary" @click="goList">{{ t("writing.backToList") }}</button>
-      </view>
+      <view v-if="phase === 'summary'" class="spacer"></view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, onBeforeUnmount } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { getEssay } from "../../api/writing";
-import type { Essay } from "../../api/writing";
+import type { Essay, EssaySentenceReport } from "../../api/writing";
+import { speak, speakLines, stopSpeak } from "../../utils/tts";
 
 const { t, locale } = useI18n();
 
 const essay = ref<Essay | null>(null);
 const loading = ref(false);
 const error = ref("");
+
+const phase = ref<"sentences" | "summary">("sentences");
+const currentIdx = ref(0);
+const speakingIdx = ref(-1);
+const speakingAll = ref(false);
 
 const CATEGORY_KEYS: Record<string, string> = {
   spell: "writing.categories.spell",
@@ -120,6 +181,23 @@ function promptTitle(e: Essay): string {
   return e.prompt_title_zh || "（自由写作）";
 }
 
+const sentences = computed<EssaySentenceReport[]>(
+  () => essay.value?.report?.sentences ?? [],
+);
+const currentSentence = computed<EssaySentenceReport>(
+  () =>
+      sentences.value[currentIdx.value] || { index: 0, original: "", errors: [], corrected: "", polished: "" },
+);
+const fullPolishedText = computed(() =>
+  sentences.value
+    .map((s) => s.polished || s.corrected || s.original)
+    .filter(Boolean)
+    .join(" "),
+);
+const noErrorText = computed(() =>
+  locale.value === "en" ? "No errors in this sentence. Nice!" : "这句没问题，很棒！",
+);
+
 async function fetchEssay(id: string) {
   loading.value = true;
   error.value = "";
@@ -132,7 +210,98 @@ async function fetchEssay(id: string) {
   }
 }
 
+function goTo(i: number) {
+  if (i < 0 || i >= sentences.value.length) return;
+  // 切句前停掉上一句的朗读
+  if (speakingIdx.value !== -1) {
+    stopSpeak();
+    speakingIdx.value = -1;
+  }
+  currentIdx.value = i;
+  phase.value = "sentences";
+}
+
+function prev() {
+  goTo(currentIdx.value - 1);
+}
+
+function next() {
+  goTo(currentIdx.value + 1);
+}
+
+function goSentence(i: number) {
+  currentIdx.value = i;
+  phase.value = "sentences";
+}
+
+function goSummary() {
+  if (speakingIdx.value !== -1) {
+    stopSpeak();
+    speakingIdx.value = -1;
+  }
+  phase.value = "summary";
+}
+
+function onSpeakSentence(i: number) {
+  // 切换播放：点同一句 → 停；点不同句 → 切到新句
+  if (speakingIdx.value === i) {
+    stopSpeak();
+    speakingIdx.value = -1;
+    return;
+  }
+  if (speakingIdx.value !== -1 || speakingAll) {
+    stopSpeak();
+  }
+  const s = sentences.value[i];
+  const text = s.polished || s.corrected || s.original;
+  if (!text) return;
+  const ok = speak(text, "en-US");
+  if (ok) {
+    speakingIdx.value = i;
+    // listen for end: speak() 没有 onEnd 回调，用 polling fallback
+    const start = Date.now();
+    const max = Math.max(8000, text.length * 80);
+    const tick = () => {
+      if (speakingIdx.value !== i) return;
+      if (Date.now() - start > max) {
+        speakingIdx.value = -1;
+        return;
+      }
+      setTimeout(tick, 200);
+    };
+    setTimeout(tick, 500);
+  }
+}
+
+function onSpeakAll() {
+  if (speakingAll.value) {
+    stopSpeak();
+    speakingAll.value = false;
+    speakingIdx.value = -1;
+    return;
+  }
+  if (speakingIdx.value !== -1) stopSpeak();
+  speakingIdx.value = -1;
+  const lines = sentences.value
+    .map((s) => s.polished || s.corrected || s.original)
+    .filter(Boolean);
+  if (!lines.length) return;
+  const setAllEnd = () => {
+    speakingAll.value = false;
+    speakingIdx.value = -1;
+  };
+  const setLine = (i: number) => {
+    speakingIdx.value = i;
+  };
+  const ok = speakLines(lines, "en-US", setLine, setAllEnd);
+  if (ok) {
+    speakingAll.value = true;
+    speakingIdx.value = 0;
+  }
+}
+
 function goList() {
+  stopSpeak();
   uni.navigateBack({ delta: 1, fail: () => uni.redirectTo({ url: "/pages/writing/index" }) });
 }
 
@@ -142,6 +311,10 @@ onLoad((query) => {
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("nav.writing") });
+});
+
+onBeforeUnmount(() => {
+  stopSpeak();
 });
 </script>
 
@@ -204,6 +377,47 @@ onShow(() => {
   color: #6a7591;
   line-height: 1.5;
 }
+
+/* 进度条 */
+.progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+.dots {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #e0e6f0;
+  transition: background 0.2s;
+}
+.dot.active {
+  background: #4f7cff;
+  transform: scale(1.3);
+}
+.dot.done {
+  background: #b8c5e0;
+}
+.dot.has_err {
+  background: #ffb84d;
+}
+.dot.done.has_err {
+  background: #ff9d2e;
+}
+.progress-text {
+  font-size: 26rpx;
+  color: #6a7591;
+  font-weight: 600;
+}
+
 .card {
   background: #fff;
   border-radius: 20rpx;
@@ -218,26 +432,7 @@ onShow(() => {
   color: #1f2d50;
   margin-bottom: 16rpx;
 }
-.original {
-  display: block;
-  font-size: 28rpx;
-  line-height: 1.7;
-  color: #1f2d50;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.sentence-block {
-  padding: 16rpx 0;
-  border-top: 1rpx solid #f0f2f8;
-}
-.sentence-block:first-of-type {
-  border-top: none;
-}
-.s-header {
-  display: flex;
-  gap: 12rpx;
-  margin-bottom: 12rpx;
-}
+
 .s-index {
   flex-shrink: 0;
   font-size: 22rpx;
@@ -245,21 +440,27 @@ onShow(() => {
   background: #eef2fb;
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
-  height: 36rpx;
-  line-height: 36rpx;
+}
+.s-header {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  align-items: flex-start;
 }
 .s-original {
-  font-size: 28rpx;
+  font-size: 30rpx;
   line-height: 1.6;
   color: #1f2d50;
+  flex: 1;
 }
+
 .errors {
   margin-bottom: 12rpx;
 }
 .error-row {
   background: #fff8e1;
   border-left: 4rpx solid #ffb84d;
-  padding: 12rpx 16rpx;
+  padding: 14rpx 18rpx;
   margin-bottom: 8rpx;
   border-radius: 6rpx;
 }
@@ -283,17 +484,43 @@ onShow(() => {
   color: #4f7cff;
   margin-top: 6rpx;
 }
+.ok-row {
+  background: #e7faf0;
+  border-left: 4rpx solid #07c160;
+  padding: 14rpx 18rpx;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.ok-icon {
+  color: #07c160;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+.ok-text {
+  font-size: 26rpx;
+  color: #1f7a3e;
+}
+
 .alt-row {
-  margin-top: 8rpx;
+  margin-top: 12rpx;
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  flex-wrap: wrap;
 }
 .alt-label {
   font-size: 22rpx;
   color: #8a94ad;
-  margin-right: 8rpx;
+  flex-shrink: 0;
+  padding-top: 4rpx;
 }
 .alt-text {
   font-size: 26rpx;
   line-height: 1.6;
+  flex: 1;
+  min-width: 0;
 }
 .corrected {
   color: #1f2d50;
@@ -301,6 +528,93 @@ onShow(() => {
 .polished {
   color: #07c160;
 }
+
+.speak-btn {
+  flex-shrink: 0;
+  background: #eef2fb;
+  color: #4f7cff;
+  font-size: 22rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  border: none;
+  margin-left: auto;
+}
+.speak-btn.playing {
+  background: #4f7cff;
+  color: #fff;
+}
+
+.reason-row {
+  margin-top: 12rpx;
+  background: #f4f6fb;
+  border-left: 4rpx solid #4f7cff;
+  padding: 12rpx 16rpx;
+  border-radius: 6rpx;
+}
+.reason-label {
+  display: block;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #4f7cff;
+  margin-bottom: 4rpx;
+}
+.reason-text {
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #1f2d50;
+}
+
+.nav-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+.btn-secondary,
+.btn-primary {
+  flex: 1;
+  font-size: 28rpx;
+  padding: 16rpx 0;
+  border-radius: 999rpx;
+  border: none;
+}
+.btn-secondary {
+  background: #fff;
+  color: #4f7cff;
+  border: 1rpx solid #eef2fb;
+}
+.btn-secondary[disabled] {
+  color: #c5cee0;
+}
+.btn-primary {
+  background: #4f7cff;
+  color: #fff;
+}
+
+.polished-full {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: #1f2d50;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 20rpx;
+  background: #f4f6fb;
+  padding: 20rpx 24rpx;
+  border-radius: 12rpx;
+}
+.speak-btn-big {
+  width: 100%;
+  background: #4f7cff;
+  color: #fff;
+  font-size: 28rpx;
+  padding: 18rpx 0;
+  border-radius: 999rpx;
+  border: none;
+}
+.speak-btn-big.playing {
+  background: #fa5151;
+}
+
 .table {
   border: 1rpx solid #f0f2f8;
   border-radius: 8rpx;
@@ -335,6 +649,16 @@ onShow(() => {
 .col-rule {
   flex: 1;
 }
+
+.original {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: #1f2d50;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .praise-card {
   background: linear-gradient(135deg, #fff7e0 0%, #ffeac2 100%);
   border-left: 6rpx solid #ffb84d;
@@ -352,18 +676,8 @@ onShow(() => {
   line-height: 1.7;
   color: #5d4400;
 }
-.actions {
-  display: flex;
-  gap: 16rpx;
-  margin-top: 32rpx;
-}
-.btn-secondary {
-  flex: 1;
-  background: #fff;
-  color: #4f7cff;
-  font-size: 28rpx;
-  padding: 18rpx 0;
-  border-radius: 999rpx;
-  border: 1rpx solid #eef2fb;
+
+.spacer {
+  height: 60rpx;
 }
 </style>

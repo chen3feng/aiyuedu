@@ -21,6 +21,7 @@ export interface EssaySentenceReport {
   errors: EssayError[];
   corrected: string;
   polished: string;
+  polished_reason?: string;
 }
 
 export interface SummaryTableRow {
