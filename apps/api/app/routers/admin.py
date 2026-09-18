@@ -147,11 +147,12 @@ def generate_article(payload: GenerateIn):
     if not payload.outline.strip():
         raise HTTPException(status_code=422, detail="大纲不能为空")
     try:
-        return {"body": admin.generate_article(
+        return admin.generate_article(
             payload.outline.strip(),
             payload.extra_requirements.strip(),
             payload.target_level,
-        )}
+            topics.list_topics(),
+        )
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 

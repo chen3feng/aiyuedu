@@ -118,7 +118,77 @@ def test_parse_json_strips_fences_and_noise():
     assert admin._parse_json("") == {}
 
 
-def test_ai_glosses_overrides_and_falls_back(monkeypatch):
+def test_generate_article_happy_path(monkeypatch):
+    """AI 生成文章：返回 JSON 含 title_zh/title_en/topics/body，topic 过滤为合法 key。"""
+    payload = json.dumps({
+        "title_zh": "秋日田野",
+        "title_en": "Autumn Fields",
+        "topics": ["science", "history"],
+        "body": "I walk in the fields...",
+    }, ensure_ascii=False)
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: payload)
+    out = admin.generate_article(
+        "秋日景色",
+        "",
+        2000,
+        [{"key": "science", "label_zh": "科普"}, {"key": "history", "label_zh": "历史"}, {"key": "adventure", "label_zh": "冒险"}],
+    )
+    assert out["title_zh"] == "秋日田野"
+    assert out["title_en"] == "Autumn Fields"
+    assert out["topics"] == ["science", "history"]
+    assert out["body"] == "I walk in the fields..."
+    assert out["ai_used"] is True
+    assert out["reason"] is None
+
+
+def test_generate_article_filters_invalid_topics(monkeypatch):
+    """AI 返回了不在可用列表中的 topic key，应被过滤掉。"""
+    payload = json.dumps({
+        "title_zh": "x", "title_en": "x",
+        "topics": ["science", "bogus_topic", "history"],
+        "body": "ok",
+    }, ensure_ascii=False)
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: payload)
+    out = admin.generate_article(
+        "outline", "", 2000,
+        [{"key": "science", "label_zh": ""}, {"key": "history", "label_zh": ""}],
+    )
+    assert out["topics"] == ["science", "history"]  # bogus_topic 被过滤
+
+
+def test_generate_article_handles_ai_runtime_error(monkeypatch):
+    """AI 抛错时不应抛出，返回 ai_used=False + reason。"""
+    def boom(*a, **k):
+        raise RuntimeError("AI 返回 401：Unauthorized")
+    monkeypatch.setattr(admin.ai, "chat", boom)
+    out = admin.generate_article("outline", "", 2000, [])
+    assert out["ai_used"] is False
+    assert "401" in (out["reason"] or "")
+    assert out["body"] == ""
+
+
+def test_generate_article_handles_empty_content(monkeypatch):
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: "")
+    out = admin.generate_article("outline", "", 2000, [])
+    assert out["ai_used"] is False
+    assert "空内容" in (out["reason"] or "")
+
+
+def test_generate_article_handles_unparseable_json(monkeypatch):
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: "好的，我来帮你写：\n...")
+    out = admin.generate_article("outline", "", 2000, [])
+    assert out["ai_used"] is False
+    assert "无法解析" in (out["reason"] or "")
+
+
+def test_generate_article_empty_body_after_parse(monkeypatch):
+    """AI 返回了合法 JSON 但 body 是空 → ai_used=False + reason 提示。"""
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: json.dumps({
+        "title_zh": "x", "title_en": "x", "topics": ["science"], "body": "",
+    }))
+    out = admin.generate_article("outline", "", 2000, [{"key": "science", "label_zh": ""}])
+    assert out["ai_used"] is False
+    assert "body" in (out["reason"] or "").lower() or "空" in (out["reason"] or "")
     body = "A dinosaur walked slowly."
     base = admin.analyze(body, 100)["glosses"]
     assert base  # 有生词
@@ -132,6 +202,21 @@ def test_ai_glosses_overrides_and_falls_back(monkeypatch):
     assert r["multiword_glosses"] == {}
     assert r["ai_used"] is True
     assert r["reason"] is None
+
+
+def test_ai_glosses_overrides_and_falls_back(monkeypatch):
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    assert base  # 有生词
+    lemma = next(iter(base))
+    monkeypatch.setattr(
+        admin.ai, "chat", lambda *a, **k: json.dumps({lemma: "AI义"}, ensure_ascii=False)
+    )
+    r = admin.ai_glosses(body, 100)
+    assert r["glosses"][lemma] == "AI义"  # AI 覆盖
+    assert set(r["glosses"]) == set(base)  # 其余保留词典义兜底
+    assert r["multiword_glosses"] == {}
+    assert r["ai_used"] is True
 
 
 def test_ai_glosses_preserves_existing_when_ai_partial(monkeypatch):

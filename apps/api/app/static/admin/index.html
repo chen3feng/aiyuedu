@@ -114,6 +114,10 @@ const state = {
   analyze: null,        // 定级/生词预览结果
   genLoading: false,    // AI 生成/修改正文进行中
   genBody: "",          // 已生成正文（预览用，确认后才写入 form）
+  genTitleZh: "",       // AI 建议的中文标题
+  genTitleEn: "",       // AI 建议的英文标题
+  genTopics: [],        // AI 建议的主题 key 数组
+  genReason: null,      // AI 失败原因（成功为 null）
   glossAiLoading: false, // AI 校正生词注释进行中
   glossSort: "appearance", // 生词注释列表排序：appearance=文中顺序，alpha=字母顺序
   mwSort: "appearance",    // 多词表达式列表排序
@@ -312,6 +316,10 @@ async function aiGlossBody() {
 
 function openGenerate() {
   state.genBody = "";
+  state.genTitleZh = "";
+  state.genTitleEn = "";
+  state.genTopics = [];
+  state.genReason = null;
   $("gen-outline").value = "";
   $("gen-extra").value = "";
   $("gen-level").value = state.form.target_level ?? "";
@@ -325,7 +333,17 @@ function closeGenerate() {
 function renderGenResult() {
   const r = $("gen-result");
   if (state.genLoading) {
-    r.innerHTML = `<div class="field"><div class="muted">AI 生成中，请稍候…</div></div>`;
+    r.innerHTML = `<div class="field"><div class="muted">AI 生成中（标题 + 主题 + 正文），请稍候…</div></div>`;
+    return;
+  }
+  if (state.genReason && !state.genBody) {
+    // AI 整体失败
+    r.innerHTML = `
+      <div class="field"><div class="muted" style="color:#fa5151">${esc(state.genReason)}</div></div>
+      <div class="actions">
+        <button onclick="closeGenerate()">取消</button>
+        <button class="primary" onclick="doGenerate()">重试</button>
+      </div>`;
     return;
   }
   if (!state.genBody) {
@@ -336,19 +354,38 @@ function renderGenResult() {
       </div>`;
     return;
   }
+  // 生成成功：显示可编辑的标题 / 主题 / 正文预览
+  const topicChecks = state.topics.map((t) => {
+    const checked = state.genTopics.includes(t.key) ? "checked" : "";
+    return `<label><input type="checkbox" ${checked}
+      onchange="toggleGenTopic('${esc(t.key)}', this.checked)"> ${esc(t.label_zh)}</label>`;
+  }).join("");
   r.innerHTML = `
-    <div class="field"><label>生成预览</label>
-      <textarea readonly style="min-height:220px;background:#fafbfe">${esc(state.genBody)}</textarea></div>
+    <div class="field"><label>中文标题（可改）</label>
+      <input type="text" id="gen-title-zh" value="${esc(state.genTitleZh)}"
+        oninput="state.genTitleZh=this.value"></div>
+    <div class="field"><label>英文标题（可改）</label>
+      <input type="text" id="gen-title-en" value="${esc(state.genTitleEn)}"
+        oninput="state.genTitleEn=this.value"></div>
+    <div class="field"><label>主题（可多选）</label>
+      <div class="checkbox-list">${topicChecks || '<span class="muted">无主题，请先到「主题管理」添加</span>'}</div></div>
+    <div class="field"><label>生成正文预览（可改）</label>
+      <textarea id="gen-body-edit" style="min-height:160px;background:#fafbfe"
+        oninput="state.genBody=this.value">${esc(state.genBody)}</textarea></div>
     <div class="field"><label>修改建议（可选）</label>
       <textarea id="gen-suggestions" placeholder="例如：把主角改成一只猫、结尾更温暖"></textarea></div>
     <div class="row" style="gap:8px;margin-bottom:14px">
-      <button onclick="doGenerate()">再次生成</button>
-      <button class="primary" onclick="doRevise()">根据建议修改</button>
+      <button onclick="doGenerate()">重新生成</button>
+      <button class="primary" onclick="doRevise()">根据建议修改正文</button>
     </div>
     <div class="actions">
       <button onclick="closeGenerate()">取消</button>
-      <button class="primary" onclick="applyGenerated()">完成</button>
+      <button class="primary" onclick="applyGenerated()">应用到表单</button>
     </div>`;
+}
+function toggleGenTopic(key, checked) {
+  if (checked && !state.genTopics.includes(key)) state.genTopics.push(key);
+  else if (!checked) state.genTopics = state.genTopics.filter((k) => k !== key);
 }
 async function doGenerate() {
   const outline = $("gen-outline").value.trim();
@@ -361,8 +398,14 @@ async function doGenerate() {
   try {
     const r = await api("/articles/generate", "POST",
       { outline, extra_requirements: extra, target_level });
-    state.genBody = r.body;
+    state.genBody = r.body || "";
+    state.genTitleZh = r.title_zh || "";
+    state.genTitleEn = r.title_en || "";
+    state.genTopics = Array.isArray(r.topics) ? r.topics : [];
+    state.genReason = r.reason || null;
+    if (r.reason) toast(r.reason, true);
   } catch (e) {
+    state.genReason = e.message;
     toast(e.message, true);
   } finally {
     state.genLoading = false;
@@ -386,12 +429,15 @@ async function doRevise() {
   }
 }
 function applyGenerated() {
+  // 应用到表单：标题（中文作为 title）、正文、主题、词汇量
+  state.form.title = state.genTitleZh || state.form.title || "";
   state.form.body = state.genBody;
+  state.form.topics = [...state.genTopics];
   const lv = $("gen-level").value.trim();
   if (lv) state.form.target_level = Number(lv);
   $("gen-overlay").classList.remove("show");
   renderForm();
-  toast("正文已生成，请补充标题/主题后保存");
+  toast("标题 / 主题 / 正文已应用，请检查后保存");
 }
 
 function validateQuizzes() {
@@ -606,7 +652,7 @@ function renderForm() {
       <div class="field"><label>副标题（可选）</label>
         <input type="text" value="${esc(f.subtitle)}" oninput="setField('subtitle',this.value)"></div>
       <div class="field"><label>正文
-        <button class="small" style="margin-left:8px" onclick="openGenerate()">AI 生成正文</button>
+        <button class="small" style="margin-left:8px" onclick="openGenerate()">AI 一键生成（标题+主题+正文）</button>
       </label>
         <textarea oninput="setField('body',this.value)">${esc(f.body)}</textarea></div>
       <div class="field"><label>主题（可多选）</label>

@@ -218,10 +218,13 @@ def generate_article(
     outline: str,
     extra_requirements: str = "",
     target_level: int | None = None,
-) -> str:
-    """调用默认 AI 根据大纲和要求生成分级阅读文章正文。
+    available_topics: list[dict] | None = None,
+) -> dict:
+    """调用默认 AI 根据大纲生成标题（双语）+ 主题 + 正文。
 
-    返回纯文本（不含标题/markdown），失败抛 RuntimeError。
+    available_topics: 当前主题库 [{key, label_zh}]，AI 只能从中挑，避免输出无效 key。
+    返回 {title_zh, title_en, topics: [key...], body, ai_used, reason, raw}。
+    AI 整体失败 / 响应无法解析为 JSON 时不再抛错：body=空 + reason 提示，前端可继续手填。
     """
     level_hint = ""
     if target_level:
@@ -232,28 +235,87 @@ def generate_article(
     else:
         level_hint = "词汇量控制在英语最常用 2000~4000 词族范围内，适合中国中小学生。"
 
+    topics_block = ""
+    topics_keys = []
+    if available_topics:
+        topics_keys = [t["key"] for t in available_topics]
+        topics_block = "\n可选主题（key 只能从下面挑）：\n" + "\n".join(
+            f"- {t['key']}（{t.get('label_zh', '')}）" for t in available_topics
+        )
+
     prompt = (
-        "你是一位英语分级阅读作家，为中国中小学生撰写英语短文。\n"
-        "请根据以下要求，用标准英语撰写一篇分级阅读短文：\n\n"
-        f"- 词汇量级别要求：{level_hint}\n"
-        f"- 文章大纲：{outline}\n"
-        f"{'- 额外要求：' + extra_requirements if extra_requirements else ''}"
-        "\n要求：\n"
-        "1. 文章长度 150~350 词，适合做分级阅读\n"
-        "2. 语言自然流畅、有教育意义\n"
-        "3. 只输出英语正文，不要标题、不要 markdown 格式、不要任何额外说明\n"
+        "你是一位英语分级阅读作家兼主编，为中国中小学生撰写英语短文。\n"
+        "请根据用户大纲，输出**严格 JSON**，包含以下字段：\n\n"
+        f"- title_zh: 文章中文标题（≤14 字，吸引人）\n"
+        f"- title_en: 英文标题（短语，≤5 个词）\n"
+        f"- topics: 主题 key 数组，1-2 个，**只能从下面的可选主题 key 里挑**{topics_block}\n"
+        f"- body: 文章正文（150~350 词，适合做分级阅读；语言自然流畅、有教育意义；"
+        f"不含标题、不含 markdown、不含 JSON 以外的任何文字）\n\n"
+        f"词汇量级别要求：{level_hint}\n"
+        f"文章大纲：{outline}\n"
+        f"{'额外要求：' + extra_requirements if extra_requirements else ''}\n\n"
+        "JSON schema：\n"
+        "{\n"
+        '  "title_zh": "...",\n'
+        '  "title_en": "...",\n'
+        '  "topics": ["key1", "key2"],\n'
+        '  "body": "..."\n'
+        "}\n"
+        "**不要** markdown 围栏、不要任何解释文字。"
     )
-    return ai.chat([{"role": "user", "content": prompt}], temperature=0.8)
+
+    result = {
+        "title_zh": "",
+        "title_en": "",
+        "topics": [],
+        "body": "",
+        "ai_used": False,
+        "reason": None,
+        "raw": "",
+    }
+    try:
+        content = ai.chat(
+            [{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=4096,
+        )
+    except RuntimeError as e:
+        result["reason"] = f"AI 调用失败：{e}"
+        return result
+    result["raw"] = content[:200]
+    if not content:
+        result["reason"] = "AI 返回空内容"
+        return result
+    parsed = _parse_json(content)
+    if not parsed:
+        snippet = content[:120].replace("\n", " ")
+        result["reason"] = f"AI 响应无法解析为 JSON（开头: {snippet!r}）"
+        return result
+
+    result["ai_used"] = True
+    result["title_zh"] = str(parsed.get("title_zh", "")).strip()
+    result["title_en"] = str(parsed.get("title_en", "")).strip()
+    raw_topics = parsed.get("topics", [])
+    if isinstance(raw_topics, str):
+        raw_topics = [raw_topics]
+    if isinstance(raw_topics, list):
+        # 过滤：只保留合法 key
+        result["topics"] = [t for t in raw_topics if isinstance(t, str) and t in topics_keys] if topics_keys else [t for t in raw_topics if isinstance(t, str)]
+    result["body"] = str(parsed.get("body", "")).strip()
+    if not result["body"]:
+        result["reason"] = "AI 响应解析成功但 body 为空"
+        result["ai_used"] = False
+    return result
 
 
 def revise_article(body: str, suggestions: str) -> str:
-    """根据修改建议重写已生成的正文，返回修改后的完整正文。"""
+    """根据修改建议重写已生成的正文，返回修改后的完整正文（标题/主题保持用户已确认的）。"""
     prompt = (
         "你是一位英语分级阅读编辑。下面是一篇已经生成好的英语分级阅读短文。\n"
         "请根据修改建议对文章进行修改，保持原有的分级阅读风格与词汇难度，"
         "输出修改后的完整正文。\n\n"
-        "【修改建议】\n" + suggestions + "\n\n"
-        "【原文】\n" + body + "\n\n"
+        f"【修改建议】\n{suggestions}\n\n"
+        f"【原文】\n{body}\n\n"
         "只输出修改后的完整英语正文，不要标题、不要 markdown 格式、不要任何额外说明。"
     )
     return ai.chat([{"role": "user", "content": prompt}], temperature=0.6)
