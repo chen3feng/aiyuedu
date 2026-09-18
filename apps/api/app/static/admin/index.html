@@ -79,8 +79,8 @@
 <header>
   <h1>阅读后台管理</h1>
   <nav class="tabs">
-    <div class="tab active" id="tab-topics" onclick="switchTab('topics')">主题管理</div>
-    <div class="tab" id="tab-articles" onclick="switchTab('articles')">文章管理</div>
+    <div class="tab active" id="tab-articles" onclick="switchTab('articles')">文章管理</div>
+    <div class="tab" id="tab-topics" onclick="switchTab('topics')">主题管理</div>
     <div class="tab" id="tab-ai" onclick="switchTab('ai')">AI 提供者</div>
   </nav>
 </header>
@@ -106,7 +106,7 @@ const $ = (id) => document.getElementById(id);
 const main = () => $("main");
 
 const state = {
-  tab: "topics",
+  tab: "articles",
   topics: [],
   articles: [],
   editing: null,        // null=列表, 'new'=新增, id=编辑
@@ -647,11 +647,15 @@ function renderForm() {
         <strong>${state.editing === "new" ? "新增文章" : "编辑文章"}</strong>
         <button onclick="cancelEdit()">返回列表</button>
       </div>
+      ${state.editing === "new" ? `
+      <div class="row" style="margin-bottom:14px">
+        <button class="primary" style="width:100%" onclick="openGenerate()">AI 一键生成（标题+主题+正文）</button>
+      </div>` : ""}
       <div class="field"><label>标题</label>
         <input type="text" value="${esc(f.title)}" oninput="setField('title',this.value)"></div>
       <div class="field"><label>中文标题（可选）</label>
         <input type="text" value="${esc(f.title_zh ?? "")}" oninput="setField('title_zh',this.value)"
-          placeholder="例如：秋日田野"></div>
+          ${state.editing === "new" ? 'placeholder="例如：秋日田野"' : ""}></div>
       <div class="field"><label>副标题（可选）</label>
         <input type="text" value="${esc(f.subtitle)}" oninput="setField('subtitle',this.value)"></div>
       <div class="field"><label>正文
@@ -788,8 +792,8 @@ function renderAiForm() {
 
 (async function init() {
   try {
-    await loadTopics();
-    await renderTopics();
+    await loadArticles();
+    await renderArticles();
   } catch (e) {
     main().innerHTML = `<div class="card"><div class="empty">加载失败：${esc(e.message)}</div></div>`;
   }
