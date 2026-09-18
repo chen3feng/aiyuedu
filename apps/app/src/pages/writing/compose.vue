@@ -54,6 +54,10 @@
         <button class="btn-primary" :disabled="submitting || !body.trim()" @click="onSubmit">
           {{ submitting ? t("writing.submitting") : t("writing.submit") }}
         </button>
+        <view v-if="submitting" class="elapsed">
+          <text class="elapsed-dot">●</text>
+          <text>{{ elapsedLabel }}</text>
+        </view>
       </view>
       <view v-if="error" class="error">{{ error }}</view>
     </view>
@@ -76,6 +80,30 @@ const loadingPrompts = ref(false);
 const promptKey = ref<string | null>(null);
 const body = ref("");
 const submitting = ref(false);
+const elapsedSec = ref(0);
+let elapsedTimer: ReturnType<typeof setInterval> | null = null;
+
+const elapsedLabel = computed(() => {
+  const s = elapsedSec.value;
+  if (s < 60) return `${s} 秒`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m} 分 ${r} 秒`;
+});
+
+function startElapsed() {
+  elapsedSec.value = 0;
+  elapsedTimer = setInterval(() => {
+    elapsedSec.value += 1;
+  }, 1000);
+}
+
+function stopElapsed() {
+  if (elapsedTimer) {
+    clearInterval(elapsedTimer);
+    elapsedTimer = null;
+  }
+}
 const error = ref("");
 
 const target = computed(() => {
@@ -166,6 +194,7 @@ async function onSubmit() {
   if (!body.value.trim()) return;
   submitting.value = true;
   error.value = "";
+  startElapsed();
   try {
     const essay = await submitEssay({
       prompt_key: promptKey.value ?? undefined,
@@ -183,6 +212,7 @@ async function onSubmit() {
     error.value = (e as Error).message;
   } finally {
     submitting.value = false;
+    stopElapsed();
   }
 }
 
@@ -214,6 +244,7 @@ onBeforeUnmount(() => {
     clearTimeout(saveTimer);
     saveTimer = null;
   }
+  stopElapsed();
 });
 </script>
 
@@ -379,5 +410,23 @@ onBeforeUnmount(() => {
   color: #fa5151;
   font-size: 26rpx;
   text-align: center;
+}
+.elapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #8a94ad;
+}
+.elapsed-dot {
+  color: #4f7cff;
+  font-size: 18rpx;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 </style>

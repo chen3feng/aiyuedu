@@ -18,6 +18,8 @@ export const API_BASE = apiBase();
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   data?: Record<string, unknown>;
+  /** H5 / 小程序超时毫秒；不传走平台默认（小程序默认 60s，容易误判超时） */
+  timeout?: number;
 }
 
 export function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -28,6 +30,8 @@ export function request<T>(path: string, options: RequestOptions = {}): Promise<
       method,
       data,
       header: { "Content-Type": "application/json", "X-User-Id": getUserId() },
+      // 长请求（写作批改需 60-180s）显式传 timeout 避免小程序端 60s 默认截断
+      ...(options.timeout ? { timeout: options.timeout } : {}),
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data as T);

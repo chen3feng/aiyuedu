@@ -64,8 +64,16 @@ export const getEssay = (id: string) =>
 export const deleteEssay = (id: string) =>
   request<{ ok: boolean }>(`/writings/${id}`, { method: "DELETE" });
 
+// 写作批改可能耗时 60-180s（本地 Ollama 慢模型），显式传 timeout 防止前端误判超时
+const LONG_TIMEOUT = 5 * 60 * 1000; // 5 分钟
+
 export const submitEssay = (data: {
   prompt_key?: string;
   original: string;
   target_words?: number;
-}) => request<Essay>("/writings", { method: "POST", data });
+}) =>
+  request<Essay>("/writings", {
+    method: "POST",
+    data,
+    timeout: LONG_TIMEOUT,
+  });
