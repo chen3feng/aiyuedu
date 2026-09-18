@@ -92,6 +92,11 @@
       <!-- 阶段二：总结 + 全文朗读 -->
       <view v-else-if="sentences.length && phase === 'summary'" class="summary-screen">
         <view class="card">
+          <text class="card-label">{{ t("writing.yourOriginal") }}</text>
+          <text class="polished-full original">{{ essay.original }}</text>
+        </view>
+
+        <view class="card">
           <text class="card-label">{{ t("writing.fullPolishedTitle") }}</text>
           <text class="polished-full">{{ fullPolishedText }}</text>
           <button
@@ -650,6 +655,11 @@ onBeforeUnmount(() => {
   background: #f4f6fb;
   padding: 20rpx 24rpx;
   border-radius: 12rpx;
+}
+.polished-full.original {
+  color: #6a7591;
+  text-decoration: line-through;
+  text-decoration-color: #c5cee0;
 }
 .speak-btn-big {
   width: 100%;
