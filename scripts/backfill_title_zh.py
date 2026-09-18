@@ -76,7 +76,7 @@ def backfill(dry_run: bool = False) -> None:
             continue
         title_zh = content.strip().strip("「」『』《》\"'").strip()
         # 去掉尾部残留的标点（模型偶有残留）
-        for ch in "。.!?！？"):
+        for ch in "。.!?！？":
             title_zh = title_zh.rstrip(ch)
         title_zh = title_zh.strip()
         if not title_zh or len(title_zh) > 30:
