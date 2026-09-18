@@ -56,9 +56,12 @@
             <text class="alt-label">{{ t("writing.corrected") }}：</text>
             <text class="alt-text corrected">{{ currentSentence.corrected }}</text>
           </view>
-          <view v-if="currentSentence.polished" class="alt-row">
-            <text class="alt-label">{{ t("writing.polished") }}：</text>
-            <text class="alt-text polished">{{ currentSentence.polished }}</text>
+          <view v-if="currentSentence.polished" class="compare-block">
+            <text class="compare-label">{{ t("writing.yourOriginal") }}</text>
+            <text class="compare-text original">{{ currentSentence.original }}</text>
+            <text class="compare-arrow">↓</text>
+            <text class="compare-label">{{ t("writing.polished") }}</text>
+            <text class="compare-text polished">{{ currentSentence.polished }}</text>
             <button
               class="speak-btn"
               :class="{ playing: speakingIdx === currentIdx }"
@@ -542,6 +545,52 @@ onBeforeUnmount(() => {
 .speak-btn.playing {
   background: #4f7cff;
   color: #fff;
+}
+
+/* polished 对比块：原文 ↓ polished，更直观看到 AI 改了什么 */
+.compare-block {
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
+  background: #f4f6fb;
+  border-radius: 12rpx;
+  position: relative;
+}
+.compare-label {
+  display: block;
+  font-size: 22rpx;
+  color: #8a94ad;
+  margin-bottom: 4rpx;
+  margin-top: 8rpx;
+}
+.compare-label:first-child {
+  margin-top: 0;
+}
+.compare-text {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.compare-text.original {
+  color: #6a7591;
+  text-decoration: line-through;
+  text-decoration-color: #c5cee0;
+}
+.compare-text.polished {
+  color: #07c160;
+  font-weight: 600;
+}
+.compare-arrow {
+  display: block;
+  text-align: center;
+  font-size: 28rpx;
+  color: #4f7cff;
+  margin: 8rpx 0;
+  font-weight: 700;
+}
+.compare-block .speak-btn {
+  margin-top: 12rpx;
+  margin-left: 0;
 }
 
 .reason-row {

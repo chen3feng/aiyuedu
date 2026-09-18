@@ -121,6 +121,7 @@ export default {
     noError: "No errors in this sentence. Nice!",
     polished: "Polished",
     polishedReason: "Why this polished version",
+    yourOriginal: "Your version",
     empty: "No essays yet",
     emptyHint: "Tap \"Start Writing\" to write your first one",
     deleteConfirm: "Delete this essay?",

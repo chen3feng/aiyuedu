@@ -120,6 +120,7 @@ export default {
     corrected: "最小修复",
     polished: "润色版",
     polishedReason: "为什么这样润色",
+    yourOriginal: "你写的",
     empty: "还没有作文",
     emptyHint: "点上方「开始写作」写你的第一篇吧",
     deleteConfirm: "确定删除这篇作文？",
