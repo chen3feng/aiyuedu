@@ -208,7 +208,9 @@ def chat(
         headers["Authorization"] = f"Bearer {provider['api_key']}"
 
     try:
-        resp = httpx.post(url, json=payload, headers=headers, timeout=180.0)
+        resp = httpx.post(url, json=payload, headers=headers, timeout=300.0)
+    except httpx.TimeoutException as exc:
+        raise RuntimeError(f"AI 推理超时（>300s）：{exc}") from exc
     except httpx.HTTPError as exc:
         raise RuntimeError(f"调用 AI 失败：{exc}") from exc
 

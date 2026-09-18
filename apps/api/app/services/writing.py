@@ -178,7 +178,8 @@ def submit_essay(
             content = ai.chat(
                 [{"role": "user", "content": prompt}],
                 temperature=0.3,
-                max_tokens=4096,
+                # 长作文 (~30 句) 输出 ~6K token；本机慢模型宁可给足也不要 retry
+                max_tokens=8192,
             )
         except RuntimeError as e:
             content = ""

@@ -118,6 +118,17 @@ def test_submit_essay_ai_runtime_error(isolated_writings, monkeypatch):
     assert essay["id"]
 
 
+def test_submit_essay_ai_timeout_surfaces_reason(isolated_writings, monkeypatch):
+    """AI 超时（httpx.TimeoutException 被 ai.chat 包成 RuntimeError）→ reason 可读。"""
+    import httpx as _httpx
+    def timeout(*a, **k):
+        raise RuntimeError("AI 推理超时（>300s）：timed out")
+    monkeypatch.setattr(writing.ai, "chat", timeout)
+    essay = writing.submit_essay("u1", "autumn-fields", "I walk in the fields.")
+    assert essay["ai_used"] is False
+    assert "超时" in (essay["reason"] or "")
+
+
 def test_submit_essay_ai_empty_content(isolated_writings, monkeypatch):
     """AI 返回空 → ai_used=False + reason 提示。"""
     monkeypatch.setattr(writing.ai, "chat", lambda *a, **k: "")
