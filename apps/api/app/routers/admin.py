@@ -27,6 +27,7 @@ class QuizIn(BaseModel):
 
 class ArticleIn(BaseModel):
     title: str = ""
+    title_zh: str = ""
     subtitle: str = ""
     body: str = ""
     topics: list[str] = []

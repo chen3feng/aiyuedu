@@ -98,6 +98,7 @@ def _build(data: dict, reading_id: str) -> tuple[dict, list]:
     article = {
         "id": reading_id,
         "title": (data.get("title") or "").strip(),
+        "title_zh": (data.get("title_zh") or "").strip(),
         "subtitle": (data.get("subtitle") or "").strip(),
         "topics": data.get("topics") or [],
         "target_level": level,

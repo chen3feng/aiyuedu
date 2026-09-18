@@ -181,7 +181,7 @@ async function delTopic(key, label) {
 // ---------- 文章 ----------
 
 function newForm() {
-  return { title: "", subtitle: "", body: "", topics: [], target_level: null,
+  return { title: "", title_zh: "", subtitle: "", body: "", topics: [], target_level: null,
     glosses: {}, full_glosses: {}, headwords: {}, multiword: [], skip: [], quizzes: [] };
 }
 function newOption() { return { text: "", correct: false }; }
@@ -202,7 +202,7 @@ async function startCreate() {
 async function startEdit(id) {
   const a = await api("/articles/" + id);
   state.editing = id;
-  state.form = { title: a.title, subtitle: a.subtitle || "", body: a.body, topics: a.topics || [],
+  state.form = { title: a.title, title_zh: a.title_zh || "", subtitle: a.subtitle || "", body: a.body, topics: a.topics || [],
     target_level: a.target_level, glosses: a.glosses || {}, full_glosses: a.full_glosses || {},
     headwords: a.headwords || {},
     multiword: Object.entries(a.terms || {}).map(([text, gloss]) => ({ text, gloss, kind: "term" })),
@@ -649,6 +649,9 @@ function renderForm() {
       </div>
       <div class="field"><label>标题</label>
         <input type="text" value="${esc(f.title)}" oninput="setField('title',this.value)"></div>
+      <div class="field"><label>中文标题（可选）</label>
+        <input type="text" value="${esc(f.title_zh ?? "")}" oninput="setField('title_zh',this.value)"
+          placeholder="例如：秋日田野"></div>
       <div class="field"><label>副标题（可选）</label>
         <input type="text" value="${esc(f.subtitle)}" oninput="setField('subtitle',this.value)"></div>
       <div class="field"><label>正文
