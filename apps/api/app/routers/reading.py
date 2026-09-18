@@ -40,6 +40,7 @@ def list_readings(
             {
                 "id": r["id"],
                 "title": r["title"],
+                "title_zh": r.get("title_zh") or "",
                 "topics": rtopics,
                 "topic_labels": _topic_labels(rtopics),
                 "target_level": r.get("target_level"),
@@ -69,6 +70,7 @@ def get_reading(
     return {
         "id": r["id"],
         "title": r["title"],
+        "title_zh": r.get("title_zh") or "",
         "subtitle": r.get("subtitle", ""),
         "topics": rtopics,
         "topic_labels": _topic_labels(rtopics),

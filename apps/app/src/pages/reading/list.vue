@@ -17,7 +17,10 @@
     <view v-else class="cards">
       <view v-for="r in items" :key="r.id" class="card" @click="open(r.id)">
         <view class="card-top">
-          <text class="title">{{ r.title }}</text>
+          <view class="title-block">
+            <text v-if="r.title_zh" class="title-zh">{{ r.title_zh }}</text>
+            <text class="title">{{ r.title }}</text>
+          </view>
           <view class="tags">
             <text v-for="(label, i) in topicTags(r)" :key="i" class="tag">{{ label }}</text>
           </view>
@@ -163,15 +166,26 @@ function open(id: string) {
 .card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20rpx;
 }
-.title {
+.title-block {
+  flex: 1;
+  margin-right: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.title-zh {
   font-size: 34rpx;
   font-weight: 700;
   color: #1f2d50;
-  flex: 1;
-  margin-right: 20rpx;
+  line-height: 1.3;
+}
+.title {
+  font-size: 24rpx;
+  color: #8a94ad;
+  line-height: 1.4;
 }
 .tags {
   display: flex;

@@ -3,7 +3,10 @@
     <!-- 顶部信息 -->
     <view v-if="detail" class="header">
       <view class="head-top">
-        <text class="title">{{ detail.title }}</text>
+        <view class="title-block">
+          <text v-if="detail.title_zh" class="title-zh">{{ detail.title_zh }}</text>
+          <text class="title">{{ detail.title }}</text>
+        </view>
         <view class="tags">
           <text v-for="(label, i) in topicTags(detail)" :key="i" class="tag">{{ label }}</text>
         </view>
@@ -142,7 +145,7 @@ import { getReading, recordReading } from "../../api/reading";
 import type { ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // 多主题中文名直接来自后端 topic_labels；标签缺失回退主题 key
 function topicTags(d: ReadingDetail): string[] {
@@ -228,7 +231,11 @@ onLoad((query) => {
 });
 
 onShow(() => {
-  uni.setNavigationBarTitle({ title: t("nav.reader") });
+  // 中文 locale 时优先用 title_zh 显示在导航栏；en / 其他回退英文 title
+  const navTitle = (locale.value === "zh-CN" && detail.value?.title_zh)
+    || detail.value?.title
+    || t("nav.reader");
+  uni.setNavigationBarTitle({ title: navTitle });
 });
 
 async function fetchDetail() {
@@ -391,15 +398,27 @@ function finish() {
 .head-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16rpx;
 }
-.title {
+.title-block {
+  flex: 1;
+  margin-right: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.title-zh {
   font-size: 40rpx;
   font-weight: 800;
   color: #1f2d50;
-  flex: 1;
-  margin-right: 20rpx;
+  line-height: 1.3;
+}
+.title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #8a94ad;
+  line-height: 1.4;
 }
 .tags {
   display: flex;

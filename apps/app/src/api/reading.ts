@@ -4,6 +4,7 @@ import { request } from "./request";
 export interface ReadingSummary {
   id: string;
   title: string;
+  title_zh?: string;
   topics: string[];
   topic_labels: string[];
   target_level: number | null;
@@ -43,6 +44,7 @@ export interface VocabItem {
 export interface ReadingDetail {
   id: string;
   title: string;
+  title_zh?: string;
   subtitle: string;
   topics: string[];
   topic_labels: string[];
