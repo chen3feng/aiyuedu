@@ -429,8 +429,9 @@ async function doRevise() {
   }
 }
 function applyGenerated() {
-  // 应用到表单：标题（中文作为 title）、正文、主题、词汇量
-  state.form.title = state.genTitleZh || state.form.title || "";
+  // 应用到表单：英文标题 / 中文标题 / 主题 / 正文 / 词汇量
+  state.form.title = state.genTitleEn || state.form.title || "";
+  state.form.title_zh = state.genTitleZh || state.form.title_zh || "";
   state.form.body = state.genBody;
   state.form.topics = [...state.genTopics];
   const lv = $("gen-level").value.trim();
@@ -649,7 +650,7 @@ function renderForm() {
       </div>
       ${state.editing === "new" ? `
       <div class="row" style="margin-bottom:14px">
-        <button class="primary" style="width:100%" onclick="openGenerate()">AI 一键生成（标题+主题+正文）</button>
+        <button class="primary" style="width:100%" onclick="openGenerate()">AI 一键生成</button>
       </div>` : ""}
       <div class="field"><label>标题</label>
         <input type="text" value="${esc(f.title)}" oninput="setField('title',this.value)"></div>
@@ -658,9 +659,7 @@ function renderForm() {
           ${state.editing === "new" ? 'placeholder="例如：秋日田野"' : ""}></div>
       <div class="field"><label>副标题（可选）</label>
         <input type="text" value="${esc(f.subtitle)}" oninput="setField('subtitle',this.value)"></div>
-      <div class="field"><label>正文
-        <button class="small" style="margin-left:8px" onclick="openGenerate()">AI 一键生成（标题+主题+正文）</button>
-      </label>
+      <div class="field"><label>正文</label>
         <textarea oninput="setField('body',this.value)">${esc(f.body)}</textarea></div>
       <div class="field"><label>主题（可多选）</label>
         <div class="checkbox-list">${topicChecks || '<span class="muted">无主题，请先到「主题管理」添加</span>'}</div></div>
