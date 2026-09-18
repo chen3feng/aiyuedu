@@ -78,9 +78,14 @@ class AIDefaultIn(BaseModel):
     name: str
 
 
+class AITestIn(BaseModel):
+    name: str | None = None  # 不传则测试默认提供者；传则测试指定名字
+
+
 class AIGlossIn(BaseModel):
     body: str
     level: int | None = Field(None, ge=0)
+    existing_glosses: dict[str, str] | None = None
 
 
 # ---------- 主题 ----------
@@ -134,10 +139,7 @@ def analyze_article(payload: AnalyzeIn):
 
 @router.post("/articles/ai-glosses")
 def ai_glosses(payload: AIGlossIn):
-    try:
-        return admin.ai_glosses(payload.body, payload.level)
-    except RuntimeError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    return admin.ai_glosses(payload.body, payload.level, payload.existing_glosses)
 
 
 @router.post("/articles/generate")
@@ -240,3 +242,23 @@ def set_ai_default(payload: AIDefaultIn):
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     return {"ok": True}
+
+
+@router.post("/ai/test")
+def test_ai(payload: AITestIn):
+    """用指定（或默认）AI 提供者跑一次最小 ping，返回 {ok, content} 或 {ok:false, error}。
+
+    不改数据库，仅供配置页面「测试连接」按钮诊断网络/Key/响应是否正常。
+    推理模型（如 deepseek-flash）会先把 token 预算花在 reasoning_content，再写 content；
+    max_tokens 太小会截断在推理阶段 → content 为空，故此处放宽到 256。
+    """
+    try:
+        content = ai.chat(
+            [{"role": "user", "content": "Reply with one word: pong"}],
+            temperature=0.0,
+            max_tokens=256,
+            provider_name=payload.name,
+        )
+        return {"ok": True, "content": content.strip()}
+    except RuntimeError as e:
+        return {"ok": False, "error": str(e)}

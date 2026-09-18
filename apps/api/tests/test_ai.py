@@ -154,3 +154,27 @@ def test_chat_url_and_payload(monkeypatch):
     assert captured["headers"]["Authorization"] == "Bearer k"
     assert captured["json"]["model"] == "m"
     assert captured["json"]["max_tokens"] == 8192
+
+
+def test_chat_with_provider_name(monkeypatch):
+    """provider_name 显式传入时跳过 default 查找，直接用指定提供者。"""
+    captured = []
+
+    def fake_post(url, **kw):
+        captured.append((url, kw["json"]["model"]))
+        return _Resp(200, {"choices": [{"message": {"content": "ok"}}]})
+
+    monkeypatch.setattr(ai.httpx, "post", fake_post)
+    ai.add_provider("A", "https://a/v1", "ka", "ma")
+    ai.add_provider("B", "https://b/v1", "kb", "mb")
+    ai.set_default("A")
+    # 显式指定 B，即使 A 是 default
+    ai.chat([{"role": "user", "content": "hi"}], provider_name="B")
+    assert captured == [("https://b/v1/chat/completions", "mb")]
+
+
+def test_chat_with_unknown_provider_name_raises(monkeypatch):
+    ai.add_provider("A", "https://a/v1", "k", "m")
+    ai.set_default("A")
+    with pytest.raises(RuntimeError, match="不存在"):
+        ai.chat([{"role": "user", "content": "hi"}], provider_name="nope")

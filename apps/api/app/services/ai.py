@@ -177,15 +177,23 @@ def chat(
     *,
     temperature: float | None = None,
     max_tokens: int = 8192,
+    provider_name: str | None = None,
 ) -> str:
-    """调用默认提供者做一次 chat completion，返回 assistant 的文本 content。
+    """调用指定（provider_name）或默认 AI 提供者做一次 chat completion，返回 assistant 文本。
 
-    - 未配置默认提供者 / 网络错误 / 非 200 / 空 content → 抛 RuntimeError（可读信息）。
-    - 推理模型（如 deepseek-flash）只读 message.content，忽略 reasoning_content。
+    - 未配置默认 / 网络错误 / 非 200 / 空 content → 抛 RuntimeError（可读信息）。
+    - 推理模型（如 deepseek-flash）只读 message.content，忽略 reasoning_content；
+      此类模型不适合做 AI校正等强约束 JSON 任务，请选用非推理 instruct 模型。
+    - provider_name 显式传入时不读 default，用于「测试连接」按钮测试非默认提供者。
     """
-    provider = get_default_provider()
-    if not provider:
-        raise RuntimeError("未配置默认 AI 提供者")
+    if provider_name:
+        provider = get_provider(provider_name)
+        if provider is None:
+            raise RuntimeError(f"提供者不存在: {provider_name}")
+    else:
+        provider = get_default_provider()
+        if not provider:
+            raise RuntimeError("未配置默认 AI 提供者")
 
     url = provider["base_url"].rstrip("/") + "/chat/completions"
     payload: dict = {
@@ -200,7 +208,7 @@ def chat(
         headers["Authorization"] = f"Bearer {provider['api_key']}"
 
     try:
-        resp = httpx.post(url, json=payload, headers=headers, timeout=120.0)
+        resp = httpx.post(url, json=payload, headers=headers, timeout=180.0)
     except httpx.HTTPError as exc:
         raise RuntimeError(f"调用 AI 失败：{exc}") from exc
 

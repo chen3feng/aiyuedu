@@ -6084,6 +6084,72 @@
       "gloss": "新药研发",
       "type": "phrasal_verb",
       "separable": false
+    },
+    {
+      "text": "wind farms",
+      "gloss": "风力农场",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "like a person",
+      "gloss": "像人",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "single path",
+      "gloss": "单一路径",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "match rope",
+      "gloss": "引火绳",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "like the",
+      "gloss": "例如",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "turn of",
+      "gloss": "转折",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "short stories",
+      "gloss": "短篇",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "meet for",
+      "gloss": "初次见面",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "single day",
+      "gloss": "每天",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "mismatch between",
+      "gloss": "供需不匹配",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power source",
+      "gloss": "电源",
+      "type": "phrasal_verb",
+      "separable": false
     }
   ]
 }

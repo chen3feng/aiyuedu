@@ -14,6 +14,7 @@ import json
 import pytest
 
 from app.services import admin, reading, topics
+from tests.test_ai import _Resp
 
 
 @pytest.fixture
@@ -129,6 +130,97 @@ def test_ai_glosses_overrides_and_falls_back(monkeypatch):
     assert r["glosses"][lemma] == "AI义"  # AI 覆盖
     assert set(r["glosses"]) == set(base)  # 其余保留词典义兜底
     assert r["multiword_glosses"] == {}
+    assert r["ai_used"] is True
+    assert r["reason"] is None
+
+
+def test_ai_glosses_preserves_existing_when_ai_partial(monkeypatch):
+    """用户手工改过的词条，AI 只给出部分时应保留；AI 命中的按语境义覆盖。"""
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    assert base
+    lemma = next(iter(base))
+    # 用户把某个生词改成"自定义义"；AI 只返回部分
+    existing = {lemma: "用户自改"}
+    monkeypatch.setattr(
+        admin.ai, "chat", lambda *a, **k: json.dumps({lemma: "AI义"}, ensure_ascii=False)
+    )
+    r = admin.ai_glosses(body, 100, existing_glosses=existing)
+    assert r["glosses"][lemma] == "AI义"  # AI 覆盖用户
+
+
+def test_ai_glosses_preserves_existing_when_ai_missing_key(monkeypatch):
+    """AI 完全没返回该 key 时，保留用户词条（不退回词典义）。"""
+    body = "A dinosaur and a kangaroo walked slowly beside a volcano."
+    base = admin.analyze(body, 100)["glosses"]
+    assert len(base) >= 2, f"需要 ≥2 个生词，实际 {list(base)}"
+    lemma = next(iter(base))
+    existing = {lemma: "用户自改"}
+    other = next(k for k in base if k != lemma)
+    monkeypatch.setattr(
+        admin.ai, "chat", lambda *a, **k: json.dumps({other: "AI义"}, ensure_ascii=False)
+    )
+    r = admin.ai_glosses(body, 100, existing_glosses=existing)
+    assert r["glosses"][lemma] == "用户自改"  # 用户词条保留，未被词典义冲掉
+    assert r["glosses"][other] == "AI义"
+
+
+def test_ai_glosses_preserves_existing_when_ai_empty(monkeypatch):
+    """AI 返回空内容时不抛错，按"现有 + 词典兜底"返回，ai_used=False，reason 含原因。"""
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    assert base
+    lemma = next(iter(base))
+    existing = {lemma: "用户自改"}
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: "")
+    r = admin.ai_glosses(body, 100, existing_glosses=existing)
+    assert r["ai_used"] is False
+    assert r["glosses"][lemma] == "用户自改"  # 现有词条不丢
+    # 其他生词仍补词典义
+    assert all(r["glosses"][k] for k in base)
+    assert r["reason"] is not None and "空内容" in r["reason"]
+
+
+def test_ai_glosses_survives_ai_runtime_error(monkeypatch):
+    """AI 整体抛 RuntimeError（如返回空、网络错）时，保留现有词条，不抛给前端。"""
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    lemma = next(iter(base))
+    existing = {lemma: "用户自改"}
+
+    def boom(*a, **k):
+        raise RuntimeError("AI 返回 401：Unauthorized")
+
+    monkeypatch.setattr(admin.ai, "chat", boom)
+    r = admin.ai_glosses(body, 100, existing_glosses=existing)
+    assert r["ai_used"] is False
+    assert r["glosses"][lemma] == "用户自改"
+    assert r["reason"] is not None and "401" in r["reason"]
+
+
+def test_ai_glosses_reports_parse_error(monkeypatch):
+    """AI 返回了内容但不是 JSON 时，reason 给出可读诊断（前端据此提示）。"""
+    body = "A dinosaur walked slowly."
+    base = admin.analyze(body, 100)["glosses"]
+    lemma = next(iter(base))
+    existing = {lemma: "用户自改"}
+    # AI 给了散文式回答（合法 content，但非 JSON）
+    garbage = "好的，我来为你解释：\n\n这是一个有趣的科学事实..."
+    monkeypatch.setattr(admin.ai, "chat", lambda *a, **k: garbage)
+    r = admin.ai_glosses(body, 100, existing_glosses=existing)
+    assert r["ai_used"] is False
+    assert r["glosses"][lemma] == "用户自改"  # 用户保留
+    assert r["reason"] is not None and "无法解析" in r["reason"]
+
+
+def test_ai_glosses_keeps_existing_keys_not_in_analyze(monkeypatch):
+    """用户手工加的、analyze 没抽到的词条（如下面不超纲的词）应被保留。"""
+    body = "A dinosaur walked slowly."
+    monkeypatch.setattr(
+        admin.ai, "chat", lambda *a, **k: json.dumps({}, ensure_ascii=False)
+    )
+    r = admin.ai_glosses(body, 100, existing_glosses={"custom": "用户加的"})
+    assert r["glosses"]["custom"] == "用户加的"
 
 
 # ---------- 文章 CRUD ----------
@@ -229,3 +321,75 @@ def test_router_list_topics_includes_article_count(isolated_data):
     resp = admin_router.list_topics()
     assert resp["items"][0]["key"] == "science"
     assert resp["items"][0]["article_count"] == 1
+
+
+# ---------- /api/ai/test ----------
+
+
+def test_ai_test_endpoint_returns_ok_on_success(monkeypatch, tmp_path):
+    """测试连接：AI 返回正常时 ok=True，content 即去空白后的回复。"""
+    from app.config import settings
+    from app.routers import admin as admin_router
+
+    monkeypatch.setattr(settings, "ai_config_path", str(tmp_path / "ai.json"))
+    admin.ai.add_provider("P", "https://x/v1", "k", "m")
+    admin.ai.set_default("P")
+    monkeypatch.setattr(
+        admin.ai.httpx, "post",
+        lambda *a, **k: _Resp(200, {"choices": [{"message": {"content": "pong"}}]}),
+    )
+    out = admin_router.test_ai(admin_router.AITestIn())
+    assert out["ok"] is True
+    assert out["content"] == "pong"
+
+
+def test_ai_test_endpoint_returns_error_message(monkeypatch, tmp_path):
+    """测试连接：AI 失败时 ok=False，error 含原始异常信息（前端可显示给用户）。"""
+    from app.config import settings
+    from app.routers import admin as admin_router
+
+    monkeypatch.setattr(settings, "ai_config_path", str(tmp_path / "ai.json"))
+    admin.ai.add_provider("P", "https://x/v1", "wrong-key", "m")
+    admin.ai.set_default("P")
+    monkeypatch.setattr(
+        admin.ai.httpx, "post",
+        lambda *a, **k: _Resp(401, {"error": {"message": "Invalid API key"}}),
+    )
+    out = admin_router.test_ai(admin_router.AITestIn())
+    assert out["ok"] is False
+    assert "401" in out["error"]
+    assert "Invalid API key" in out["error"]
+
+
+def test_ai_test_endpoint_targets_named_provider(monkeypatch, tmp_path):
+    """传 name 时测试指定提供者；不传时测试默认。"""
+    from app.config import settings
+    from app.routers import admin as admin_router
+
+    monkeypatch.setattr(settings, "ai_config_path", str(tmp_path / "ai.json"))
+    admin.ai.add_provider("Default", "https://default/v1", "k", "m")
+    admin.ai.add_provider("Alt", "https://alt/v1", "k", "m")
+    admin.ai.set_default("Default")
+
+    captured = {}
+
+    def fake_post(url, **kw):
+        captured.setdefault("calls", []).append(url)
+        return _Resp(200, {"choices": [{"message": {"content": "pong"}}]})
+
+    monkeypatch.setattr(admin.ai.httpx, "post", fake_post)
+
+    # 不传 name → 默认
+    out = admin_router.test_ai(admin_router.AITestIn())
+    assert out["ok"] is True
+    assert any("default" in u for u in captured["calls"])
+
+    # 传 name → 指定
+    out = admin_router.test_ai(admin_router.AITestIn(name="Alt"))
+    assert out["ok"] is True
+    assert any("alt" in u for u in captured["calls"])
+
+    # 不存在的 name → error
+    out = admin_router.test_ai(admin_router.AITestIn(name="Ghost"))
+    assert out["ok"] is False
+    assert "Ghost" in out["error"]

@@ -259,32 +259,55 @@ def revise_article(body: str, suggestions: str) -> str:
     return ai.chat([{"role": "user", "content": prompt}], temperature=0.6)
 
 
-def ai_glosses(body: str, level: int | None = None) -> dict:
+def ai_glosses(
+    body: str,
+    level: int | None = None,
+    existing_glosses: dict[str, str] | None = None,
+) -> dict:
     """调用默认 AI 为本文生词/短语生成语境义（仅行内 ruby 用），词典义兜底。
 
-    返回 {"glosses": {lemma: 义}, "multiword_glosses": {text: 义}}；AI 漏项/空义时保留词典义。
+    existing_glosses: 编辑器当前已有的词条；保留用户手工编辑，只在 AI 给出语境义时覆盖。
+    返回 {"glosses", "multiword_glosses", "ai_used": bool, "reason": str|None, "raw": str}。
+    AI 整体失败（网络/空内容/错误码）或响应无法解析为 JSON 时不再抛错：
+    按 "现有词条 + 词典兜底" 返回，ai_used=False，reason 给出可读诊断信息供前端提示。
+    raw 字段始终带回 AI 原始 content（成功为空内容/无法解析时仍可见），仅供调试。
     """
     r = analyze(body, level)
-    glosses: dict[str, str] = dict(r["glosses"])  # lemma -> 词典 inline 义（兜底）
+    dict_glosses: dict[str, str] = dict(r["glosses"])  # 词典义兜底
     multiword = r["multiword"]  # [{text, gloss, kind, tag}]
 
-    items = [f"- {lemma}（词典义：{gloss}）" for lemma, gloss in glosses.items() if gloss]
+    items = [f"- {lemma}（词典义：{gloss}）" for lemma, gloss in dict_glosses.items() if gloss]
     items += [f"- {m['text']}（词典义：{m['gloss']}）" for m in multiword if m.get("gloss")]
-    if not items:
-        return {"glosses": glosses, "multiword_glosses": {}}
 
-    prompt = (
-        "你是英语分级阅读的编辑，为英语学习者（中国初中生）做行内中文注音。\n"
-        "下面是一篇文章的正文，以及需要注音的词/短语清单（附词典义作参考）。\n"
-        "请结合本文语境，为每一项给出最准确、最简短的中文释义（用于行内 ruby 注音，"
-        "通常 2~8 个字；多义词务必取本文含义，词典义已贴合时可沿用，避免冗长）。\n\n"
-        "【正文】\n" + body + "\n\n"
-        "【待注音项】\n" + "\n".join(items) + "\n\n"
-        "只输出一个 JSON 对象，键为上面的原词，值为中文释义。不要输出 JSON 以外的任何内容。"
-    )
-
-    content = ai.chat([{"role": "user", "content": prompt}], temperature=0.3)
-    ai_map = _parse_json(content)
+    ai_map: dict = {}
+    ai_used = False
+    reason: str | None = None
+    raw: str = ""
+    if items:
+        prompt = (
+            "你是英语分级阅读的编辑，为英语学习者（中国初中生）做行内中文注音。\n"
+            "下面是一篇文章的正文，以及需要注音的词/短语清单（附词典义作参考）。\n"
+            "请结合本文语境，为每一项给出最准确、最简短的中文释义（用于行内 ruby 注音，"
+            "通常 2~8 个字；多义词务必取本文含义，词典义已贴合时可沿用，避免冗长）。\n\n"
+            "【正文】\n" + body + "\n\n"
+            "【待注音项】\n" + "\n".join(items) + "\n\n"
+            "只输出一个 JSON 对象，键为上面的原词，值为中文释义。不要输出 JSON 以外的任何内容。"
+        )
+        try:
+            content = ai.chat([{"role": "user", "content": prompt}], temperature=0.3)
+        except RuntimeError as e:
+            content = ""
+            reason = f"AI 调用失败：{e}"
+        raw = content[:200]  # 截断，避免大响应塞回前端
+        if content:
+            raw_snippet = content[:120].replace("\n", " ")
+            ai_map = _parse_json(content)
+            if ai_map:
+                ai_used = True
+            else:
+                reason = f"AI 响应无法解析为 JSON（开头: {raw_snippet!r}）"
+        elif reason is None:
+            reason = "AI 返回空内容"
 
     def _pick(key: str) -> str:
         if key in ai_map:
@@ -295,16 +318,33 @@ def ai_glosses(body: str, level: int | None = None) -> dict:
                 return str(v).strip()
         return ""
 
-    for lemma in list(glosses):
-        g = _pick(lemma)
-        if g:
-            glosses[lemma] = g
+    user = dict(existing_glosses or {})
+    glosses: dict[str, str] = dict(user)  # 起点：用户所有手工词条（避免被冲掉）
+    for lemma, dict_g in dict_glosses.items():
+        ai_g = _pick(lemma)
+        if ai_g:
+            glosses[lemma] = ai_g  # AI 给出语境义 → 覆盖
+        elif lemma not in glosses:
+            glosses[lemma] = dict_g  # 新词（用户词条里没有）→ 词典兜底
 
     multiword_glosses: dict[str, str] = {}
     for m in multiword:
-        g = _pick(m["text"])
-        if g:
-            m["gloss"] = g
-            multiword_glosses[m["text"]] = g
+        text = m["text"]
+        ai_g = _pick(text)
+        user_g = user.get(text, "")
+        if ai_g:
+            m["gloss"] = ai_g
+            multiword_glosses[text] = ai_g
+        elif user_g:
+            m["gloss"] = user_g
+            multiword_glosses[text] = user_g
+        else:
+            multiword_glosses[text] = m["gloss"]  # 词典义
 
-    return {"glosses": glosses, "multiword_glosses": multiword_glosses}
+    return {
+        "glosses": glosses,
+        "multiword_glosses": multiword_glosses,
+        "ai_used": ai_used,
+        "reason": reason,
+        "raw": raw,
+    }

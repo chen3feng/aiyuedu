@@ -107,9 +107,9 @@ const state = {
   editing: null,        // null=列表, 'new'=新增, id=编辑
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
-  aiLoading: false,     // AI 生成本文义进行中
   genLoading: false,    // AI 生成/修改正文进行中
   genBody: "",          // 已生成正文（预览用，确认后才写入 form）
+  glossAiLoading: false, // AI 校正生词注释进行中
   glossSort: "appearance", // 生词注释列表排序：appearance=文中顺序，alpha=字母顺序
   mwSort: "appearance",    // 多词表达式列表排序
   ai: { providers: [], default: null, editing: null },
@@ -269,15 +269,22 @@ async function analyzeBody() {
 async function aiGlossBody() {
   if (!state.form.body.trim()) return toast("请先填写正文", true);
   if (!state.analyze) return toast("请先点「自动定级 + 提取生词」", true);
-  state.aiLoading = true;
+  state.glossAiLoading = true;
   renderForm();
   try {
     const r = await api("/articles/ai-glosses", "POST",
-      { body: state.form.body, level: state.form.target_level });
+      {
+        body: state.form.body,
+        level: state.form.target_level,
+        existing_glosses: state.form.glosses || {},
+      });
     if (r.glosses) {
+      // 合并：后端已按 "AI > 用户现有 > 词典兜底" 合成，但仍要尊重 skip（已删的词条不再带回）
       const skipSet = new Set(state.form.skip || []);
       const g = {};
-      Object.keys(r.glosses).forEach((k) => { if (!skipSet.has(k)) g[k] = r.glosses[k]; });
+      Object.keys(r.glosses).forEach((k) => {
+        if (!skipSet.has(k) && r.glosses[k]) g[k] = r.glosses[k];
+      });
       state.form.glosses = g;
     }
     const mw = r.multiword_glosses || {};
@@ -287,11 +294,13 @@ async function aiGlossBody() {
       const g = lk[(m.text || "").toLowerCase()];
       if (g) m.gloss = g;
     });
-    toast("已生成本文语境义（仅 ruby 显示）");
+    toast(r.reason
+      ? r.reason
+      : "已用 AI 校正本文语境义（仅 ruby 显示）", !!r.reason);
   } catch (e) {
     toast(e.message, true);
   } finally {
-    state.aiLoading = false;
+    state.glossAiLoading = false;
     renderForm();
   }
 }
@@ -600,8 +609,8 @@ function renderForm() {
       <div class="row" style="margin-bottom:14px">
         <button class="primary" onclick="analyzeBody()">自动定级 + 提取生词</button>
         ${state.analyze ? `<span class="muted">已分析：${state.analyze.new_word_count} 个生词</span>` : ""}
-        <button class="primary" onclick="aiGlossBody()" ${!state.analyze || state.aiLoading ? "disabled" : ""}>
-          ${state.aiLoading ? "AI 生成中…" : "AI 生成本文义"}
+        <button class="primary" onclick="aiGlossBody()" ${!state.analyze || state.glossAiLoading ? "disabled" : ""}>
+          ${state.glossAiLoading ? "AI 校正中…" : "AI校正"}
         </button>
       </div>
       ${state.analyze ? `
@@ -666,11 +675,36 @@ async function renderAi() {
               p.api_key ? `<code>${esc(maskKey(p.api_key))}</code>` : "无 key"}</div>
           </div>
           ${p.name !== state.ai.default
-            ? `<button class="small" onclick="setDefaultProvider('${esc(p.name)}')">设为默认</button>` : ""}
+            ? `<button class="small" onclick="setDefaultProvider('${esc(p.name)}')">设为默认</button>`
+            : ""}
+          <button class="small" onclick="testProvider('${esc(p.name)}')">测试连接</button>
           <button class="small" onclick="startEditProvider('${esc(p.name)}')">编辑</button>
           <button class="danger small" onclick="delProvider('${esc(p.name)}')">删除</button>
         </div>`).join("")}
+    </div>
+    <div class="card" id="ai-test-result" style="display:none">
+      <strong>测试结果</strong>
+      <div id="ai-test-body" class="muted" style="margin-top:8px;white-space:pre-wrap"></div>
     </div>`;
+}
+
+async function testProvider(name) {
+  const box = $("ai-test-result");
+  const body = $("ai-test-body");
+  box.style.display = "block";
+  body.textContent = `测试 ${name} 中…`;
+  try {
+    const r = await api("/ai/test", "POST", { name });
+    if (r.ok) {
+      body.textContent = `✓ ${name} 成功\nAI 返回: ${r.content}`;
+    } else {
+      body.textContent = `✗ ${name} 失败\n${r.error}`;
+      toast(r.error, true);
+    }
+  } catch (e) {
+    body.textContent = `✗ ${name} 请求失败\n${e.message}`;
+    toast(e.message, true);
+  }
 }
 
 function renderAiForm() {
