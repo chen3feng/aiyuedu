@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     mwe_path: str = str(PROJECT_ROOT / "data" / "mwe" / "mwe.json")
     ecdict_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "raw" / "stardict.db")
     ai_config_path: str = str(PROJECT_ROOT / "data" / "config" / "ai.json")
+    writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
 
 
 settings = Settings()

@@ -30,6 +30,8 @@ data/wordlists/raw/
 data/logs/
 # 运行时用户档案（按 user_id 隔离的偏好/词汇量）
 data/users/
+# 运行时写作记录（学生作文 + AI 批改报告）
+data/writings/
 
 # 临时/逆向分析产物（含 APK、反编译文件）
 tmp/

@@ -16,7 +16,7 @@ function apiBase(): string {
 export const API_BASE = apiBase();
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "PUT";
+  method?: "GET" | "POST" | "PUT" | "DELETE";
   data?: Record<string, unknown>;
 }
 

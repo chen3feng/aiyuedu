@@ -25,6 +25,24 @@
 			}
 		},
 		{
+			"path": "pages/writing/index",
+			"style": {
+				"navigationBarTitleText": "写作"
+			}
+		},
+		{
+			"path": "pages/writing/compose",
+			"style": {
+				"navigationBarTitleText": "写作"
+			}
+		},
+		{
+			"path": "pages/writing/report",
+			"style": {
+				"navigationBarTitleText": "批改报告"
+			}
+		},
+		{
 			"path": "pages/settings/settings",
 			"style": {
 				"navigationBarTitleText": "设置"

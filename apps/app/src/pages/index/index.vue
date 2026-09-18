@@ -6,6 +6,7 @@
     </view>
     <button class="start-btn" @click="goAssessment">{{ t("home.start") }}</button>
     <button class="reading-btn" @click="goReading">{{ t("home.reading") }}</button>
+    <button class="writing-btn" @click="goWriting">{{ t("nav.writing") }}</button>
     <view class="settings-link" @click="goSettings">{{ t("home.settings") }}</view>
   </view>
 </template>
@@ -25,6 +26,9 @@ function goAssessment() {
 }
 function goReading() {
   uni.navigateTo({ url: "/pages/reading/list" });
+}
+function goWriting() {
+  uni.navigateTo({ url: "/pages/writing/index" });
 }
 function goSettings() {
   uni.navigateTo({ url: "/pages/settings/settings" });
@@ -66,7 +70,8 @@ function goSettings() {
   font-size: 34rpx;
   font-weight: 600;
 }
-.reading-btn {
+.reading-btn,
+.writing-btn {
   width: 100%;
   margin-top: 24rpx;
   background: #fff;
