@@ -1,4 +1,4 @@
-"""作品集 API：CRUD + 详情（含完整 chapters）。"""
+"""作品集 API：CRUD + 详情（含完整 chapters）+ 古腾堡导入。"""
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
@@ -19,6 +19,10 @@ class CollectionIn(BaseModel):
     glossary: dict[str, str] = {}
     polysemy: dict = {}
     chapters: list[dict] = []
+
+
+class ImportGutenbergIn(BaseModel):
+    book_id: int
 
 
 def _uid(user_id: str | None) -> str:
@@ -45,6 +49,19 @@ def create(payload: CollectionIn, _user_id: str | None = Header(None, alias="X-U
         return collections.create_collection(payload.model_dump())
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.post("/import-gutenberg")
+def import_gutenberg(payload: ImportGutenbergIn,
+                    _user_id: str | None = Header(None, alias="X-User-Id")):
+    """从古腾堡 book_id 拉取 + 拆章节 → 创建 collection 文件。
+
+    失败（网络 / 不存在）抛 502。AI 标注（词汇、标题翻译）后续单章重跑。
+    """
+    try:
+        return collections.import_from_gutenberg(payload.book_id)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 @router.put("/{collection_id}")

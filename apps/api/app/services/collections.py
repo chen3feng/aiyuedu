@@ -199,6 +199,72 @@ def delete_collection(id: str) -> bool:
     return True
 
 
+# ---------- 古腾堡导入 ----------
+
+def _slug_from_title(title: str, fallback: str) -> str:
+    """从英文书名生成 collection id（限长 + 去前缀噪音）。"""
+    # 去掉常见前缀（The / A / An）
+    s = re.sub(r"^(the|a|an)\s+", "", (title or "").lower(), flags=re.IGNORECASE)
+    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    # 限长 40 字符，按词边界截断
+    if len(s) > 40:
+        s = "-".join(s.split("-")[:5])
+    return s or fallback
+
+
+def import_from_gutenberg(book_id: int) -> dict:
+    """从古腾堡拉取 + 拆章节 → 创建 collection 文件。
+
+    不做 AI 标注（词汇分析留给后台「重跑 AI 分析」按钮）。
+
+    返回完整 collection dict。失败抛 RuntimeError。
+    """
+    # 避免循环引用
+    from . import gutenberg
+
+    data = gutenberg.fetch_book(book_id)
+    chapters = gutenberg.split_chapters(data["text"])
+
+    cid = _slug_from_title(data["title"], f"gutenberg-{book_id}")
+    # 已存在则加后缀
+    if get_collection(cid) is not None:
+        cid = f"{cid}-{book_id}"
+
+    chapter_dicts = []
+    for ch in chapters:
+        cid_ch = f"r-{cid}-{ch.index}"
+        chapter_dicts.append({
+            "index": ch.index,
+            "id": cid_ch,
+            "title": ch.title,
+            "title_zh": "",  # 待后台 AI 补
+            "body": ch.body,
+            "target_level": 3000,  # 默认初中级
+            "glosses": {},
+            "terms": {},
+            "skip": [],
+            "quizzes": [],
+        })
+
+    collection = {
+        "id": cid,
+        "title": data["title"],
+        "title_zh": "",  # 待后台 AI 补
+        "author": data["author"],
+        "source": data["source"],
+        "total_chapters": len(chapter_dicts),
+        "cover_url": data.get("cover_url") or "",
+        "intro_zh": "",  # 待后台 AI 补
+        "intro_en": data.get("summary") or "",
+        "created_at": round(time.time(), 3),
+        "glossary": {},
+        "polysemy": {},
+        "chapters": chapter_dicts,
+    }
+    _persist(collection)
+    return collection
+
+
 # ---------- reading 视图适配 ----------
 
 def flatten_chapter_to_reading(coll: dict, chapter: dict) -> dict:
