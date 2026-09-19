@@ -6150,6 +6150,348 @@
       "gloss": "电源",
       "type": "phrasal_verb",
       "separable": false
+    },
+    {
+      "text": "queen of",
+      "gloss": "…的王后",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "break free",
+      "gloss": "摆脱",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "back to earth",
+      "gloss": "传回地球",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "border security",
+      "gloss": "边境安全",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "last decade",
+      "gloss": "过去十年",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space junk",
+      "gloss": "太空垃圾",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "chain reaction",
+      "gloss": "连锁反应",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "space communication",
+      "gloss": "太空通信",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sport event",
+      "gloss": "体育盛会",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "end to",
+      "gloss": "终结",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "message to",
+      "gloss": "发消息到",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "stream video",
+      "gloss": "看视频",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "smart tv",
+      "gloss": "智能电视",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "walk through",
+      "gloss": "走遍",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "sight in",
+      "gloss": "视力",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "master of",
+      "gloss": "大师",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "favor of",
+      "gloss": "转而采用",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "seat of government",
+      "gloss": "都城",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "front line",
+      "gloss": "前队",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "strike at",
+      "gloss": "攻击",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "return to",
+      "gloss": "返回",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "front of",
+      "gloss": "在…前面",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "phase error",
+      "gloss": "相位误差",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "target object",
+      "gloss": "目标天体",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "guide star",
+      "gloss": "导引星",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "light within",
+      "gloss": "光在…内",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "second to",
+      "gloss": "每秒",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "cancel out",
+      "gloss": "抵消",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "account for",
+      "gloss": "解释",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "book on",
+      "gloss": "关于…的书",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "complete set of",
+      "gloss": "完整的",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "equal to",
+      "gloss": "等于",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "order of",
+      "gloss": "量级",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "scale accuracy",
+      "gloss": "精度",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "time balance",
+      "gloss": "实时平衡",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "perfect for",
+      "gloss": "非常适合",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "water flows",
+      "gloss": "水流",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "gas turbine",
+      "gloss": "燃气轮机",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "power spikes",
+      "gloss": "电力尖峰",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "range anxiety",
+      "gloss": "里程焦虑",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "go bankrupt",
+      "gloss": "破产",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "produce electricity",
+      "gloss": "发电",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "lack of",
+      "gloss": "缺乏",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "travel writing",
+      "gloss": "游记",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "average distance",
+      "gloss": "平均距离",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "distance light",
+      "gloss": "光传播的距离",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "change in",
+      "gloss": "变化",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "thunder god",
+      "gloss": "雷神",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "disagree on",
+      "gloss": "对…有分歧",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "start the week",
+      "gloss": "一周开始",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "exact same",
+      "gloss": "完全相同",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "direct translation",
+      "gloss": "直接翻译",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "impact of",
+      "gloss": "……的影响",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "master of philosophy",
+      "gloss": "哲学大师",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "fall of",
+      "gloss": "衰落",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "band of",
+      "gloss": "一伙",
+      "type": "phrasal_verb",
+      "separable": false
+    },
+    {
+      "text": "phone to",
+      "gloss": "用手机",
+      "type": "phrasal_verb",
+      "separable": false
     }
   ]
 }
