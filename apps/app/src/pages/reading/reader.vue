@@ -1,5 +1,11 @@
 <template>
   <view class="page">
+    <!-- collection 章节面包屑 -->
+    <view v-if="detail?.collection" class="breadcrumb">
+      <text class="crumb-link" @click="goCollection">{{ detail.collection.title_zh || detail.collection.title }}</text>
+      <text class="crumb-sep">›</text>
+      <text class="crumb-current">{{ detail.chapter_title || detail.title }}</text>
+    </view>
     <!-- 顶部信息 -->
     <view v-if="detail" class="header">
       <view class="head-top">
@@ -104,6 +110,27 @@
             <text v-if="zhShown[item.i]" class="q-explanation-zh">{{ item.q.explanation_zh }}</text>
           </view>
         </view>
+      </view>
+
+      <!-- 章节导航（仅 collection 章节显示） -->
+      <view v-if="detail?.collection && detail.chapters" class="chapter-nav">
+        <button
+          class="nav-btn"
+          :disabled="!prevChapter"
+          @click="goPrevChapter"
+        >
+          ← {{ prevChapter ? t("reading.reader.prevChapter", { title: prevChapter.title || '' }) : t("reading.reader.firstChapter") }}
+        </button>
+        <text class="chapter-pos">
+          {{ t("reading.reader.chapterPos", { n: detail.chapter_index ?? 1, total: detail.collection.total_chapters }) }}
+        </text>
+        <button
+          class="nav-btn"
+          :disabled="!nextChapter"
+          @click="goNextChapter"
+        >
+          {{ nextChapter ? t("reading.reader.nextChapter", { title: nextChapter.title || '' }) : t("reading.reader.lastChapter") }} →
+        </button>
       </view>
 
       <button
@@ -222,6 +249,32 @@ function optClass(q: ChoiceQuiz, qi: number, oi: number): string {
   if (q.options[oi]?.correct) return "opt-correct";
   if (oi === chosen) return "opt-wrong";
   return "opt-dim";
+}
+
+// 章节导航（仅 collection 章节）
+const prevChapter = computed(() => {
+  const d = detail.value;
+  if (!d?.chapters || d.chapter_index == null) return null;
+  return d.chapters.find((c) => c.index === d.chapter_index! - 1) ?? null;
+});
+const nextChapter = computed(() => {
+  const d = detail.value;
+  if (!d?.chapters || d.chapter_index == null) return null;
+  return d.chapters.find((c) => c.index === d.chapter_index! + 1) ?? null;
+});
+function goChapter(ch: { id: string }) {
+  uni.redirectTo({ url: `/pages/reading/reader?id=${ch.id}` });
+}
+function goPrevChapter() {
+  if (prevChapter.value) goChapter(prevChapter.value);
+}
+function goNextChapter() {
+  if (nextChapter.value) goChapter(nextChapter.value);
+}
+function goCollection() {
+  const d = detail.value;
+  if (!d?.collection) return;
+  uni.redirectTo({ url: `/pages/reading/collection-detail?id=${d.collection.id}` });
 }
 
 onLoad((query) => {
@@ -388,6 +441,56 @@ function finish() {
   padding: 32rpx;
   box-sizing: border-box;
 }
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #8a94ad;
+  margin-bottom: 16rpx;
+  padding: 8rpx 0;
+}
+.crumb-link {
+  color: #4f7cff;
+}
+.crumb-sep {
+  color: #c5cee0;
+}
+.crumb-current {
+  color: #1f2d50;
+  font-weight: 600;
+}
+
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+  padding: 16rpx;
+  background: #f4f6fb;
+  border-radius: 12rpx;
+}
+.nav-btn {
+  flex: 1;
+  background: #fff;
+  color: #4f7cff;
+  font-size: 24rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #eef2fb;
+}
+.nav-btn[disabled] {
+  color: #c5cee0;
+  background: #f9fafe;
+}
+.chapter-pos {
+  font-size: 24rpx;
+  color: #6a7591;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .header {
   background: #fff;
   border-radius: 20rpx;

@@ -10,6 +10,13 @@ export interface ReadingSummary {
   target_level: number | null;
   word_count: number;
   new_word_rate: number;
+  // collection 章节字段（孤儿 reading 没有）
+  collection_id?: string;
+  chapter_index?: number;
+  collection_title?: string;
+  collection_title_zh?: string;
+  collection_total_chapters?: number;
+  collection_cover_url?: string;
 }
 
 export interface ReadingWord {
@@ -56,6 +63,25 @@ export interface ReadingDetail {
   lines: ReadingLine[];
   vocabulary: VocabItem[];
   quizzes: Quiz[];
+  // collection 章节字段
+  collection_id?: string;
+  chapter_index?: number;
+  chapter_title?: string;
+  collection_glossary?: Record<string, string>;
+  collection?: {
+    id: string;
+    title: string;
+    title_zh?: string;
+    author?: string;
+    cover_url?: string;
+    total_chapters: number;
+  };
+  chapters?: Array<{
+    index: number;
+    id: string;
+    title?: string;
+    title_zh?: string;
+  }>;
 }
 
 // 课后小测题目。当前只渲染 `choice`；`type` 字段为未来题型（如判断题 `truefalse`）预留，

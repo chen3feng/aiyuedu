@@ -89,6 +89,12 @@ export default {
       finish: "Finish Reading",
       finishRemain: "Finish Reading ({n} left)",
       finished: "Reading finished",
+      prevChapter: "Prev: {title}",
+      nextChapter: "Next: {title}",
+      firstChapter: "First chapter",
+      lastChapter: "Last chapter",
+      chapterPos: "Ch. {n} / {total}",
+      collections: "Books",
     },
   },
 

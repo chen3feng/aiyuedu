@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     ecdict_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "raw" / "stardict.db")
     ai_config_path: str = str(PROJECT_ROOT / "data" / "config" / "ai.json")
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
+    collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
+    collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
 
 
 settings = Settings()

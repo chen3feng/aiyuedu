@@ -1,0 +1,58 @@
+{
+  "id": "little-princess",
+  "title": "A Little Princess",
+  "title_zh": "小公主",
+  "author": "Frances Hodgson Burnett",
+  "source": "gutenberg://146",
+  "total_chapters": 3,
+  "cover_url": "https://www.gutenberg.org/cache/epub/146/pg146.cover.medium.jpg",
+  "intro_zh": "萨拉·克鲁是伦敦寄宿学校的小公主，从云端跌入谷底，靠想象和善良度过最艰难的日子。",
+  "intro_en": "Sara Crewe, a privileged pupil at a London boarding school, loses everything but her kind heart.",
+  "created_at": 1789700000,
+  "glossary": {
+    "cloakroom": "衣帽间",
+    "marmalade": "果酱",
+    "boarding-school": "寄宿学校",
+    "puppet": "玩偶",
+    "attic": "阁楼"
+  },
+  "polysemy": {},
+  "chapters": [
+    {
+      "index": 1,
+      "id": "r-little-princess-1",
+      "title": "Sara Crewe",
+      "title_zh": "萨拉·克鲁",
+      "body": "Sara Crewe was eight years old when she came to live at Miss Minchin's school. Her father, Captain Crewe, brought her from India. She had a doll named Emily. She was rich, and everyone was kind to her.",
+      "target_level": 3500,
+      "glosses": {},
+      "terms": {},
+      "skip": [],
+      "quizzes": []
+    },
+    {
+      "index": 2,
+      "id": "r-little-princess-2",
+      "title": "A French Lesson",
+      "title_zh": "一堂法语课",
+      "body": "Sara stood at the blackboard. She wrote the French words. She made a mistake. She did not cry. She was brave.",
+      "target_level": 3500,
+      "glosses": {},
+      "terms": {},
+      "skip": [],
+      "quizzes": []
+    },
+    {
+      "index": 3,
+      "id": "r-little-princess-3",
+      "title": "The Diamond Mines",
+      "title_zh": "钻石矿",
+      "body": "Captain Crewe told Sara about the diamond mines. They were in India. One day he would take her there. Sara was very happy.",
+      "target_level": 3500,
+      "glosses": {},
+      "terms": {},
+      "skip": [],
+      "quizzes": []
+    }
+  ]
+}

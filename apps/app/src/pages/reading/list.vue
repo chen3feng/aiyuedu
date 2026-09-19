@@ -12,46 +12,85 @@
       </view>
     </view>
 
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
-    <view v-else class="cards">
-      <view v-for="r in items" :key="r.id" class="card" @click="open(r.id)">
-        <view class="card-top">
-          <view class="title-block">
-            <text v-if="r.title_zh" class="title-zh">{{ r.title_zh }}</text>
-            <text class="title">{{ r.title }}</text>
+    <!-- 书籍 tab：作品集网格 -->
+    <view v-if="currentView === 'collections'">
+      <view v-if="loadingCollections" class="loading">{{ t("common.loading") }}</view>
+      <view v-else-if="collectionsError" class="error">{{ collectionsError }}</view>
+      <view v-else class="collections-grid">
+        <view v-for="c in collections" :key="c.id" class="coll-card" @click="openCollection(c.id)">
+          <view class="coll-cover">
+            <image v-if="c.cover_url" :src="c.cover_url" mode="aspectFill" class="cover-img"></image>
+            <text v-else class="cover-fallback">{{ (c.title_zh || c.title).slice(0, 2) }}</text>
           </view>
-          <view class="tags">
-            <text v-for="(label, i) in topicTags(r)" :key="i" class="tag">{{ label }}</text>
+          <view class="coll-info">
+            <text v-if="c.title_zh" class="coll-title-zh">{{ c.title_zh }}</text>
+            <text class="coll-title">{{ c.title }}</text>
+            <text class="coll-author">{{ c.author }}</text>
+            <view class="coll-meta">
+              <text class="meta-item">{{ c.total_chapters }} 章</text>
+              <text v-if="c.glossary_size" class="meta-item">· {{ c.glossary_size }} 词</text>
+            </view>
           </view>
         </view>
-        <view class="meta">
-          <text class="meta-item">{{ t("reading.list.wordCount", { n: r.word_count }) }}</text>
-          <text class="meta-item">{{ t("reading.list.newWordRate", { n: (r.new_word_rate * 100).toFixed(1) }) }}</text>
-        </view>
+        <view v-if="!collections.length" class="empty">{{ t("reading.list.empty") }}</view>
       </view>
-      <view v-if="!items.length" class="empty">{{ t("reading.list.empty") }}</view>
+    </view>
+
+    <!-- 文章列表（按主题） -->
+    <view v-else>
+      <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
+      <view v-else-if="error" class="error">{{ error }}</view>
+      <view v-else class="cards">
+        <view v-for="r in items" :key="r.id" class="card" @click="open(r.id)">
+          <view class="card-top">
+            <view class="title-block">
+              <text v-if="r.title_zh" class="title-zh">{{ r.title_zh }}</text>
+              <text class="title">{{ r.title }}</text>
+              <text v-if="r.collection_title_zh || r.collection_title" class="coll-tag">
+                {{ r.collection_title_zh || r.collection_title }} · {{ r.chapter_index }}/{{ r.collection_total_chapters }}
+              </text>
+            </view>
+            <view class="tags">
+              <text v-for="(label, i) in topicTags(r)" :key="i" class="tag">{{ label }}</text>
+            </view>
+          </view>
+          <view class="meta">
+            <text class="meta-item">{{ t("reading.list.wordCount", { n: r.word_count }) }}</text>
+            <text class="meta-item">{{ t("reading.list.newWordRate", { n: (r.new_word_rate * 100).toFixed(1) }) }}</text>
+          </view>
+        </view>
+        <view v-if="!items.length" class="empty">{{ t("reading.list.empty") }}</view>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
 import type { ReadingSummary } from "../../api/reading";
+import { listCollections, type CollectionSummary } from "../../api/collections";
 import { getProfile } from "../../api/users";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
-const tabs = [
-  { key: "", labelKey: "reading.list.all" },
-  { key: "science", labelKey: "topic.science" },
-  { key: "sports", labelKey: "topic.sports" },
-  { key: "history", labelKey: "topic.history" },
-  { key: "adventure", labelKey: "topic.adventure" },
+// 顶部 tab：第一项是「全部 / 书籍」切换，后四项是 topics
+type Tab = { key: string; labelKey: string; view: "list" | "collections" };
+const tabs: Tab[] = [
+  { key: "", labelKey: "reading.list.all", view: "list" },
+  { key: "books", labelKey: "reading.reader.collections", view: "collections" },
+  { key: "science", labelKey: "topic.science", view: "list" },
+  { key: "sports", labelKey: "topic.sports", view: "list" },
+  { key: "history", labelKey: "topic.history", view: "list" },
+  { key: "adventure", labelKey: "topic.adventure", view: "list" },
 ];
+
+const currentView = computed<"list" | "collections">(() => {
+  const tab = tabs.find((t) => t.key === activeTopic.value);
+  return tab?.view ?? "list";
+});
 
 // 多主题中文名直接来自后端 topic_labels；标签缺失回退主题 key
 function topicTags(r: ReadingSummary): string[] {
@@ -65,6 +104,11 @@ const activeTopic = ref("");
 const items = ref<ReadingSummary[]>([]);
 const loading = ref(false);
 const error = ref("");
+
+// 书籍 tab 状态
+const collections = ref<CollectionSummary[]>([]);
+const loadingCollections = ref(false);
+const collectionsError = ref("");
 
 onLoad(() => {
   applyPrefThenFetch();
@@ -101,13 +145,35 @@ async function fetchList() {
   }
 }
 
+async function fetchCollections() {
+  loadingCollections.value = true;
+  collectionsError.value = "";
+  try {
+    const resp = await listCollections();
+    collections.value = resp.items;
+  } catch (e) {
+    collectionsError.value = (e as Error).message;
+  } finally {
+    loadingCollections.value = false;
+  }
+}
+
 function setTopic(key: string) {
   activeTopic.value = key;
-  fetchList();
+  const tab = tabs.find((t) => t.key === key);
+  if (tab?.view === "collections") {
+    if (!collections.value.length && !loadingCollections.value) fetchCollections();
+  } else {
+    fetchList();
+  }
 }
 
 function open(id: string) {
   uni.navigateTo({ url: `/pages/reading/reader?id=${id}&level=${level.value}` });
+}
+
+function openCollection(id: string) {
+  uni.navigateTo({ url: `/pages/reading/collection-detail?id=${id}` });
 }
 </script>
 
@@ -209,5 +275,80 @@ function open(id: string) {
 .meta-item {
   font-size: 24rpx;
   color: #8a94ad;
+}
+
+/* 书籍网格 */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+.coll-card {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
+}
+.coll-card:active {
+  transform: scale(0.99);
+}
+.coll-cover {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(135deg, #4f7cff 0%, #6c5ce7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.cover-img {
+  width: 100%;
+  height: 100%;
+}
+.cover-fallback {
+  font-size: 80rpx;
+  font-weight: 800;
+  color: #fff;
+}
+.coll-info {
+  padding: 16rpx 20rpx 20rpx;
+}
+.coll-title-zh {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2d50;
+  line-height: 1.3;
+}
+.coll-title {
+  display: block;
+  font-size: 22rpx;
+  color: #8a94ad;
+  margin-top: 4rpx;
+}
+.coll-author {
+  display: block;
+  font-size: 22rpx;
+  color: #6a7591;
+  margin-top: 8rpx;
+}
+.coll-meta {
+  display: flex;
+  gap: 8rpx;
+  font-size: 22rpx;
+  color: #8a94ad;
+  margin-top: 8rpx;
+}
+
+/* 列表中 collection 章节的小标识 */
+.coll-tag {
+  display: block;
+  font-size: 22rpx;
+  color: #4f7cff;
+  background: #eef2fb;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+  margin-top: 6rpx;
+  align-self: flex-start;
 }
 </style>

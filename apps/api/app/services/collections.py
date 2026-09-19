@@ -1,0 +1,233 @@
+"""作品集 / 书籍服务：每个 collection 一个 JSON 文件（含 metadata + glossary + chapters）。
+
+存储：
+- data/collections/<id>.json — 单本书完整数据
+- data/collections/_index.json — 轻量列表（首页用）
+- chapters 数组嵌在 collection 文件里，不外置到 readings.json
+  （这样一本 = 一个文件，git diff 自包含、导出/共享 = 单文件）
+
+API 不暴露 chapter 子概念，统一以 reading 视图呈现
+（前端看到的 reading 实体带 collection_id / chapter_index / chapter_title）。
+"""
+from __future__ import annotations
+
+import json
+import re
+import threading
+import time
+import uuid
+from pathlib import Path
+
+from ..config import settings
+
+_lock = threading.Lock()
+
+
+def _collection_path(id: str) -> Path:
+    """单本 collection 文件路径：data/collections/<id>.json"""
+    # 防路径穿越：只允许字母数字 + 短横线
+    if not re.match(r"^[a-z0-9][a-z0-9-]*$", id):
+        raise ValueError(f"collection id 非法（仅小写字母数字 + 短横线）: {id}")
+    return Path(settings.collections_dir) / f"{id}.json"
+
+
+# ---------- 列表 / 单本 ----------
+
+def list_collections() -> list[dict]:
+    """所有 collection 的轻量列表（基于 _index.json；缺则现扫）。"""
+    idx_path = Path(settings.collections_index)
+    if idx_path.exists():
+        try:
+            return list(json.loads(idx_path.read_text(encoding="utf-8")) or [])
+        except (json.JSONDecodeError, OSError):
+            pass
+    # 兜底：扫目录
+    return _scan_list()
+
+
+def _scan_list() -> list[dict]:
+    """扫 data/collections/*.json 重建轻量列表（不读 chapters 内容，只读元数据）。"""
+    items: list[dict] = []
+    d = Path(settings.collections_dir)
+    if not d.exists():
+        return items
+    for p in sorted(d.glob("*.json")):
+        if p.name == "_index.json":
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        items.append({
+            "id": data.get("id", p.stem),
+            "title": data.get("title", ""),
+            "title_zh": data.get("title_zh", ""),
+            "author": data.get("author", ""),
+            "cover_url": data.get("cover_url", ""),
+            "total_chapters": len(data.get("chapters") or []),
+            "source": data.get("source", ""),
+            "glossary_size": len(data.get("glossary") or {}),
+            "created_at": data.get("created_at", 0),
+        })
+    return items
+
+
+def get_collection(id: str) -> dict | None:
+    """读完整 collection（含 chapters + glossary + polysemy）；不存在返 None。"""
+    p = _collection_path(id)
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def get_chapter(collection_id: str, chapter_index: int) -> tuple[dict, dict] | None:
+    """返回 (collection, chapter) 或 None。index 从 1 开始。"""
+    coll = get_collection(collection_id)
+    if coll is None:
+        return None
+    for ch in coll.get("chapters") or []:
+        if ch.get("index") == chapter_index:
+            return coll, ch
+    return None
+
+
+def get_chapter_for_reading(reading_id: str) -> tuple[dict, dict] | None:
+    """按 reading_id 找章节（扫所有 collection）。找到返回 (collection, chapter)。"""
+    d = Path(settings.collections_dir)
+    if not d.exists():
+        return None
+    for p in sorted(d.glob("*.json")):
+        if p.name == "_index.json":
+            continue
+        try:
+            coll = json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        for ch in coll.get("chapters") or []:
+            if ch.get("id") == reading_id:
+                return coll, ch
+    return None
+
+
+# ---------- 写入 ----------
+
+def _persist(collection: dict) -> None:
+    """单文件落盘；同时更新 _index.json。"""
+    d = Path(settings.collections_dir)
+    d.mkdir(parents=True, exist_ok=True)
+    cid = collection["id"]
+    path = _collection_path(cid)
+    with _lock:
+        path.write_text(
+            json.dumps(collection, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    # 重建索引
+    _rebuild_index()
+
+
+def _rebuild_index() -> None:
+    items = _scan_list()
+    idx = Path(settings.collections_index)
+    idx.parent.mkdir(parents=True, exist_ok=True)
+    idx.write_text(
+        json.dumps(items, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def create_collection(data: dict) -> dict:
+    """新建 collection。data 需含 id, title；其他字段可选。"""
+    cid = (data.get("id") or "").strip()
+    if not cid:
+        raise ValueError("collection id 不能为空")
+    # 默认自动生成短 id
+    if cid == "_auto":
+        cid = "c-" + uuid.uuid4().hex[:8]
+    if get_collection(cid) is not None:
+        raise ValueError(f"collection 已存在: {cid}")
+    title = (data.get("title") or "").strip()
+    if not title:
+        raise ValueError("title 不能为空")
+    collection = {
+        "id": cid,
+        "title": title,
+        "title_zh": (data.get("title_zh") or "").strip(),
+        "author": (data.get("author") or "").strip(),
+        "source": (data.get("source") or "").strip(),
+        "total_chapters": len(data.get("chapters") or []),
+        "cover_url": (data.get("cover_url") or "").strip(),
+        "intro_zh": (data.get("intro_zh") or "").strip(),
+        "intro_en": (data.get("intro_en") or "").strip(),
+        "created_at": round(time.time(), 3),
+        "glossary": dict(data.get("glossary") or {}),
+        "polysemy": dict(data.get("polysemy") or {}),
+        "chapters": list(data.get("chapters") or []),
+    }
+    _persist(collection)
+    return collection
+
+
+def update_collection(id: str, data: dict) -> dict | None:
+    """改字段（metadata + glossary + polysemy + chapters）。"""
+    cur = get_collection(id)
+    if cur is None:
+        return None
+    for k in ("title", "title_zh", "author", "source", "cover_url", "intro_zh", "intro_en"):
+        if k in data:
+            cur[k] = (data.get(k) or "").strip()
+    for k in ("glossary", "polysemy"):
+        if k in data and data[k] is not None:
+            cur[k] = dict(data[k])
+    if "chapters" in data and data["chapters"] is not None:
+        cur["chapters"] = list(data["chapters"])
+        cur["total_chapters"] = len(cur["chapters"])
+    _persist(cur)
+    return cur
+
+
+def delete_collection(id: str) -> bool:
+    p = _collection_path(id)
+    if not p.exists():
+        return False
+    with _lock:
+        p.unlink()
+    _rebuild_index()
+    return True
+
+
+# ---------- reading 视图适配 ----------
+
+def flatten_chapter_to_reading(coll: dict, chapter: dict) -> dict:
+    """把嵌在 collection 里的 chapter 转成 reading 视图（带 collection 元数据）。"""
+    return {
+        "id": chapter["id"],
+        "collection_id": coll["id"],
+        "chapter_index": chapter.get("index"),
+        "chapter_title": chapter.get("title"),
+        "title": chapter.get("title") or chapter["id"],
+        "title_zh": chapter.get("title_zh") or "",
+        "subtitle": "",
+        "topics": [],
+        "target_level": chapter.get("target_level"),
+        "glosses": chapter.get("glosses") or {},
+        # collection.glossary 合并展示：chapter 优先
+        "collection_glossary": coll.get("glossary") or {},
+        "full_glosses": {},
+        "headwords": {},
+        "terms": chapter.get("terms") or {},
+        "skip": chapter.get("skip") or [],
+        "body": chapter.get("body") or "",
+        "quizzes": chapter.get("quizzes") or [],
+        "collection": {
+            "id": coll["id"],
+            "title": coll.get("title", ""),
+            "title_zh": coll.get("title_zh", ""),
+            "author": coll.get("author", ""),
+            "cover_url": coll.get("cover_url", ""),
+            "total_chapters": len(coll.get("chapters") or []),
+        },
+    }

@@ -4,7 +4,7 @@ from sqlalchemy import text
 
 from .config import settings
 from .db import engine
-from .routers import reading, tts, users, vocab, writing
+from .routers import reading, tts, users, vocab, writing, collections
 
 app = FastAPI(title=settings.app_name)
 
@@ -21,6 +21,7 @@ app.include_router(reading.router)
 app.include_router(tts.router)
 app.include_router(users.router)
 app.include_router(writing.router)
+app.include_router(collections.router)
 
 
 @app.get("/health")

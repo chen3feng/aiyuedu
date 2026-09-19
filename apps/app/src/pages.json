@@ -25,6 +25,12 @@
 			}
 		},
 		{
+			"path": "pages/reading/collection-detail",
+			"style": {
+				"navigationBarTitleText": "书籍"
+			}
+		},
+		{
 			"path": "pages/writing/index",
 			"style": {
 				"navigationBarTitleText": "写作"

@@ -89,6 +89,12 @@ export default {
       finish: "完成阅读",
       finishRemain: "完成阅读（还剩 {n} 题）",
       finished: "已完成阅读",
+      prevChapter: "上一章：{title}",
+      nextChapter: "下一章：{title}",
+      firstChapter: "已是第一章",
+      lastChapter: "已是最后一章",
+      chapterPos: "第 {n} / {total} 章",
+      collections: "书籍",
     },
   },
 
