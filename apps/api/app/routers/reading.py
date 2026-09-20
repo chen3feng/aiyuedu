@@ -22,45 +22,51 @@ class RecordIn(BaseModel):
     new_word_clicks: list[str] = []
 
 
-def _all_reading_views():
-    """合并孤儿 readings.json + 各 collection 的所有章节，输出统一的 reading 视图。"""
-    views = []
-    # 孤儿（readings.json 里的）
+def _all_reading_views(topic: str | None = None):
+    """合并视图：孤儿 readings（按 topic 过滤）+ 各 collection 摘要（作为整体入口）。
+
+    不再把 collection 的章节作为独立条目列出——它们是 collection 的一部分，
+    通过 collection 入口访问。这避免了 list 页章节与其他文章混在一起的问题。
+    """
+    out: list[dict] = []
+    # 孤儿 readings
     for r in reading.list_readings():
-        views.append({
+        rtopics = _topics_of(r)
+        if topic and topic not in rtopics:
+            continue
+        out.append({
             "id": r["id"],
             "title": r["title"],
             "title_zh": r.get("title_zh") or "",
-            "topics": _topics_of(r),
-            "topic_labels": _topic_labels(_topics_of(r)),
+            "topics": rtopics,
+            "topic_labels": _topic_labels(rtopics),
             "target_level": r.get("target_level"),
-            "word_count": 0,  # 列表页不计算，省 CPU
+            "word_count": 0,  # 列表页不计算
             "new_word_rate": 0,
         })
-    # collection 章节
+    # collection 摘要：每个 collection 作为一条目，独立入口
     for coll in collections.list_collections():
         full = collections.get_collection(coll["id"])
         if not full:
             continue
-        for ch in full.get("chapters") or []:
-            views.append({
-                "id": ch["id"],
-                "title": ch.get("title") or ch["id"],
-                "title_zh": ch.get("title_zh") or "",
-                "topics": [],
-                "topic_labels": [],
-                "target_level": ch.get("target_level"),
-                "word_count": 0,
-                "new_word_rate": 0,
-                # collection 元数据（前端面包屑用）
-                "collection_id": coll["id"],
-                "chapter_index": ch.get("index"),
-                "collection_title": coll.get("title"),
-                "collection_title_zh": coll.get("title_zh"),
-                "collection_total_chapters": coll.get("total_chapters") or len(full.get("chapters") or []),
-                "collection_cover_url": coll.get("cover_url"),
-            })
-    return views
+        ctopics = full.get("topics") or []
+        if topic and topic not in ctopics:
+            continue
+        out.append({
+            "id": coll["id"],
+            "title": coll.get("title", ""),
+            "title_zh": coll.get("title_zh") or "",
+            "topics": ctopics,
+            "topic_labels": _topic_labels(ctopics),
+            "target_level": None,
+            "word_count": 0,
+            "new_word_rate": 0,
+            "is_collection": True,
+            "total_chapters": coll.get("total_chapters") or len(full.get("chapters") or []),
+            "author": coll.get("author", ""),
+            "cover_url": coll.get("cover_url", ""),
+        })
+    return out
 
 
 @router.get("")
@@ -70,13 +76,8 @@ def list_readings(
     user_id: str | None = Header(None, alias="X-User-Id")):
     # 未显式指定 level 时，用该用户的评测词汇量，否则回退默认
     level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
-    items = []
-    for v in _all_reading_views():
-        if topic and topic not in v["topics"]:
-            continue
-        # 列表页不重算统计（懒加载）；调用方按需 GET /readings/{id}
-        items.append(v)
-    return {"items": items}
+    # 列表页不重算统计（懒加载）；调用方按需 GET /readings/{id}
+    return {"items": _all_reading_views(topic)}
 
 
 @router.get("/{reading_id}")

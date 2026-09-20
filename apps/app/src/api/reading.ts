@@ -10,13 +10,11 @@ export interface ReadingSummary {
   target_level: number | null;
   word_count: number;
   new_word_rate: number;
-  // collection 章节字段（孤儿 reading 没有）
-  collection_id?: string;
-  chapter_index?: number;
-  collection_title?: string;
-  collection_title_zh?: string;
-  collection_total_chapters?: number;
-  collection_cover_url?: string;
+  // collection 摘要字段（孤儿 reading 没有）
+  is_collection?: boolean;
+  total_chapters?: number;
+  author?: string;
+  cover_url?: string;
 }
 
 export interface ReadingWord {

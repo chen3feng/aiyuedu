@@ -64,6 +64,7 @@ export default {
       empty: "该主题暂无文章",
       wordCount: "{n} 词",
       newWordRate: "生词率 {n}%",
+      chapters: "章",
     },
     reader: {
       words: "{n} 词",

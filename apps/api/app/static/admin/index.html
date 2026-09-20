@@ -80,6 +80,7 @@
   <h1>阅读后台管理</h1>
   <nav class="tabs">
     <div class="tab active" id="tab-articles" onclick="switchTab('articles')">文章管理</div>
+    <div class="tab" id="tab-collections" onclick="switchTab('collections')">作品集</div>
     <div class="tab" id="tab-topics" onclick="switchTab('topics')">主题管理</div>
     <div class="tab" id="tab-ai" onclick="switchTab('ai')">AI 提供者</div>
   </nav>
@@ -109,6 +110,8 @@ const state = {
   tab: "articles",
   topics: [],
   articles: [],
+  collections: [],      // 作品集列表
+  collectionDetail: null, // 正在查看的作品集详情
   editing: null,        // null=列表, 'new'=新增, id=编辑
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
@@ -535,9 +538,11 @@ async function switchTab(tab) {
   state.tab = tab;
   $("tab-topics").className = "tab" + (tab === "topics" ? " active" : "");
   $("tab-articles").className = "tab" + (tab === "articles" ? " active" : "");
+  $("tab-collections").className = "tab" + (tab === "collections" ? " active" : "");
   $("tab-ai").className = "tab" + (tab === "ai" ? " active" : "");
   if (tab === "topics") await renderTopics();
   else if (tab === "articles") await renderArticles();
+  else if (tab === "collections") await renderCollections();
   else await renderAi();
 }
 
@@ -558,6 +563,122 @@ async function renderTopics() {
           <button class="danger small" onclick="delTopic('${esc(t.key)}','${esc(t.label_zh)}')">删除</button>
         </div>`).join("")}
     </div>`;
+}
+
+// ---------- 作品集 ----------
+
+async function loadCollections() {
+  state.collections = (await api("/collections")).items;
+}
+
+async function renderCollections() {
+  await loadCollections();
+  if (state.collectionDetail !== null) { renderCollectionDetail(); return; }
+  main().innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <strong>作品集（${state.collections.length}）</strong>
+      </div>
+      <div class="row" style="margin-bottom:14px;gap:8px">
+        <input type="number" id="gutenberg-id" placeholder="古腾堡 book ID（如 146）" style="max-width:220px">
+        <button class="primary" onclick="importGutenberg()">从古腾堡导入</button>
+        <span class="muted" id="import-status"></span>
+      </div>
+      <div class="muted" style="margin-bottom:10px">导入后会自动拉取 + 拆章节；词汇标注 / 标题翻译后续逐章补。</div>
+      <div>${state.collections.length ? "" : '<div class="empty">暂无作品集，可输入古腾堡 ID 导入</div>'}</div>
+      ${state.collections.map((c) => `
+        <div class="item">
+          <div class="grow">
+            <strong>${esc(c.title_zh || c.title)}</strong>
+            <span class="muted">${esc(c.title)}</span>
+            <div class="muted">${esc(c.author || "")} · ${c.total_chapters} 章 · ${c.glossary_size} 词</div>
+          </div>
+          <button class="small" onclick="openCollectionDetail('${esc(c.id)}')">章节</button>
+          <button class="danger small" onclick="delCollection('${esc(c.id)}','${esc(c.title_zh || c.title)}')">删除</button>
+        </div>`).join("")}
+    </div>`;
+}
+
+async function renderCollectionDetail() {
+  const c = state.collectionDetail;
+  main().innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:14px">
+        <strong>${esc(c.title_zh || c.title)}</strong>
+        <button onclick="closeCollectionDetail()">返回列表</button>
+      </div>
+      <div class="muted" style="margin-bottom:14px">
+        ${esc(c.title)} · ${esc(c.author || "")} · 共 ${c.chapters.length} 章 · glossary ${Object.keys(c.glossary || {}).length} 词
+      </div>
+      <div class="field"><label>中文标题</label>
+        <input type="text" id="coll-title-zh" value="${esc(c.title_zh || "")}" placeholder="例如：小公主"></div>
+      <div class="field"><label>中文简介</label>
+        <textarea id="coll-intro-zh" placeholder="一两句话介绍这本书">${esc(c.intro_zh || "")}</textarea></div>
+      <div class="row" style="margin-bottom:14px">
+        <button class="primary" onclick="saveCollectionMeta('${esc(c.id)}')">保存标题/简介</button>
+      </div>
+      <div class="muted" style="margin-bottom:10px">章节列表（点击标题可编辑正文；标题翻译 / 词汇标注待补）</div>
+      ${(c.chapters || []).map((ch, i) => `
+        <div class="item">
+          <div class="grow">
+            <strong>${ch.index}. ${esc(ch.title || "")}</strong>
+            <span class="muted">${ch.title_zh ? esc(ch.title_zh) : ""}</span>
+            <div class="muted">${(ch.body || "").split(/\s+/).length} 词</div>
+          </div>
+          <input type="text" placeholder="中文标题" value="${esc(ch.title_zh || "")}"
+            onchange="setChapterTitleZh('${esc(c.id)}', ${ch.index}, this.value)" style="max-width:200px">
+        </div>`).join("")}
+    </div>`;
+}
+
+async function importGutenberg() {
+  const id = parseInt($("gutenberg-id").value, 10);
+  if (!id) return toast("请输入古腾堡 book ID", true);
+  $("import-status").textContent = "导入中（拉取 + 拆章节，约 20-60s）…";
+  try {
+    const coll = await api("/collections/import-gutenberg", "POST", { book_id: id });
+    $("import-status").textContent = "";
+    toast(`已导入「${coll.title}」，共 ${coll.total_chapters} 章`);
+    await renderCollections();
+  } catch (e) {
+    $("import-status").textContent = "";
+    toast(e.message, true);
+  }
+}
+
+async function openCollectionDetail(id) {
+  state.collectionDetail = await api("/collections/" + id);
+  renderCollectionDetail();
+}
+
+function closeCollectionDetail() {
+  state.collectionDetail = null;
+  renderCollections();
+}
+
+async function delCollection(id, title) {
+  if (!confirm(`确认删除作品集「${title}」及其所有章节？`)) return;
+  try { await api("/collections/" + id, "DELETE"); } catch (e) { return toast(e.message, true); }
+  toast("已删除作品集");
+  await renderCollections();
+}
+
+async function saveCollectionMeta(id) {
+  const title_zh = $("coll-title-zh").value.trim();
+  const intro_zh = $("coll-intro-zh").value.trim();
+  try {
+    await api("/collections/" + id, "PUT", { ...state.collectionDetail, title_zh, intro_zh });
+    toast("已保存");
+    await openCollectionDetail(id);
+  } catch (e) { toast(e.message, true); }
+}
+
+function setChapterTitleZh(collId, chapterIndex, value) {
+  const c = state.collectionDetail;
+  if (!c) return;
+  const ch = (c.chapters || []).find((x) => x.index === chapterIndex);
+  if (ch) ch.title_zh = value;
+  // 不立即保存，等用户点「保存标题/简介」时整体提交
 }
 
 async function renderArticles() {

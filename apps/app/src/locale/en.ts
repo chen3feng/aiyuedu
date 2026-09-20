@@ -64,6 +64,7 @@ export default {
       empty: "No articles in this topic",
       wordCount: "{n} words",
       newWordRate: "New-word rate {n}%",
+      chapters: "chapters",
     },
     reader: {
       words: "{n} words",
