@@ -381,3 +381,71 @@ def test_reconcile_collection_mixed_glosses(isolated_collections):
 
 def test_reconcile_collection_missing_returns_none(isolated_collections):
     assert collections.reconcile_collection("ghost") is None
+
+# ---------- 章节编辑 ----------
+
+def test_update_chapter_fields(isolated_collections):
+    """title / title_zh / body / target_level 全量更新并落盘。"""
+    collections.create_collection(_sample_coll("edit", n=2))
+    ch = collections.update_chapter("edit", 1, {
+        "title": "Chapter One",
+        "title_zh": "第一章",
+        "body": "New body text. " * 5,
+        "target_level": 5000,
+    })
+    assert ch["title"] == "Chapter One"
+    assert ch["title_zh"] == "第一章"
+    assert ch["body"].startswith("New body text.")
+    assert ch["target_level"] == 5000
+    # 落盘 + 其他章不受影响
+    fetched = collections.get_collection("edit")
+    assert fetched["chapters"][0]["title"] == "Chapter One"
+    assert fetched["chapters"][1]["title"] == "Chapter 2"
+
+
+def test_update_chapter_partial(isolated_collections):
+    """只传 title_zh：body / target_level / glosses 原样保留。"""
+    collections.create_collection(_sample_coll("part", n=1))
+    coll = collections.get_collection("part")
+    coll["chapters"][0]["body"] = "Original body."
+    coll["chapters"][0]["glosses"] = {"attic": "阁楼"}
+    coll["chapters"][0]["target_level"] = 3000
+    collections._persist(coll)
+
+    ch = collections.update_chapter("part", 1, {"title_zh": "第一章"})
+    assert ch["body"] == "Original body."
+    assert ch["target_level"] == 3000
+    assert ch["glosses"] == {"attic": "阁楼"}
+
+
+def test_update_chapter_body_resets_ai_status(isolated_collections):
+    """body 实际变更 → ai_status 重置 pending + 提示 reason；glosses 保留。"""
+    collections.create_collection(_sample_coll("rst", n=1))
+    coll = collections.get_collection("rst")
+    coll["chapters"][0]["ai_status"] = "done"
+    coll["chapters"][0]["glosses"] = {"attic": "阁楼"}
+    collections._persist(coll)
+
+    ch = collections.update_chapter("rst", 1, {"body": "Edited body."})
+    assert ch["ai_status"] == "pending"
+    assert "重跑" in ch["ai_reason"]
+    assert ch["glosses"] == {"attic": "阁楼"}  # 词条保留，重跑时覆盖
+
+
+def test_update_chapter_same_body_keeps_ai_status(isolated_collections):
+    """body 传了但内容相同 → 不重置（保存其他字段不算编辑正文）。"""
+    collections.create_collection(_sample_coll("same", n=1))
+    coll = collections.get_collection("same")
+    coll["chapters"][0]["ai_status"] = "done"
+    collections._persist(coll)
+    body = coll["chapters"][0]["body"]
+
+    ch = collections.update_chapter("same", 1, {"body": body, "title_zh": "改标题"})
+    assert ch["ai_status"] == "done"
+    assert ch["title_zh"] == "改标题"
+
+
+def test_update_chapter_missing_returns_none(isolated_collections):
+    assert collections.update_chapter("ghost", 1, {"title": "x"}) is None
+    collections.create_collection(_sample_coll("miss", n=1))
+    assert collections.update_chapter("miss", 999, {"title": "x"}) is None

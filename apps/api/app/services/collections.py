@@ -304,6 +304,45 @@ import re as _re_html
 _HTML_TAG_RE = _re_html.compile(r"<[^>]+>")
 
 
+def update_chapter(collection_id: str, chapter_index: int, data: dict) -> dict | None:
+    """编辑单章：title / title_zh / body / target_level（只更新传入的字段）。
+
+    body 实际变更时把 ai_status 重置为 pending（glosses 已过期，提示重跑 AI；
+    词条保留，重跑 force=True 会覆盖）。返回更新后的 chapter；不存在返 None。
+    读改写全程持锁，与并发 AI 写回互不覆盖。
+    """
+
+    def _find(coll: dict) -> dict | None:
+        return next(
+            (c for c in coll.get("chapters") or [] if c.get("index") == chapter_index),
+            None,
+        )
+
+    with _lock:
+        cur = get_collection(collection_id)
+        if cur is None:
+            return None
+        ch = _find(cur)
+        if ch is None:
+            return None
+        body_changed = False
+        if "title" in data and data["title"] is not None:
+            ch["title"] = str(data["title"]).strip()
+        if "title_zh" in data and data["title_zh"] is not None:
+            ch["title_zh"] = str(data["title_zh"]).strip()
+        if "body" in data and data["body"] is not None:
+            new_body = str(data["body"])
+            body_changed = new_body != ch.get("body")
+            ch["body"] = new_body
+        if "target_level" in data and data["target_level"] is not None:
+            ch["target_level"] = int(data["target_level"])
+        if body_changed:
+            ch["ai_status"] = "pending"
+            ch["ai_reason"] = "正文已编辑，词条可能过期，建议重跑 AI"
+        _persist_locked(cur)
+        return ch
+
+
 def _extract_chapter_vocab(body: str, level: int) -> list[dict]:
     """提取章节候选生词（按 level 过滤 + 每词首次出现句）。
 

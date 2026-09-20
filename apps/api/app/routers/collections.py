@@ -84,6 +84,28 @@ class AnalyzeChapterIn(BaseModel):
     force: bool = False  # True = 即使已完成也重跑（管理员「重跑 AI 释义」按钮）
 
 
+class ChapterIn(BaseModel):
+    """单章编辑：只更新传入的字段（None = 不改）。"""
+    title: str | None = None
+    title_zh: str | None = None
+    body: str | None = None
+    target_level: int | None = None
+
+
+@router.put("/{collection_id}/chapters/{chapter_index}")
+def update_chapter(collection_id: str, chapter_index: int, payload: ChapterIn,
+                   _user_id: str | None = Header(None, alias="X-User-Id")):
+    """编辑单章（标题 / 正文 / 目标词汇量）。
+
+    body 实际变更时该章 ai_status 重置为 pending（词条过期，需重跑 AI）。
+    返回更新后的 chapter；不存在返回 404。
+    """
+    ch = collections.update_chapter(collection_id, chapter_index, payload.model_dump())
+    if ch is None:
+        raise HTTPException(status_code=404, detail="作品集或章节不存在")
+    return ch
+
+
 @router.post("/{collection_id}/chapters/{chapter_index}/analyze")
 def analyze_chapter(collection_id: str, chapter_index: int,
                      payload: AnalyzeChapterIn | None = None,

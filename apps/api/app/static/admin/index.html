@@ -118,6 +118,7 @@ const state = {
   articles: [],
   collections: [],      // 作品集列表
   collectionDetail: null, // 正在查看的作品集详情
+  editingChapter: null, // 正在编辑的章节 {collId, index}；null=不在编辑
   editing: null,        // null=列表, 'new'=新增, id=编辑
   form: null,           // 正在编辑的文章对象
   analyze: null,        // 定级/生词预览结果
@@ -629,7 +630,7 @@ async function renderCollectionDetail() {
         <button onclick="reconcileCollection('${esc(c.id)}')">对齐词汇表</button>
       </div>
       <div class="muted" style="margin-bottom:10px">章节列表（点击「重跑 AI」= force 模式；导入后已自动跑一遍）</div>
-      ${(c.chapters || []).map((ch, i) => `
+      ${state.editingChapter ? renderChapterEditor(c) : (c.chapters || []).map((ch, i) => `
         <div class="item">
           <div class="grow">
             <strong>${ch.index}. ${esc(ch.title || "")}</strong>
@@ -642,9 +643,59 @@ async function renderCollectionDetail() {
           </div>
           <input type="text" placeholder="中文标题" value="${esc(ch.title_zh || "")}"
             onchange="setChapterTitleZh('${esc(c.id)}', ${ch.index}, this.value)" style="max-width:200px">
+          <button class="small" onclick="startEditChapter('${esc(c.id)}', ${ch.index})">编辑</button>
           <button class="small" onclick="analyzeOneChapter('${esc(c.id)}', ${ch.index})">重跑 AI</button>
         </div>`).join("")}
     </div>`;
+}
+
+function renderChapterEditor(c) {
+  const ch = c.chapters.find((x) => x.index === state.editingChapter.index);
+  if (!ch) { state.editingChapter = null; return ""; }
+  return `
+    <div class="item" style="display:block">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <strong>编辑第 ${ch.index} 章</strong>
+        <button class="small" onclick="cancelEditChapter()">取消</button>
+      </div>
+      <div class="row" style="gap:8px;margin-bottom:10px">
+        <div class="field grow"><label>英文标题</label>
+          <input type="text" id="ch-edit-title" value="${esc(ch.title || "")}"></div>
+        <div class="field grow"><label>中文标题</label>
+          <input type="text" id="ch-edit-title-zh" value="${esc(ch.title_zh || "")}"></div>
+        <div class="field" style="max-width:140px"><label>目标词汇量</label>
+          <input type="number" id="ch-edit-level" value="${ch.target_level ?? 3000}"></div>
+      </div>
+      <div class="field"><label>正文（可修古腾堡残留的断行 / 注记；斜体用 &lt;em&gt;…&lt;/em&gt;）</label>
+        <textarea id="ch-edit-body" style="min-height:340px;font-family:monospace;font-size:13px">${esc(ch.body || "")}</textarea></div>
+      <div class="muted" style="margin-bottom:10px">正文变更后该章 AI 状态会重置为「待分析」（词条保留，可重跑 AI 刷新）。</div>
+      <button class="primary" onclick="saveChapterEdit('${esc(c.id)}', ${ch.index})">保存</button>
+    </div>`;
+}
+
+function startEditChapter(collId, idx) {
+  state.editingChapter = { collId, index: idx };
+  renderCollectionDetail();
+}
+
+function cancelEditChapter() {
+  state.editingChapter = null;
+  renderCollectionDetail();
+}
+
+async function saveChapterEdit(collId, idx) {
+  const payload = {
+    title: $("ch-edit-title").value,
+    title_zh: $("ch-edit-title-zh").value,
+    body: $("ch-edit-body").value,
+    target_level: parseInt($("ch-edit-level").value, 10) || 3000,
+  };
+  try {
+    const ch = await api(`/collections/${collId}/chapters/${idx}`, "PUT", payload);
+    state.editingChapter = null;
+    toast(`第 ${idx} 章已保存${ch.ai_status === "pending" ? "（正文已变更，建议重跑 AI）" : ""}`);
+    await openCollectionDetail(collId);
+  } catch (e) { toast(e.message, true); }
 }
 
 function statusLabel(s) {
@@ -695,11 +746,13 @@ async function importGutenberg() {
 
 async function openCollectionDetail(id) {
   state.collectionDetail = await api("/collections/" + id);
+  state.editingChapter = null;
   renderCollectionDetail();
 }
 
 function closeCollectionDetail() {
   state.collectionDetail = null;
+  state.editingChapter = null;
   renderCollections();
 }
 
