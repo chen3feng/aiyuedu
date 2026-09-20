@@ -30,6 +30,7 @@ export interface ReadingWord {
   stop?: boolean;
   lemma?: string;
   phrase?: boolean; // 多词短语（take over / throw up），整段一个生词单元
+  em?: boolean; // 斜体强调（正文 <em> 内；ruby html 自带标签，此标志供逐词模式加样式）
 }
 
 export interface ReadingLine {

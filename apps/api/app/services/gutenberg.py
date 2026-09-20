@@ -142,6 +142,26 @@ def strip_gutenberg_boilerplate(text: str) -> str:
 
 # ---------- 拆章节 ----------
 
+# 古腾堡纯文本斜体：_text_（首个字符非空白，天然跳过 "____" 分隔线与 "_ _"）
+_UNDERSCORE_EM_RE = re.compile(r"_([^_\s][^_]*?)_")
+
+
+def underscores_to_em(text: str) -> str:
+    """古腾堡斜体标记 _text_ → <em>text</em>（阅读端渲染斜体强调）。
+
+    - 内容允许内部换行（软回车折行截断的斜体），但不允许跨段落（含空行
+      则保持原样：斜体不该跨段，宁可漏转也不错转）
+    - 词首非空白约束让 "______" 分隔线、"_ _ _" 之类装饰线天然不匹配
+    """
+    def _conv(m: re.Match) -> str:
+        inner = m.group(1)
+        if re.search(r"\n\s*\n", inner):
+            return m.group(0)
+        return f"<em>{inner}</em>"
+
+    return _UNDERSCORE_EM_RE.sub(_conv, text)
+
+
 def _is_chapter_heading(line: str) -> bool:
     """一行是否是章节标题（去前后空白后精确匹配）。"""
     s = line.strip()
@@ -324,8 +344,13 @@ def _merge_short_chapters(chapters: list[Chapter], cfg: SplitConfig) -> list[Cha
 
 
 def _finalize(chapters: list[Chapter]) -> list[Chapter]:
-    """重编号 index=1..N。"""
+    """重编号 index=1..N；body 里的 _text_ 斜体标记转成 <em>（标题不动）。"""
     return [
-        Chapter(index=i + 1, title=c.title, body=c.body, word_count=c.word_count)
+        Chapter(
+            index=i + 1,
+            title=c.title,
+            body=underscores_to_em(c.body),
+            word_count=c.word_count,
+        )
         for i, c in enumerate(chapters)
     ]

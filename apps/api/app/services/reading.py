@@ -135,8 +135,12 @@ DEFAULT_LEVEL = 3600
 # 覆盖各文章自动难度不一的问题；阅读端仍按用户自己的词汇量现筛现显。
 GLOSS_LEVEL = 2000
 
-# 句子切分：句末标点 + 空白（"9.58" 里的点后无空白，不会被误切）
-_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+# 句子切分：句末标点 + 空白（"9.58" 里的点后无空白，不会被误切）。
+# [\x01\x02]* 容忍句末紧贴的斜体掩码（"<em>I insist.</em> He left." 的句点
+# 后面是掩码再接空白）：切点上被吞掉的掩码直接丢弃——html 里未闭合的
+# <em> 由浏览器自动补全；跨句斜体（"_No. Never._"）极罕见，plain 模式
+# 后半句不带斜体，损失可忽略。
+_SENT_SPLIT = re.compile(r"(?<=[.!?])[\x01\x02]*\s+")
 # 古腾堡等长文本里有三种行尾：\r\n（Windows） / \r（旧 Mac，已罕见） / \n（Unix）。
 # 先归一为 \n：1) 单 \n 软回车 → 空格；2) \n\n+ 段落分隔保留。
 _CRLF_RE = re.compile(r"\r\n?")
@@ -148,6 +152,16 @@ _ABBREV_RE = re.compile(
 )
 # 缩写点占位符（用 \x00 防止与正文冲突；最终替换回 .）
 _ABBREV_PLACEHOLDER = "\x00"
+# 斜体强调 <em>/</em>（古腾堡导入把 _text_ 转成 <em>text</em>）：先掩码成
+# 控制字符，以「标点」身份流过 tokenizer（否则会拆成 < / em / > 三个 token，
+# "em" 沦为假词）。组装时 html 还原成真标签（ruby 模式 v-html 渲染斜体）；
+# words 剔除掩码（words 供逐词点击 + 前端 TTS 拼文本，必须无标记），
+# 词上改打 em: True 标志供 plain 模式加斜体样式。掩码与缩写占位符一样
+# 用控制字符，正文不可能出现。
+_EM_TAG_RE = re.compile(r"</?em>")
+_EM_PH_OPEN = "\x01"
+_EM_PH_CLOSE = "\x02"
+_EM_PH_SPLIT = re.compile(r"([\x01\x02])")
 # 词 token：数字（可含小数点与序数后缀 20th/21st/2nd/3rd，序数整体按数字处理，
 # 避免把 "20th" 拆成 "20"+"th"，使 "th" 沦为生词/噪声）或字母词（内部可含撇号，
 # 如 can't / don't）；其余为标点
@@ -251,6 +265,14 @@ def _head_of(lower: str) -> str:
         if stripped in sl:
             return sl[stripped]
     return lower
+
+
+def _mask_em(body: str) -> str:
+    """<em>/</em> → 控制字符掩码（tokenizer 阶段防拆碎；annotate 组装时还原）。"""
+    return _EM_TAG_RE.sub(
+        lambda m: _EM_PH_OPEN if m.group(0) == "<em>" else _EM_PH_CLOSE,
+        body,
+    )
 
 
 def _sentences(body: str) -> list[str]:
@@ -393,7 +415,8 @@ def _count(body: str, level: int, terms: dict | None = None, skip: list | None =
     """
     skip_set = set(skip) if skip else set()
     word_count = new_count = 0
-    for sentence in _sentences(body):
+    # 与 annotate 相同先掩码 <em>：否则标签会被拆出假词 "em" 计入词数
+    for sentence in _sentences(_mask_em(body)):
         for u in _units(sentence, level, terms):
             if u["kind"] == "punct" or u.get("num") or u.get("noise"):
                 continue
@@ -453,15 +476,37 @@ def annotate(
     lines = []
     vocab: dict[str, dict] = {}  # 词族头 -> 生词表条目（按首次出现顺序）
     word_count = new_count = 0
-    for sentence in _sentences(body):
+    for sentence in _sentences(_mask_em(body)):
         words = []
         html_parts: list[str] = []
+        in_em = False  # 当前是否在 <em> 内（供 plain 模式词打 em 标志）
         for u in _units(sentence, level, terms):
             kind = u["kind"]
             if kind == "punct":
-                words.append({"w": u["w"], "punct": True})
-                html_parts.append(_html.escape(u["w"], quote=False))
+                w = u["w"]
+                if _EM_PH_OPEN in w or _EM_PH_CLOSE in w:
+                    # 含斜体掩码的标点串（掩码可能与相邻标点合并成一个 token）：
+                    # html 里逐段还原 <em>/</em>、转义其余字符；words 剔除掩码
+                    for piece in _EM_PH_SPLIT.split(w):
+                        if not piece:
+                            continue
+                        if piece == _EM_PH_OPEN:
+                            html_parts.append("<em>")
+                            in_em = True
+                        elif piece == _EM_PH_CLOSE:
+                            html_parts.append("</em>")
+                            in_em = False
+                        else:
+                            html_parts.append(_html.escape(piece, quote=False))
+                    clean = w.replace(_EM_PH_OPEN, "").replace(_EM_PH_CLOSE, "")
+                    if clean:
+                        words.append({"w": clean, "punct": True})
+                    continue
+                words.append({"w": w, "punct": True})
+                html_parts.append(_html.escape(w, quote=False))
                 continue
+            if in_em:
+                u["em"] = True  # plain 模式（{{ w.w }} 纯文本插值）靠此标志渲染斜体
             if u.get("num"):
                 words.append(u)
                 html_parts.append(_html.escape(u["w"], quote=False))
@@ -474,7 +519,10 @@ def annotate(
             if kind == "term":
                 # 术语：行内注释（每次出现都注），不计生词数、不进生词表
                 word_count += 1
-                words.append({"w": u["w"], "known": True, "term": True, "gloss": u["gloss"]})
+                tw = {"w": u["w"], "known": True, "term": True, "gloss": u["gloss"]}
+                if in_em:
+                    tw["em"] = True
+                words.append(tw)
                 html_parts.append(
                     f"<ruby>{_html.escape(u['w'], quote=False)}"
                     f"<rt>{_html.escape(u['gloss'], quote=False)}</rt></ruby>"

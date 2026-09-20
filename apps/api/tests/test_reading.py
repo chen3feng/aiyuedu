@@ -637,3 +637,59 @@ def test_build_glosses_excludes_multiword_phrases():
     g = reading.build_glosses("I will take over the company.", 3600)
     assert "take over" not in g
     assert all(" " not in k for k in g)
+
+
+# ---------- 斜体强调 <em>（古腾堡 _text_ 导入转换而来） ----------
+
+def test_annotate_em_passes_through_to_html():
+    """<em> 在 ruby html 里原样保留（v-html 渲染斜体），不被转义、不拆碎。"""
+    r = reading.annotate('"<em>You</em> want to tell me," she said.', level=3600)
+    line = r["lines"][0]
+    assert '"<em>You</em> want to tell me," she said.' == line["html"]
+
+
+def test_annotate_em_words_stay_clean():
+    """words 不带任何标记（供逐词点击 + 前端 TTS 拼文本），词上打 em 标志。"""
+    r = reading.annotate('"<em>You</em> want to tell me," she said.', level=3600)
+    line = r["lines"][0]
+    joined = "".join(w["w"] for w in line["words"])
+    assert '"You want to tell me," she said.' == joined
+    assert "\x01" not in joined and "\x02" not in joined
+    you = next(w for w in line["words"] if w["w"] == "You")
+    assert you.get("em") is True
+    want = next(w for w in line["words"] if w["w"] == "want")
+    assert not want.get("em")
+
+
+def test_annotate_em_adjacent_punct_tokens():
+    """掩码与相邻标点合并成一个 token（如 '\x02,' / '"\x01'）也能正确还原。"""
+    r = reading.annotate("He called <em>her</em>, loudly.", level=3600)
+    line = r["lines"][0]
+    assert "He called <em>her</em>, loudly." == line["html"]
+    joined = "".join(w["w"] for w in line["words"])
+    assert "He called her, loudly." == joined
+
+
+def test_annotate_em_does_not_pollute_word_count():
+    """<em> 标签不是词：不计词数、不进生词表。"""
+    r = reading.annotate("The <em>quaint</em> attic was dim.", level=100)
+    assert r["word_count"] == 5
+    assert "em" not in [v["lemma"] for v in r["vocabulary"]]
+
+
+def test_annotate_sentence_split_inside_em():
+    """句点在 <em> 内也要切句；切点上的闭合标签被丢弃（浏览器自动补全）。"""
+    r = reading.annotate("<em>I insist.</em> He left.", level=3600)
+    assert len(r["lines"]) == 2
+    assert r["lines"][0]["html"].endswith("<em>I insist.")
+    assert r["lines"][1]["html"] == "He left."
+    # 逐词模式：第一行的词仍带 em 标志
+    assert any(w.get("em") for w in r["lines"][0]["words"])
+
+
+def test_annotate_word_inside_em_still_glossed():
+    """<em> 里的生词照常提取与 ruby 注释（标签只是外壳）。"""
+    r = reading.annotate("She entered a <em>quaint</em> attic.", level=100)
+    line = r["lines"][0]
+    assert "<em><ruby>quaint" in line["html"]
+    assert "quaint" in [v["lemma"] for v in r["vocabulary"]]

@@ -310,8 +310,8 @@ function isNew(wd: ReadingWord): boolean {
 
 function tokClass(wd: ReadingWord): string {
   if (wd.punct) return "punct";
-  if (isNew(wd)) return "new";
-  return "";
+  const cls = isNew(wd) ? "new" : "";
+  return wd.em ? `${cls} em`.trim() : cls;
 }
 
 function onTok(wd: ReadingWord) {
@@ -627,8 +627,15 @@ function finish() {
   color: #b06a00;
   font-weight: 400;
 }
+/* 斜体强调（正文 _text_ → <em>） */
+.ruby-body :deep(em) {
+  font-style: italic;
+}
 .tok.punct {
   color: #33405f;
+}
+.tok.em {
+  font-style: italic;
 }
 .tok.new {
   color: #e68a00;

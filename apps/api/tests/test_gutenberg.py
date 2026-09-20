@@ -206,3 +206,33 @@ def test_split_chapters_preserves_word_count():
     chapters = gutenberg.split_chapters(text)
     total = sum(c.word_count for c in chapters)
     assert total == 100  # 不丢词
+
+def test_underscores_to_em():
+    """古腾堡 _text_ 斜体标记 → <em>；分隔线/跨段不动。"""
+    assert gutenberg.underscores_to_em("_her_") == "<em>her</em>"
+    assert gutenberg.underscores_to_em("_of a good fortune_") == "<em>of a good fortune</em>"
+    # 词首非空白：分隔线与空内容装饰不匹配
+    assert gutenberg.underscores_to_em("______") == "______"
+    assert gutenberg.underscores_to_em("_ _ _ _") == "_ _ _ _"
+    assert gutenberg.underscores_to_em("plain text") == "plain text"
+    # 跨软回车（折行截断的斜体）要转
+    assert gutenberg.underscores_to_em("_a\nb_") == "<em>a\nb</em>"
+    # 跨段落（内容含空行）不转
+    assert gutenberg.underscores_to_em("_a\n\nb_") == "_a\n\nb_"
+
+
+def test_split_chapters_converts_underscore_italics_in_body_only():
+    """拆章节后 body 里的 _text_ → <em>；标题保持原样。"""
+    long_body = "word " * 900
+    text = (
+        "CHAPTER I.\n"
+        "\"_You_ must know that Mrs. Long says the house is _taken\nby a young man_.\"\n"
+        f"{long_body}\n"
+    )
+    chapters = gutenberg.split_chapters(text)
+    assert chapters[0].title == "CHAPTER I."
+    b = chapters[0].body
+    assert "<em>You</em>" in b
+    # 跨软回车的斜体
+    assert "<em>taken\nby a young man</em>" in b
+    assert "_You_" not in b
