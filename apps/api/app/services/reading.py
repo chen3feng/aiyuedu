@@ -141,6 +141,13 @@ _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 # 先归一为 \n：1) 单 \n 软回车 → 空格；2) \n\n+ 段落分隔保留。
 _CRLF_RE = re.compile(r"\r\n?")
 _SOFT_WRAP_RE = re.compile(r"(?<!\n)\n(?!\n)")
+# 常见英文缩写：句末 splitter 不能把这些点当句末（"Mr. Bennet" 不能被切成两句）
+_ABBREV_RE = re.compile(
+    r"\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|Gen|Gov|Sgt|Capt|Lt|Cmdr|Hon|Rev|Fr|vs|etc|"
+    r"i\.e|e\.g|cf|No|Inc|Co|Corp|Ltd|Fig|approx|dept|Univ|est|vol)\."
+)
+# 缩写点占位符（用 \x00 防止与正文冲突；最终替换回 .）
+_ABBREV_PLACEHOLDER = "\x00"
 # 词 token：数字（可含小数点与序数后缀 20th/21st/2nd/3rd，序数整体按数字处理，
 # 避免把 "20th" 拆成 "20"+"th"，使 "th" 沦为生词/噪声）或字母词（内部可含撇号，
 # 如 can't / don't）；其余为标点
@@ -247,10 +254,12 @@ def _head_of(lower: str) -> str:
 
 
 def _sentences(body: str) -> list[str]:
-    # 归一行尾（\r\n / \r → \n）→ 软回车 → 空格；保留段落分隔（\n\n）。
-    # 修复古腾堡"句中强制换行"造成的断句错误。
-    pre = _SOFT_WRAP_RE.sub(" ", _CRLF_RE.sub("\n", body))
-    return [s.strip() for s in _SENT_SPLIT.split(pre.strip()) if s.strip()]
+    # 1. 缩写点 → 占位符（防被误切）；2. 行尾归一；3. 软回车折叠；4. 句末切分；5. 还原占位符
+    pre = _ABBREV_RE.sub(lambda m: m.group(0)[:-1] + _ABBREV_PLACEHOLDER, body)
+    pre = _CRLF_RE.sub("\n", pre)
+    pre = _SOFT_WRAP_RE.sub(" ", pre)
+    sents = _SENT_SPLIT.split(pre.strip())
+    return [s.replace(_ABBREV_PLACEHOLDER, ".").strip() for s in sents if s.strip()]
 
 
 def _tokenize(sentence: str) -> list[dict]:

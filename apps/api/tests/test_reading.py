@@ -82,6 +82,25 @@ def test_sentences_keeps_paragraph_break_with_crlf():
     assert s[1] == "Second paragraph starts here."
 
 
+def test_sentences_keeps_mr_and_mrs_abbreviations():
+    """缩写点不能被当句末标点 — "Mr. Bennet" / "Mrs. Long" 必须完整。"""
+    body = (
+        "Mr. Bennet was among the earliest. "
+        "Mrs. Bennet, however, was not."
+    )
+    s = reading._sentences(body)
+    assert s == [
+        "Mr. Bennet was among the earliest.",
+        "Mrs. Bennet, however, was not.",
+    ]
+
+
+def test_sentences_keeps_multiple_abbreviations_in_one_sentence():
+    body = "Mr. Bennet met Dr. Smith and Prof. Jones at St. Mary's."
+    s = reading._sentences(body)
+    assert s == ["Mr. Bennet met Dr. Smith and Prof. Jones at St. Mary's."]
+
+
 def test_tokenize_splits_punctuation_and_keeps_contraction():
     toks = reading._tokenize("can't you see the hand-drawn map?")
     kinds = [(t["kind"], t["text"]) for t in toks]
