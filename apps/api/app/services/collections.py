@@ -142,17 +142,26 @@ def _write_index_atomic(items: list[dict]) -> None:
 
 
 def _persist(collection: dict) -> None:
-    """单文件落盘 + 原子更新 _index.json（均在 _lock 内，并发安全）。"""
+    """单文件落盘 + 原子更新 _index.json（持锁版本，外部调用入口）。"""
+    with _lock:
+        _persist_locked(collection)
+
+
+def _persist_locked(collection: dict) -> None:
+    """_persist 的无锁版本：调用方必须已持有 _lock。
+
+    用于「读最新 → 改 → 落盘」需要原子的场景（analyze_chapter 并发写回）：
+    只锁写不锁读的话，并发线程会用旧快照覆盖别人刚写的状态。
+    """
     d = Path(settings.collections_dir)
     d.mkdir(parents=True, exist_ok=True)
     cid = collection["id"]
     path = _collection_path(cid)
-    with _lock:
-        path.write_text(
-            json.dumps(collection, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        _write_index_atomic(_scan_list())
+    path.write_text(
+        json.dumps(collection, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _write_index_atomic(_scan_list())
 
 
 def create_collection(data: dict) -> dict:
@@ -163,8 +172,6 @@ def create_collection(data: dict) -> dict:
     # 默认自动生成短 id
     if cid == "_auto":
         cid = "c-" + uuid.uuid4().hex[:8]
-    if get_collection(cid) is not None:
-        raise ValueError(f"collection 已存在: {cid}")
     title = (data.get("title") or "").strip()
     if not title:
         raise ValueError("title 不能为空")
@@ -183,33 +190,39 @@ def create_collection(data: dict) -> dict:
         "polysemy": dict(data.get("polysemy") or {}),
         "chapters": list(data.get("chapters") or []),
     }
-    _persist(collection)
+    # 查重 + 落盘放同一锁段：否则两个并发 create 同 id 都能通过检查
+    with _lock:
+        if get_collection(cid) is not None:
+            raise ValueError(f"collection 已存在: {cid}")
+        _persist_locked(collection)
     return collection
 
 
 def update_collection(id: str, data: dict) -> dict | None:
     """改字段（metadata + glossary + polysemy + chapters）。"""
-    cur = get_collection(id)
-    if cur is None:
-        return None
-    for k in ("title", "title_zh", "author", "source", "cover_url", "intro_zh", "intro_en"):
-        if k in data:
-            cur[k] = (data.get(k) or "").strip()
-    for k in ("glossary", "polysemy"):
-        if k in data and data[k] is not None:
-            cur[k] = dict(data[k])
-    if "chapters" in data and data["chapters"] is not None:
-        cur["chapters"] = list(data["chapters"])
-        cur["total_chapters"] = len(cur["chapters"])
-    _persist(cur)
-    return cur
+    # 读 → 改 → 落盘整个放锁内：并发 update 不互相覆盖
+    with _lock:
+        cur = get_collection(id)
+        if cur is None:
+            return None
+        for k in ("title", "title_zh", "author", "source", "cover_url", "intro_zh", "intro_en"):
+            if k in data:
+                cur[k] = (data.get(k) or "").strip()
+        for k in ("glossary", "polysemy"):
+            if k in data and data[k] is not None:
+                cur[k] = dict(data[k])
+        if "chapters" in data and data["chapters"] is not None:
+            cur["chapters"] = list(data["chapters"])
+            cur["total_chapters"] = len(cur["chapters"])
+        _persist_locked(cur)
+        return cur
 
 
 def delete_collection(id: str) -> bool:
     p = _collection_path(id)
-    if not p.exists():
-        return False
     with _lock:
+        if not p.exists():
+            return False
         p.unlink()
         _write_index_atomic(_scan_list())
     return True
@@ -398,53 +411,77 @@ def analyze_chapter(
 ) -> dict | None:
     """对单章跑 AI 释义：提取生词 → 调 AI → 写回 chapter.glosses + ai_status。
 
-    返回更新后的 (collection, chapter)；不存在时返回 None。
+    返回 {"collection", "chapter", "items_count", "ai_used", "reason", "raw"}；
+    collection / 章节不存在返回 None。
     force=True 时即使 ai_status=done 也重跑（用于「重跑 AI 释义」按钮）。
+
+    并发安全：标记 analyzing 与写回结果两段都持 _lock 做「读最新 → 改 → 落盘」。
+    若只锁写不锁读，多章并发时后落盘的线程会拿旧快照把别人刚写的状态
+    覆盖回去（表现为章节 ai_status 卡在 pending / analyzing）。
+    AI 调用不持锁——耗时长，不能阻塞其他章节的写回。
     """
-    coll = get_collection(collection_id)
-    if coll is None:
-        return None
-    chapter = next((c for c in coll["chapters"] if c.get("index") == chapter_index), None)
-    if chapter is None:
-        return None
-    level = chapter.get("target_level") or 3000
 
-    chapter["ai_status"] = "analyzing"
-    chapter["ai_reason"] = ""
-    _persist(coll)
+    def _find(coll: dict) -> dict | None:
+        return next(
+            (c for c in coll.get("chapters") or [] if c.get("index") == chapter_index),
+            None,
+        )
 
-    items = _extract_chapter_vocab(chapter.get("body") or "", level)
+    # 第一段：标记 analyzing（原子读改写）
+    with _lock:
+        coll = get_collection(collection_id)
+        if coll is None:
+            return None
+        chapter = _find(coll)
+        if chapter is None:
+            return None
+        level = chapter.get("target_level") or 3000
+        body = chapter.get("body") or ""
+        chapter["ai_status"] = "analyzing"
+        chapter["ai_reason"] = ""
+        _persist_locked(coll)
+
+    items = _extract_chapter_vocab(body, level)
     result = _ai_gloss_vocab(items)
 
-    # 加载最新（其他线程可能并发改了）
-    cur = get_collection(collection_id)
-    if cur is None:
-        return None
-    ch = next((c for c in cur["chapters"] if c.get("index") == chapter_index), None)
-    if ch is None:
-        return None
+    # 第二段：写回结果（重新读最新快照再合并，同样原子）
+    with _lock:
+        cur = get_collection(collection_id)
+        if cur is None:
+            return None
+        ch = _find(cur)
+        if ch is None:
+            return None
 
-    if force:
-        ch["glosses"] = dict(result["glosses"])
-    else:
-        merged = dict(ch.get("glosses") or {})
-        merged.update(result["glosses"])
-        ch["glosses"] = merged
-    if result["ai_used"]:
-        ch["ai_status"] = "done"
-        ch["ai_reason"] = ""
-    else:
-        ch["ai_status"] = "error"
-        ch["ai_reason"] = result["reason"] or "未知错误"
-    _persist(cur)
-    return {"collection": cur, "chapter": ch, "items_count": len(items),
-            "ai_used": result["ai_used"], "reason": result["reason"], "raw": result["raw"]}
+        if force:
+            ch["glosses"] = dict(result["glosses"])
+        else:
+            merged = dict(ch.get("glosses") or {})
+            merged.update(result["glosses"])
+            ch["glosses"] = merged
+        if result["ai_used"] or not items:
+            # AI 成功，或本章没有生词（不算失败，避免「无生词」标红）
+            ch["ai_status"] = "done"
+            ch["ai_reason"] = "" if result["ai_used"] else (result["reason"] or "")
+        else:
+            ch["ai_status"] = "error"
+            ch["ai_reason"] = result["reason"] or "未知错误"
+        _persist_locked(cur)
+        return {
+            "collection": cur,
+            "chapter": ch,
+            "items_count": len(items),
+            "ai_used": result["ai_used"],
+            "reason": result["reason"],
+            "raw": result["raw"],
+        }
 
 
 def analyze_collection(collection_id: str) -> dict | None:
     """对全本所有未 done 的章节并发跑 AI（在后台线程里调用）。
 
-    返回启动摘要：{"scheduled": [chapter_indices]}；collection 不存在返回 None。
+    返回启动摘要：{"scheduled": [chapter_indices], "threads": [...]}
+    collection 不存在返回 None。返回的 threads 列表供调用方 join（测试 / 重启场景）。
     """
     coll = get_collection(collection_id)
     if coll is None:
@@ -454,28 +491,32 @@ def analyze_collection(collection_id: str) -> dict | None:
         if ch.get("ai_status") != "done":
             scheduled.append(ch["index"])
     if not scheduled:
-        return {"scheduled": [], "collection": coll}
+        return {"scheduled": [], "collection": coll, "threads": []}
 
     def _run(idx: int) -> None:
         try:
             analyze_chapter(collection_id, idx, force=False)
         except Exception:
-            # 标记失败，不让线程死循环
-            cur = get_collection(collection_id)
-            if cur is None:
-                return
-            c = next((c for c in cur["chapters"] if c.get("index") == idx), None)
-            if c is not None:
-                c["ai_status"] = "error"
-                c["ai_reason"] = "后台线程异常"
-                _persist(cur)
+            # 标记失败，不让线程死循环（同样原子读改写）
+            with _lock:
+                cur = get_collection(collection_id)
+                if cur is None:
+                    return
+                c = next(
+                    (c for c in cur.get("chapters") or [] if c.get("index") == idx),
+                    None,
+                )
+                if c is not None:
+                    c["ai_status"] = "error"
+                    c["ai_reason"] = "后台线程异常"
+                    _persist_locked(cur)
 
     threads = []
     for idx in scheduled:
         t = threading.Thread(target=_run, args=(idx,), daemon=True)
         t.start()
         threads.append(t)
-    return {"scheduled": scheduled, "collection": coll}
+    return {"scheduled": scheduled, "collection": coll, "threads": threads}
 
 
 def reconcile_collection(collection_id: str) -> dict | None:
@@ -509,10 +550,15 @@ def reconcile_collection(collection_id: str) -> dict | None:
             canonical = max(glosses.items(), key=lambda kv: len(kv[1]))[0]
             glossary[lemma] = canonical
 
-    coll["glossary"] = glossary
-    coll["polysemy"] = polysemy
-    _persist(coll)
-    return coll
+    # 写回放锁内：避免与并发 analyze_chapter 互相覆盖
+    with _lock:
+        cur = get_collection(collection_id)
+        if cur is None:
+            return None
+        cur["glossary"] = glossary
+        cur["polysemy"] = polysemy
+        _persist_locked(cur)
+        return cur
 
 
 # ---------- reading 视图适配 ----------

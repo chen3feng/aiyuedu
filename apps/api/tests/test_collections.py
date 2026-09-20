@@ -187,7 +187,7 @@ def test_flatten_chapter_to_reading_shape(isolated_collections):
 
 # ---------- 章节 AI 释义 ----------
 
-def _wait_chapter_done(coll_id: str, ch_idx: int, timeout: float = 3.0) -> dict:
+def _wait_chapter_done(coll_id: str, ch_idx: int, timeout: float = 15.0) -> dict:
     """轮询章节 ai_status 变成 done 或 error（后台线程跑完后才稳定）。"""
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -313,9 +313,50 @@ def test_analyze_collection_skips_done(isolated_collections):
     try:
         result = collections.analyze_collection("batch")
         assert sorted(result["scheduled"]) == [2, 3]
-        # 等后台线程跑完
-        _wait_chapter_done("batch", 2)
-        _wait_chapter_done("batch", 3)
+        # 等后台线程跑完 — 显式 join 避免 mock 被 undo 时线程还在跑导致超时
+        for t in result["threads"]:
+            t.join(timeout=15.0)
+            assert not t.is_alive(), f"线程 {t.name} 未在 15s 内完成"
+        # 校验 ai_status 已写入
+        coll = collections.get_collection("batch")
+        assert coll["chapters"][1]["ai_status"] in ("done", "error")
+        assert coll["chapters"][2]["ai_status"] in ("done", "error")
+    finally:
+        monkey.undo()
+
+
+def test_analyze_collection_no_status_clobber(isolated_collections):
+    """并发多章分析：任何线程的写回都不得把别人刚写的 ai_status 覆盖回 pending。
+
+    回归测试：曾因「读快照在锁外、写文件在锁内」，最后落盘的线程拿旧快照
+    把其他章节的 done/error 覆盖回 pending（线程全部 join 成功但状态丢失）。
+    """
+    import random
+
+    n = 6
+    coll = collections.create_collection(_sample_coll("race", n=n))
+    for ch in coll["chapters"]:
+        ch["ai_status"] = "pending"
+        ch["body"] = "Sara ventured into a quaint attic. " * 3
+    collections._persist(coll)
+
+    def fake_chat(*a, **k):
+        time.sleep(random.random() * 0.02)  # 拉开线程竞争窗口
+        return json.dumps({"attic": "阁楼", "quaint": "古雅的"}, ensure_ascii=False)
+
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr(collections.ai, "chat", fake_chat)
+    try:
+        result = collections.analyze_collection("race")
+        assert result["scheduled"] == list(range(1, n + 1))
+        for t in result["threads"]:
+            t.join(timeout=15.0)
+            assert not t.is_alive(), f"线程 {t.name} 未在 15s 内完成"
+        coll = collections.get_collection("race")
+        for ch in coll["chapters"]:
+            assert ch["ai_status"] in ("done", "error"), (
+                f"ch{ch['index']} 状态被并发覆盖: {ch['ai_status']!r}"
+            )
     finally:
         monkey.undo()
 
