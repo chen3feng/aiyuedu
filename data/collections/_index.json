@@ -16,9 +16,9 @@
     "title_zh": "",
     "author": "Austen, Jane",
     "cover_url": "https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg",
-    "total_chapters": 59,
+    "total_chapters": 60,
     "source": "gutenberg://1342",
-    "glossary_size": 0,
-    "created_at": 1789879217.764
+    "glossary_size": 1351,
+    "created_at": 1789885455.91
   }
 ]
