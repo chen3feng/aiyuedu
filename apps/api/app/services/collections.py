@@ -34,13 +34,22 @@ def _collection_path(id: str) -> Path:
 # ---------- 列表 / 单本 ----------
 
 def list_collections() -> list[dict]:
-    """所有 collection 的轻量列表（基于 _index.json；缺则现扫）。"""
+    """所有 collection 的轻量列表（基于 _index.json；缺则现扫）。
+
+    索引里的条目若对应文件已删，自动剔除并重写索引，避免指向死文件。
+    """
     idx_path = Path(settings.collections_index)
     if idx_path.exists():
         try:
-            return list(json.loads(idx_path.read_text(encoding="utf-8")) or [])
+            raw = json.loads(idx_path.read_text(encoding="utf-8")) or []
         except (json.JSONDecodeError, OSError):
-            pass
+            raw = None
+        if raw is not None:
+            d = Path(settings.collections_dir)
+            live = [e for e in raw if (d / f"{e.get('id', '')}.json").exists()]
+            if len(live) != len(raw):
+                _rebuild_index()
+            return live
     # 兜底：扫目录
     return _scan_list()
 

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .routers import admin
+from .routers import admin, collections
 
 STATIC_DIR = Path(__file__).parent / "static" / "admin"
 
@@ -22,6 +22,7 @@ admin_app.add_middleware(
 )
 
 admin_app.include_router(admin.router)
+admin_app.include_router(collections.router)
 
 
 @admin_app.get("/", include_in_schema=False)
