@@ -652,6 +652,29 @@ async function renderCollectionDetail() {
 function renderChapterEditor(c) {
   const ch = c.chapters.find((x) => x.index === state.editingChapter.index);
   if (!ch) { state.editingChapter = null; return ""; }
+  const ec = state.editingChapter;
+  if (ec.title === undefined) {  // 首次渲染：从章节快照初始化编辑器状态
+    ec.title = ch.title || "";
+    ec.title_zh = ch.title_zh || "";
+    ec.body = ch.body || "";
+    ec.level = ch.target_level ?? 3000;
+    ec.glosses = { ...(ch.glosses || {}) };
+    ec.terms = { ...(ch.terms || {}) };
+  }
+  const glossEntries = Object.entries(ec.glosses);
+  const termEntries = Object.entries(ec.terms);
+  const glossRows = glossEntries.map(([k, v], i) => `
+    <div class="gloss-row">
+      <div class="w">${esc(k)}</div>
+      <input type="text" value="${esc(v)}" oninput="setChGloss(${i}, this.value)">
+      <button class="danger small" onclick="delChGloss(${i})">删</button>
+    </div>`).join("");
+  const termRows = termEntries.map(([k, v], i) => `
+    <div class="gloss-row">
+      <div class="w">${esc(k)}</div>
+      <input type="text" value="${esc(v)}" oninput="setChTerm(${i}, this.value)">
+      <button class="danger small" onclick="delChTerm(${i})">删</button>
+    </div>`).join("");
   return `
     <div class="item" style="display:block">
       <div class="row" style="justify-content:space-between;margin-bottom:10px">
@@ -660,18 +683,44 @@ function renderChapterEditor(c) {
       </div>
       <div class="row" style="gap:8px;margin-bottom:10px">
         <div class="field grow"><label>英文标题</label>
-          <input type="text" id="ch-edit-title" value="${esc(ch.title || "")}"></div>
+          <input type="text" value="${esc(ec.title)}" oninput="ecField('title', this.value)"></div>
         <div class="field grow"><label>中文标题</label>
-          <input type="text" id="ch-edit-title-zh" value="${esc(ch.title_zh || "")}"></div>
+          <input type="text" value="${esc(ec.title_zh)}" oninput="ecField('title_zh', this.value)"></div>
         <div class="field" style="max-width:140px"><label>目标词汇量</label>
-          <input type="number" id="ch-edit-level" value="${ch.target_level ?? 3000}"></div>
+          <input type="number" value="${ec.level}" oninput="ecField('level', parseInt(this.value,10) || 3000)"></div>
       </div>
       <div class="field"><label>正文（可修古腾堡残留的断行 / 注记；斜体用 &lt;em&gt;…&lt;/em&gt;）</label>
-        <textarea id="ch-edit-body" style="min-height:340px;font-family:monospace;font-size:13px">${esc(ch.body || "")}</textarea></div>
+        <textarea oninput="ecField('body', this.value)" style="min-height:260px;font-family:monospace;font-size:13px">${esc(ec.body)}</textarea></div>
       <div class="muted" style="margin-bottom:10px">正文变更后该章 AI 状态会重置为「待分析」（词条保留，可重跑 AI 刷新）。</div>
+      <div class="card" style="background:#fafbfe;margin-bottom:10px">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+          <strong>词汇（${glossEntries.length} 条，可手工增改）</strong>
+          <button class="small" onclick="aiCalibrateChapter()" ${ec.calibrating ? "disabled" : ""}>
+            ${ec.calibrating ? "AI 校准中…" : "AI 校准"}</button>
+        </div>
+        ${glossRows || '<div class="muted" style="margin-bottom:6px">暂无词条</div>'}
+        <div class="row" style="gap:8px;margin-top:6px">
+          <input type="text" id="ch-add-word" placeholder="单词 / 词形还原头（如 attic）" style="max-width:220px">
+          <input type="text" id="ch-add-gloss" placeholder="中文释义" class="grow">
+          <button class="small" onclick="addChGloss()">+ 添加</button>
+        </div>
+      </div>
+      <div class="card" style="background:#fafbfe;margin-bottom:10px">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+          <strong>短语 / 术语（${termEntries.length} 条，整段行内注释）</strong>
+        </div>
+        ${termRows || '<div class="muted" style="margin-bottom:6px">暂无短语</div>'}
+        <div class="row" style="gap:8px;margin-top:6px">
+          <input type="text" id="ch-add-term" placeholder="短语原文（如 in want of）" style="max-width:220px">
+          <input type="text" id="ch-add-term-gloss" placeholder="中文释义" class="grow">
+          <button class="small" onclick="addChTerm()">+ 添加</button>
+        </div>
+      </div>
       <button class="primary" onclick="saveChapterEdit('${esc(c.id)}', ${ch.index})">保存</button>
     </div>`;
 }
+
+function ecField(k, v) { state.editingChapter[k] = v; }
 
 function startEditChapter(collId, idx) {
   state.editingChapter = { collId, index: idx };
@@ -683,12 +732,78 @@ function cancelEditChapter() {
   renderCollectionDetail();
 }
 
+function setChGloss(i, v) {
+  const entries = Object.entries(state.editingChapter.glosses);
+  entries[i][1] = v;
+  state.editingChapter.glosses = Object.fromEntries(entries);
+}
+function delChGloss(i) {
+  const entries = Object.entries(state.editingChapter.glosses);
+  entries.splice(i, 1);
+  state.editingChapter.glosses = Object.fromEntries(entries);
+  renderCollectionDetail();
+}
+function addChGloss() {
+  const k = $("ch-add-word").value.trim();
+  const v = $("ch-add-gloss").value.trim();
+  if (!k) return toast("请填写单词", true);
+  state.editingChapter.glosses[k] = v;
+  renderCollectionDetail();
+}
+function setChTerm(i, v) {
+  const entries = Object.entries(state.editingChapter.terms);
+  entries[i][1] = v;
+  state.editingChapter.terms = Object.fromEntries(entries);
+}
+function delChTerm(i) {
+  const entries = Object.entries(state.editingChapter.terms);
+  entries.splice(i, 1);
+  state.editingChapter.terms = Object.fromEntries(entries);
+  renderCollectionDetail();
+}
+function addChTerm() {
+  const k = $("ch-add-term").value.trim();
+  const v = $("ch-add-term-gloss").value.trim();
+  if (!k) return toast("请填写短语原文", true);
+  state.editingChapter.terms[k] = v;
+  renderCollectionDetail();
+}
+
+async function aiCalibrateChapter() {
+  const ec = state.editingChapter;
+  if (!ec) return;
+  ec.calibrating = true;
+  renderCollectionDetail();
+  try {
+    const r = await api(
+      `/collections/${ec.collId}/chapters/${ec.index}/gloss-ai`, "POST",
+      {
+        body: ec.body,          // 校准用编辑器当前正文（可能未保存）
+        target_level: ec.level,
+        glosses: ec.glosses,
+        terms: ec.terms,
+      });
+    ec.glosses = r.glosses || {};
+    ec.terms = r.terms || {};
+    ec.calibrating = false;
+    toast(r.reason || `AI 校准完成：词汇 ${Object.keys(ec.glosses).length} 条，短语 ${Object.keys(ec.terms).length} 条`, !!r.reason);
+    renderCollectionDetail();
+  } catch (e) {
+    ec.calibrating = false;
+    toast(e.message, true);
+    renderCollectionDetail();
+  }
+}
+
 async function saveChapterEdit(collId, idx) {
+  const ec = state.editingChapter;
   const payload = {
-    title: $("ch-edit-title").value,
-    title_zh: $("ch-edit-title-zh").value,
-    body: $("ch-edit-body").value,
-    target_level: parseInt($("ch-edit-level").value, 10) || 3000,
+    title: ec.title,
+    title_zh: ec.title_zh,
+    body: ec.body,
+    target_level: ec.level,
+    glosses: ec.glosses,
+    terms: ec.terms,
   };
   try {
     const ch = await api(`/collections/${collId}/chapters/${idx}`, "PUT", payload);

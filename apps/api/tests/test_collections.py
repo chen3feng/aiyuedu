@@ -449,3 +449,93 @@ def test_update_chapter_missing_returns_none(isolated_collections):
     assert collections.update_chapter("ghost", 1, {"title": "x"}) is None
     collections.create_collection(_sample_coll("miss", n=1))
     assert collections.update_chapter("miss", 999, {"title": "x"}) is None
+
+
+# ---------- 章节词汇 / 短语编辑 + AI 校准 ----------
+
+def test_update_chapter_glosses_and_terms(isolated_collections):
+    """glosses / terms 整体替换并落盘；只动词条不重置 ai_status。"""
+    collections.create_collection(_sample_coll("gt", n=1))
+    coll = collections.get_collection("gt")
+    coll["chapters"][0]["ai_status"] = "done"
+    coll["chapters"][0]["glosses"] = {"old": "旧"}
+    collections._persist(coll)
+
+    ch = collections.update_chapter("gt", 1, {
+        "glosses": {"attic": "阁楼", "": "空键应被滤掉"},
+        "terms": {"in want of": "需要"},
+    })
+    assert ch["glosses"] == {"attic": "阁楼"}
+    assert ch["terms"] == {"in want of": "需要"}
+    assert ch["ai_status"] == "done"  # 词条编辑不重置
+    # 落盘
+    assert collections.get_collection("gt")["chapters"][0]["terms"] == {"in want of": "需要"}
+
+
+def test_ai_calibrate_overrides_with_context(isolated_collections, monkeypatch):
+    """AI 给出语境义 → 覆盖现有义；手工词条（提取不覆盖的）也喂给 AI。"""
+    coll = collections.create_collection(_sample_coll("cal1", n=1))
+    body = "Sara ventured into a quaint attic. The attic was dim."
+    # body 换成含生词的（sample body 全是常见词）
+    coll["chapters"][0]["body"] = body
+    collections._persist(coll)
+
+    seen = {}
+    def fake_chat(messages, **k):
+        prompt = messages[0]["content"]
+        seen["prompt"] = prompt
+        return json.dumps({
+            "attic": "阁楼", "quaint": "古雅的",
+            "happy": "开心的",           # 手工词条（不在提取结果里）
+            "in want of": "缺乏",        # 短语
+        }, ensure_ascii=False)
+
+    monkeypatch.setattr(collections.ai, "chat", fake_chat)
+    r = collections.ai_calibrate_vocab(
+        body, level=100,
+        glosses={"quaint": "古怪的", "happy": "高兴的"},  # quaint 会被 AI 校准覆盖
+        terms={"in want of": "想要"},
+    )
+    assert r["ai_used"] is True
+    assert r["glosses"]["quaint"] == "古雅的"      # AI 覆盖
+    assert r["glosses"]["happy"] == "开心的"        # 手工词条被校准
+    assert r["terms"]["in want of"] == "缺乏"
+    # 手工词条带正文语境喂给 AI
+    assert "happy" in seen["prompt"]
+    assert "Sara ventured" in seen["prompt"]
+
+
+def test_ai_calibrate_failure_keeps_original(isolated_collections, monkeypatch):
+    """AI 挂掉 → 原样返回 + reason；条目一条不丢。"""
+    coll = collections.create_collection(_sample_coll("cal2", n=1))
+    body = "Sara ventured into a quaint attic."
+    monkeypatch.setattr(
+        collections.ai, "chat",
+        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("模型挂了")),
+    )
+    r = collections.ai_calibrate_vocab(
+        body, level=100,
+        glosses={"attic": "阁楼"},
+        terms={"in want of": "需要"},
+    )
+    assert r["ai_used"] is False
+    assert "模型挂了" in r["reason"]
+    assert r["glosses"] == {"attic": "阁楼"}
+    assert r["terms"] == {"in want of": "需要"}
+
+
+def test_ai_calibrate_ai_missing_keeps_current(isolated_collections, monkeypatch):
+    """AI 漏掉某条 → 该条保持原值（合并保证不丢词条）。"""
+    coll = collections.create_collection(_sample_coll("cal3", n=1))
+    body = "Sara ventured into a quaint attic."
+    monkeypatch.setattr(
+        collections.ai, "chat",
+        lambda *a, **k: json.dumps({"attic": "阁楼"}, ensure_ascii=False),  # 漏了 quaint
+    )
+    r = collections.ai_calibrate_vocab(
+        body, level=100,
+        glosses={"attic": "顶楼", "quaint": "古怪的"},
+        terms={},
+    )
+    assert r["glosses"]["attic"] == "阁楼"        # AI 给了 → 覆盖
+    assert r["glosses"]["quaint"] == "古怪的"     # AI 漏了 → 保持

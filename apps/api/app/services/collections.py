@@ -336,6 +336,18 @@ def update_chapter(collection_id: str, chapter_index: int, data: dict) -> dict |
             ch["body"] = new_body
         if "target_level" in data and data["target_level"] is not None:
             ch["target_level"] = int(data["target_level"])
+        # 词汇 / 短语：整体替换（编辑器全量提交）；只动词条不重置 ai_status
+        #（手工校正属于收尾，不代表词条过期）
+        if "glosses" in data and data["glosses"] is not None:
+            ch["glosses"] = {
+                str(k).strip(): str(v).strip()
+                for k, v in data["glosses"].items() if str(k).strip()
+            }
+        if "terms" in data and data["terms"] is not None:
+            ch["terms"] = {
+                str(k).strip(): str(v).strip()
+                for k, v in data["terms"].items() if str(k).strip()
+            }
         if body_changed:
             ch["ai_status"] = "pending"
             ch["ai_reason"] = "正文已编辑，词条可能过期，建议重跑 AI"
@@ -387,7 +399,7 @@ def _ai_gloss_vocab(items: list[dict]) -> dict:
         return {"glosses": {}, "ai_used": False, "reason": "无生词", "raw": ""}
 
     lines = [
-        f"- {it['lemma']}（词典义：{it['dict_gloss'] or '无'}）\n  首次出现句：{it['context']}"
+        f"- {it['lemma']}（参考义：{it['dict_gloss'] or '无'}）\n  首次出现句：{it['context']}"
         for it in items
     ]
     prompt = (
@@ -514,6 +526,66 @@ def analyze_chapter(
             "reason": result["reason"],
             "raw": result["raw"],
         }
+
+
+def _first_context(body: str, phrase: str, window: int = 100) -> str:
+    """短语 / 手工词条在正文首次出现处的上下文窗口（提示词里当语境用）。"""
+    m = _re_html.search(re.escape(phrase), body, _re_html.IGNORECASE)
+    if m is None:
+        return ""
+    s = max(0, m.start() - window)
+    e = min(len(body), m.end() + window)
+    return _re_html.sub(r"\s+", " ", body[s:e]).strip()
+
+
+def ai_calibrate_vocab(
+    body: str,
+    level: int,
+    glosses: dict | None,
+    terms: dict | None,
+) -> dict:
+    """AI 校准一份章节词条清单（无状态，不落盘）—— 编辑器「AI 校准」按钮。
+
+    输入编辑器当前的词汇 + 短语（可含手工加的），结合正文语境重新给义：
+    - 每条以「当前义 + 首次出现语境」喂给 AI，AI 给出语境义则覆盖；
+      AI 没覆盖的条目保持原值（合并结果保证不丢词条）
+    - 只重给义、不添新词：提取发现但不在清单里的词不进结果
+      （新增词条归「重跑 AI」；校准不该悄悄改清单）
+    - AI 失败（网络 / 无法解析）→ 原样返回 + reason 诊断，ai_used=False
+    返回 {"glosses", "terms", "ai_used", "reason", "raw"}。
+    """
+    input_glosses: dict[str, str] = {str(k): str(v) for k, v in (glosses or {}).items()}
+    input_terms: dict[str, str] = {str(k): str(v) for k, v in (terms or {}).items()}
+
+    items: list[dict] = []
+    # 提取的生词带真实语境；当前义优先于词典义作参考（校准的就是它）
+    for it in _extract_chapter_vocab(body, level):
+        it["dict_gloss"] = input_glosses.get(it["lemma"]) or it["dict_gloss"]
+        items.append(it)
+    # 手工词条（提取不覆盖：常见词手动加的 / 词形不同）+ 短语
+    for lemma, g in input_glosses.items():
+        if not any(it["lemma"] == lemma for it in items):
+            items.append({"lemma": lemma, "context": _first_context(body, lemma), "dict_gloss": g})
+    for text, g in input_terms.items():
+        items.append({"lemma": text, "context": _first_context(body, text), "dict_gloss": g})
+
+    result = _ai_gloss_vocab(items)
+
+    # 合并：输入清单为起点，AI 结果只作用于清单内的 key（条目不丢、不添）
+    out_glosses: dict[str, str] = dict(input_glosses)
+    out_terms: dict[str, str] = dict(input_terms)
+    for k, v in result["glosses"].items():
+        if k in out_terms:
+            out_terms[k] = v
+        elif k in out_glosses:
+            out_glosses[k] = v
+    return {
+        "glosses": out_glosses,
+        "terms": out_terms,
+        "ai_used": result["ai_used"],
+        "reason": result["reason"],
+        "raw": result["raw"],
+    }
 
 
 def analyze_collection(collection_id: str) -> dict | None:

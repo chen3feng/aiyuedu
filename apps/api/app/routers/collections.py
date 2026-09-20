@@ -90,20 +90,52 @@ class ChapterIn(BaseModel):
     title_zh: str | None = None
     body: str | None = None
     target_level: int | None = None
+    glosses: dict[str, str] | None = None  # 整体替换（编辑器全量提交）
+    terms: dict[str, str] | None = None
+
+
+class CalibrateIn(BaseModel):
+    """AI 校准：编辑器当前的正文 / 词汇 / 短语（缺省用已存章节的值）。"""
+    body: str | None = None
+    target_level: int | None = None
+    glosses: dict[str, str] | None = None
+    terms: dict[str, str] | None = None
 
 
 @router.put("/{collection_id}/chapters/{chapter_index}")
 def update_chapter(collection_id: str, chapter_index: int, payload: ChapterIn,
                    _user_id: str | None = Header(None, alias="X-User-Id")):
-    """编辑单章（标题 / 正文 / 目标词汇量）。
+    """编辑单章（标题 / 正文 / 目标词汇量 / 词汇 / 短语）。
 
-    body 实际变更时该章 ai_status 重置为 pending（词条过期，需重跑 AI）。
+    body 实际变更时该章 ai_status 重置为 pending（词条过期，需重跑 AI）；
+    glosses / terms 整体替换、不重置（手工校正属于收尾）。
     返回更新后的 chapter；不存在返回 404。
     """
     ch = collections.update_chapter(collection_id, chapter_index, payload.model_dump())
     if ch is None:
         raise HTTPException(status_code=404, detail="作品集或章节不存在")
     return ch
+
+
+@router.post("/{collection_id}/chapters/{chapter_index}/gloss-ai")
+def calibrate_chapter(collection_id: str, chapter_index: int, payload: CalibrateIn | None = None,
+                      _user_id: str | None = Header(None, alias="X-User-Id")):
+    """AI 校准章节词条（无状态，不落盘）：结合正文语境重新给义。
+
+    输入编辑器当前的词汇/短语（可含手工加的），AI 给出语境义则覆盖、
+    没覆盖的保持原值；失败原样返回 + reason。用户确认后随「保存」提交。
+    """
+    match = collections.get_chapter(collection_id, chapter_index)
+    if match is None:
+        raise HTTPException(status_code=404, detail="作品集或章节不存在")
+    _coll, ch = match
+    p = payload or CalibrateIn()
+    return collections.ai_calibrate_vocab(
+        p.body if p.body is not None else (ch.get("body") or ""),
+        p.target_level if p.target_level is not None else (ch.get("target_level") or 3000),
+        p.glosses if p.glosses is not None else (ch.get("glosses") or {}),
+        p.terms if p.terms is not None else (ch.get("terms") or {}),
+    )
 
 
 @router.post("/{collection_id}/chapters/{chapter_index}/analyze")
