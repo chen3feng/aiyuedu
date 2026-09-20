@@ -25,11 +25,11 @@ USER_AGENT = "aiyuedu/1.0 (+https://github.com/chen3feng/aiyuedu)"
 
 # 标题行匹配（多行模式 ^/$）
 _CHAPTER_PATTERNS = [
-    # 英文：CHAPTER I. / CHAPTER 1. / CHAPTER ONE
-    re.compile(r"(?im)^chapter\s+([ivxlcdm]+|\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b\.?\s*$"),
-    # 英文：Chapter 1 / Chapter One
-    re.compile(r"(?im)^chapter\s+\d+\s*$"),
-    re.compile(r"(?im)^chapter\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b\.?\s*$"),
+    # 英文：CHAPTER I. / CHAPTER 1. / CHAPTER ONE（可带尾部 ] 容纳 "Chapter I.]" 这类目录标记）
+    re.compile(r"(?im)^chapter\s+([ivxlcdm]+|\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b\.?\s*\]?\s*$"),
+    # 英文：Chapter 1 / Chapter One（同样允许尾部 ]）
+    re.compile(r"(?im)^chapter\s+\d+\s*\]?\s*$"),
+    re.compile(r"(?im)^chapter\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b\.?\s*\]?\s*$"),
     # 数字编号（Project Gutenberg 常见）：  1. Sara /  2. A French Lesson
     re.compile(r"(?m)^\s*\d{1,3}\.\s+\S"),
     # 裸数字 + 下一行是标题（1 / Sara）

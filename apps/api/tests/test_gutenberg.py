@@ -50,6 +50,38 @@ def test_split_chapters_chapter_i_style():
     assert chapters[1].title == "CHAPTER III."
 
 
+def test_split_chapters_handles_bracket_suffixed_toc_heading():
+    """古腾堡目录页用 'Chapter I.]' 这种带尾部 ] 的标记 — 必须识别为章节标题。"""
+    text = (
+        "Heading to Chapter LXI.                                              472\n"
+        "\n"
+        "The End                                                              476\n"
+        "\n"
+        "\n"
+        "[Illustration: ·PRIDE AND PREJUDICE·\n"
+        "\n"
+        "\n"
+        "\n"
+        "Chapter I.]\n"
+        "\n"
+        "\n"
+        "It is a truth universally acknowledged, that a single man in possession\n"
+        "of a good fortune must be in want of a wife.\n"
+        "\n"
+        "\n"
+        "CHAPTER II.\n"
+        "Mr. Bennet was among the earliest.\n"
+        "\n"
+        "CHAPTER III.\n"
+        "Not all that Mrs. Bennet could ask.\n"
+    )
+    chapters = gutenberg.split_chapters(text)
+    titles = [ch.title for ch in chapters]
+    assert "Chapter I.]" in titles, f"Chapter I lost. Got: {titles}"
+    # I/II 都很短 → 合并；III 单独
+    assert any("CHAPTER III." in t for t in titles)
+
+
 def test_split_chapters_chapter_arabic_style():
     text = (
         "Chapter 1\n"
