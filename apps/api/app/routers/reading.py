@@ -93,11 +93,10 @@ def get_reading(
         rview = collections.flatten_chapter_to_reading(coll, chapter)
         # 合并 collection.glossary（同名优先 chapter 本地）
         merged_glosses = {**(coll.get("glossary") or {}), **(chapter.get("glosses") or {})}
-        # 同样合并 collection_glossary 字段
         # 计算统计
         ann = reading.annotate(
             chapter["body"], level,
-            chapter.get("glosses") or {},
+            merged_glosses,
             {}, {},  # full_glosses / headwords（章节里没存）
             chapter.get("terms") or {}, chapter.get("skip") or [],
             only_glosses=True,
