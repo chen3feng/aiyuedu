@@ -162,6 +162,68 @@ def underscores_to_em(text: str) -> str:
     return _UNDERSCORE_EM_RE.sub(_conv, text)
 
 
+# 插图注记起点：[Illustration] / [Illustration: caption]
+_ILLUS_START_RE = re.compile(r"\[[Ii]llustration\b")
+# 块结尾后紧跟的整段空行（删块时一并吞掉，避免留下 3+ 连续空行）
+_TRAILING_BLANKS_RE = re.compile(r"[ \t]*\r?\n(?:[ \t]*\r?\n)*")
+
+
+def strip_illustrations(text: str) -> str:
+    """删掉 [Illustration...] 插图注记块（含 caption）。
+
+    纯文本里没有对应图片，注记只是噪音；caption 常是相邻正文的引文
+    （如 1894 插图版傲慢与偏见的 “He came down to see the place”），
+    保留会与正文重复。块内可嵌套 [...]（如 "[_Copyright 1894 ..._]]"），
+    用括号深度扫描找闭合 ]，正则做不到。
+
+    删块后把块所在段的空行一并吞掉：插图本来就在段落之间，删后留下
+    一个干净的段落分隔即可。两类例外：
+    - 闭合 ] 挂在章节标题行尾（扉页样式）→ 标题幸存，只吞 ]
+    - 畸形未闭合块跳过不动（宁留勿删）
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while True:
+        m = _ILLUS_START_RE.search(text, i)
+        if m is None:
+            out.append(text[i:])
+            break
+        out.append(text[i : m.start()])
+        # 从 [ 起做括号深度扫描找闭合 ]
+        depth = 0
+        end = -1
+        for j in range(m.start(), n):
+            c = text[j]
+            if c == "[":
+                depth += 1
+            elif c == "]":
+                depth -= 1
+                if depth == 0:
+                    end = j + 1
+                    break
+        if end < 0:
+            # 未闭合：跳过这个 [ 继续扫后面的块
+            out.append(text[m.start() : m.start() + 1])
+            i = m.start() + 1
+            continue
+        # 闭合 ] 所在行若有非空白前缀：caption 本该在前面结束，这一行是「恰好
+        # 带着闭合括号的正文」。只有章节标题才幸存（傲慢与偏见扉页即
+        # "[Illustration: ·PRIDE AND PREJUDICE· …\nChapter I.]"，闭合 ] 挂在
+        # 第一章标题行尾）；其余（如 [_Copyright …._]] 的版权注行）仍是 caption。
+        j = end - 1  # text[j] == ']'
+        line_start = text.rfind("\n", m.start(), j) + 1
+        prefix = text[line_start:j]
+        if line_start > m.start() and prefix.strip() and _is_chapter_heading(prefix):
+            out.append(prefix)
+            i = j + 1  # 只吞掉 ]，标题行之后的空行留给段落分隔
+            continue
+        # 吞掉块后的空行（要求至少一个换行，避免把行中空格也吞掉）
+        tail = _TRAILING_BLANKS_RE.match(text, end)
+        i = tail.end() if tail else end
+    return "".join(out)
+
+
 def _is_chapter_heading(line: str) -> bool:
     """一行是否是章节标题（去前后空白后精确匹配）。"""
     s = line.strip()
@@ -186,6 +248,7 @@ def split_chapters(text: str, config: SplitConfig | None = None) -> list[Chapter
     """
     cfg = config or SplitConfig()
     text = _strip_table_of_contents(text)
+    text = strip_illustrations(text)
     raw = _hard_split(text)
     raw = _split_long_chapters(raw, cfg)
     raw = _merge_short_chapters(raw, cfg)

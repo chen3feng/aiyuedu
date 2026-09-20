@@ -51,7 +51,7 @@ def test_split_chapters_chapter_i_style():
 
 
 def test_split_chapters_handles_bracket_suffixed_toc_heading():
-    """古腾堡目录页用 'Chapter I.]' 这种带尾部 ] 的标记 — 必须识别为章节标题。"""
+    """扉页插图块的闭合 ] 挂在 "Chapter I.]" 标题行尾 — 剥插图后标题必须幸存。"""
     text = (
         "Heading to Chapter LXI.                                              472\n"
         "\n"
@@ -77,7 +77,8 @@ def test_split_chapters_handles_bracket_suffixed_toc_heading():
     )
     chapters = gutenberg.split_chapters(text)
     titles = [ch.title for ch in chapters]
-    assert "Chapter I.]" in titles, f"Chapter I lost. Got: {titles}"
+    assert "Chapter I." in titles, f"Chapter I lost. Got: {titles}"
+    assert "It is a truth" in chapters[0].body
     # I/II 都很短 → 合并；III 单独
     assert any("CHAPTER III." in t for t in titles)
 
@@ -236,3 +237,74 @@ def test_split_chapters_converts_underscore_italics_in_body_only():
     # 跨软回车的斜体
     assert "<em>taken\nby a young man</em>" in b
     assert "_You_" not in b
+
+
+# ---------- 插图注记剥离 ----------
+
+def test_strip_illustrations_bare():
+    """裸 [Illustration]（无 caption）删除，前后段落保留一个空行。"""
+    text = "First para.\n\n[Illustration]\n\nSecond para."
+    assert gutenberg.strip_illustrations(text) == "First para.\n\nSecond para."
+
+
+def test_strip_illustrations_with_nested_brackets():
+    """带 caption 且嵌套 [...] 的块整块删（1894 插图版版权注样式）。"""
+    text = (
+        'Before.\n\n[Illustration:\n\n“He came down to see the place”\n\n'
+        '[_Copyright 1894 by George Allen._]]\n\nAfter.'
+    )
+    assert gutenberg.strip_illustrations(text) == "Before.\n\nAfter."
+
+
+def test_strip_illustrations_crlf_and_multiblock():
+    """CRLF 行尾 + 连续多块都能删净。"""
+    text = "A.\r\n\r\n[Illustration]\r\n\r\n[Illustration: cap]\r\n\r\nB."
+    assert gutenberg.strip_illustrations(text) == "A.\r\n\r\nB."
+
+
+def test_strip_illustrations_unclosed_left_untouched():
+    """畸形未闭合块不动（宁留勿删），后面正常块照删。"""
+    text = "Keep [Illustration: broken\n\nand [Illustration] gone.\n"
+    out = gutenberg.strip_illustrations(text)
+    assert "[Illustration: broken" in out
+    assert "[Illustration]" not in out
+
+
+def test_strip_illustrations_keeps_other_brackets():
+    """非插图方括号（如 [sic]）不受影响。"""
+    text = "He left [sic] early.\n\n[Illustration]\n\nEnd."
+    assert gutenberg.strip_illustrations(text) == "He left [sic] early.\n\nEnd."
+
+
+def test_split_chapters_strips_illustrations_in_body():
+    """导入管线：拆章节时插图注记一并剥离（正文干净）。"""
+    long_body = "word " * 900
+    text = (
+        "CHAPTER I.\n"
+        "It is a truth.\n\n"
+        "[Illustration:\n\n“Cap”\n\n[_Copyright 1894._]]\n\n"
+        "More narrative.\n\n"
+        f"{long_body}\n"
+    )
+    chapters = gutenberg.split_chapters(text)
+    assert "[Illustration" not in chapters[0].body
+    assert "It is a truth." in chapters[0].body
+    assert "More narrative." in chapters[0].body
+
+
+def test_strip_illustrations_heading_line_survives():
+    """闭合 ] 挂在章节标题行尾（扉页样式）：标题幸存，只吞 ]。"""
+    text = (
+        "[Illustration: ·PRIDE AND PREJUDICE·\n\n\n\n\nChapter I.]\n\n\n"
+        "It is a truth."
+    )
+    out = gutenberg.strip_illustrations(text)
+    assert "Chapter I." in out
+    assert "[Illustration" not in out
+    assert "It is a truth." in out
+
+
+def test_strip_illustrations_nested_bracket_line_is_caption():
+    """闭合行前缀非标题（版权注 [_Copyright …_]）→ 仍是 caption，整块删。"""
+    text = "A.\n\n[Illustration:\n\n“quote”\n\n[_Copyright 1894 by George Allen._]]\n\nB."
+    assert gutenberg.strip_illustrations(text) == "A.\n\nB."
