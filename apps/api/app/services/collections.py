@@ -12,12 +12,14 @@ API 不暴露 chapter 子概念，统一以 reading 视图呈现
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
 import uuid
 from pathlib import Path
 
+from . import ai
 from ..config import settings
 
 _lock = threading.Lock()
@@ -48,7 +50,8 @@ def list_collections() -> list[dict]:
             d = Path(settings.collections_dir)
             live = [e for e in raw if (d / f"{e.get('id', '')}.json").exists()]
             if len(live) != len(raw):
-                _rebuild_index()
+                with _lock:
+                    _write_index_atomic(live)
             return live
     # 兜底：扫目录
     return _scan_list()
@@ -123,8 +126,23 @@ def get_chapter_for_reading(reading_id: str) -> tuple[dict, dict] | None:
 
 # ---------- 写入 ----------
 
+def _write_index_atomic(items: list[dict]) -> None:
+    """原子写入 _index.json：临时文件 + os.replace，避免并发 open('w') 撕文件。
+
+    调用方需已持有 _lock（或保证单线程），否则多个并发调用仍可能竞争临时文件名。
+    """
+    idx = Path(settings.collections_index)
+    idx.parent.mkdir(parents=True, exist_ok=True)
+    tmp = idx.with_suffix(".json.tmp")
+    tmp.write_text(
+        json.dumps(items, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(tmp, idx)
+
+
 def _persist(collection: dict) -> None:
-    """单文件落盘；同时更新 _index.json。"""
+    """单文件落盘 + 原子更新 _index.json（均在 _lock 内，并发安全）。"""
     d = Path(settings.collections_dir)
     d.mkdir(parents=True, exist_ok=True)
     cid = collection["id"]
@@ -134,18 +152,7 @@ def _persist(collection: dict) -> None:
             json.dumps(collection, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-    # 重建索引
-    _rebuild_index()
-
-
-def _rebuild_index() -> None:
-    items = _scan_list()
-    idx = Path(settings.collections_index)
-    idx.parent.mkdir(parents=True, exist_ok=True)
-    idx.write_text(
-        json.dumps(items, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+        _write_index_atomic(_scan_list())
 
 
 def create_collection(data: dict) -> dict:
@@ -204,7 +211,7 @@ def delete_collection(id: str) -> bool:
         return False
     with _lock:
         p.unlink()
-    _rebuild_index()
+        _write_index_atomic(_scan_list())
     return True
 
 
@@ -268,10 +275,244 @@ def import_from_gutenberg(book_id: int) -> dict:
         "created_at": round(time.time(), 3),
         "glossary": {},
         "polysemy": {},
+        "ai_status": "pending",  # pending / analyzing / done / error
+        "ai_reason": "",
         "chapters": chapter_dicts,
     }
+    # 自动启动全本 AI 释义（后台线程）：导入即可用，学生打开章节能看到生词
     _persist(collection)
+    analyze_collection(cid)
     return collection
+
+
+# ---------- 章节 AI 释义（提取生词 + 跨章一致性） ----------
+
+import re as _re_html
+_HTML_TAG_RE = _re_html.compile(r"<[^>]+>")
+
+
+def _extract_chapter_vocab(body: str, level: int) -> list[dict]:
+    """提取章节候选生词（按 level 过滤 + 每词首次出现句）。
+
+    返回 [{"lemma": str, "context": str, "dict_gloss": str}, ...]
+    """
+    from . import reading  # 避免循环导入
+
+    r = reading.annotate(body, level=level)
+    # 收集每词首次出现的句子（用纯文本，去 markup）
+    first_sent: dict[str, str] = {}
+    for line in r["lines"]:
+        text = _HTML_TAG_RE.sub("", line["html"]).strip()
+        if not text:
+            continue
+        for w in line["words"]:
+            lemma = w.get("lemma")
+            if lemma and lemma not in first_sent:
+                first_sent[lemma] = text
+
+    items: list[dict] = []
+    seen: set[str] = set()
+    for v in r["vocabulary"]:
+        lemma = v["lemma"]
+        if lemma in seen or not lemma:
+            continue
+        seen.add(lemma)
+        items.append({
+            "lemma": lemma,
+            "context": first_sent.get(lemma, ""),
+            "dict_gloss": v.get("gloss") or "",
+        })
+    return items
+
+
+def _ai_gloss_vocab(items: list[dict]) -> dict:
+    """调用默认 AI 为生词列表生成语境义。
+
+    输入: [{"lemma", "context", "dict_gloss"}, ...]
+    返回: {"glosses": {lemma: gloss}, "ai_used", "reason", "raw"}
+    """
+    if not items:
+        return {"glosses": {}, "ai_used": False, "reason": "无生词", "raw": ""}
+
+    lines = [
+        f"- {it['lemma']}（词典义：{it['dict_gloss'] or '无'}）\n  首次出现句：{it['context']}"
+        for it in items
+    ]
+    prompt = (
+        "你是英语分级阅读的编辑，为初中英语学习者做生词的中文释义。\n"
+        "下面是某书某一章里的生词清单（附词典义 + 首次出现的句子），"
+        "请结合上下文语境，为每个词给出 1~6 个字的中文释义，"
+        "只取该句里最贴切的含义（多义词务必按句意取舍，不要列出全部义项）。\n\n"
+        "【生词清单】\n" + "\n".join(lines) + "\n\n"
+        "只输出一个 JSON 对象，键为词条文本，值为中文释义。"
+        "不要输出 JSON 以外的任何内容（不要 markdown 围栏）。"
+    )
+    ai_map: dict = {}
+    ai_used = False
+    reason: str | None = None
+    raw = ""
+    try:
+        content = ai.chat([{"role": "user", "content": prompt}], temperature=0.2)
+    except RuntimeError as e:
+        content = ""
+        reason = f"AI 调用失败：{e}"
+    raw = content[:200]
+    if content:
+        snippet = content[:120].replace("\n", " ")
+        try:
+            parsed = json.loads(content)
+        except (json.JSONDecodeError, TypeError):
+            # 容错：尝试剥离 markdown 围栏
+            stripped = content.strip()
+            if stripped.startswith("```"):
+                stripped = _re_html.sub(r"^```\w*\n?", "", stripped)
+                stripped = stripped.rstrip("`").rstrip()
+            try:
+                parsed = json.loads(stripped)
+            except (json.JSONDecodeError, TypeError):
+                parsed = None
+        if isinstance(parsed, dict) and parsed:
+            ai_map = parsed
+            ai_used = True
+        else:
+            reason = f"AI 响应无法解析为 JSON（开头: {snippet!r}）"
+    elif reason is None:
+        reason = "AI 返回空内容"
+
+    glosses: dict[str, str] = {}
+    for it in items:
+        lemma = it["lemma"]
+        ai_g = str(ai_map.get(lemma) or "").strip()
+        if ai_g:
+            glosses[lemma] = ai_g
+        elif it["dict_gloss"]:
+            glosses[lemma] = it["dict_gloss"]  # AI 没给则词典义兜底
+    return {"glosses": glosses, "ai_used": ai_used, "reason": reason, "raw": raw}
+
+
+def analyze_chapter(
+    collection_id: str,
+    chapter_index: int,
+    *,
+    force: bool = False,
+) -> dict | None:
+    """对单章跑 AI 释义：提取生词 → 调 AI → 写回 chapter.glosses + ai_status。
+
+    返回更新后的 (collection, chapter)；不存在时返回 None。
+    force=True 时即使 ai_status=done 也重跑（用于「重跑 AI 释义」按钮）。
+    """
+    coll = get_collection(collection_id)
+    if coll is None:
+        return None
+    chapter = next((c for c in coll["chapters"] if c.get("index") == chapter_index), None)
+    if chapter is None:
+        return None
+    level = chapter.get("target_level") or 3000
+
+    chapter["ai_status"] = "analyzing"
+    chapter["ai_reason"] = ""
+    _persist(coll)
+
+    items = _extract_chapter_vocab(chapter.get("body") or "", level)
+    result = _ai_gloss_vocab(items)
+
+    # 加载最新（其他线程可能并发改了）
+    cur = get_collection(collection_id)
+    if cur is None:
+        return None
+    ch = next((c for c in cur["chapters"] if c.get("index") == chapter_index), None)
+    if ch is None:
+        return None
+
+    if force:
+        ch["glosses"] = dict(result["glosses"])
+    else:
+        merged = dict(ch.get("glosses") or {})
+        merged.update(result["glosses"])
+        ch["glosses"] = merged
+    if result["ai_used"]:
+        ch["ai_status"] = "done"
+        ch["ai_reason"] = ""
+    else:
+        ch["ai_status"] = "error"
+        ch["ai_reason"] = result["reason"] or "未知错误"
+    _persist(cur)
+    return {"collection": cur, "chapter": ch, "items_count": len(items),
+            "ai_used": result["ai_used"], "reason": result["reason"], "raw": result["raw"]}
+
+
+def analyze_collection(collection_id: str) -> dict | None:
+    """对全本所有未 done 的章节并发跑 AI（在后台线程里调用）。
+
+    返回启动摘要：{"scheduled": [chapter_indices]}；collection 不存在返回 None。
+    """
+    coll = get_collection(collection_id)
+    if coll is None:
+        return None
+    scheduled: list[int] = []
+    for ch in coll["chapters"]:
+        if ch.get("ai_status") != "done":
+            scheduled.append(ch["index"])
+    if not scheduled:
+        return {"scheduled": [], "collection": coll}
+
+    def _run(idx: int) -> None:
+        try:
+            analyze_chapter(collection_id, idx, force=False)
+        except Exception:
+            # 标记失败，不让线程死循环
+            cur = get_collection(collection_id)
+            if cur is None:
+                return
+            c = next((c for c in cur["chapters"] if c.get("index") == idx), None)
+            if c is not None:
+                c["ai_status"] = "error"
+                c["ai_reason"] = "后台线程异常"
+                _persist(cur)
+
+    threads = []
+    for idx in scheduled:
+        t = threading.Thread(target=_run, args=(idx,), daemon=True)
+        t.start()
+        threads.append(t)
+    return {"scheduled": scheduled, "collection": coll}
+
+
+def reconcile_collection(collection_id: str) -> dict | None:
+    """对齐全书词汇表：扫描所有 chapter.glosses，写入 collection.glossary + polysemy。
+
+    规则：
+    - 同一词所有章节 gloss 一致 → glossary[lemma] = gloss；polysemy 不收录
+    - 同一词不同章节 gloss 不同 → glossary[lemma] = 出现次数最多的 gloss；
+      polysemy[lemma][gloss] = [章节 index 列表]
+    """
+    coll = get_collection(collection_id)
+    if coll is None:
+        return None
+
+    # lemma → gloss → [chapter_index]
+    bucket: dict[str, dict[str, list[int]]] = {}
+    for ch in coll["chapters"]:
+        for lemma, gloss in (ch.get("glosses") or {}).items():
+            if not lemma or not gloss:
+                continue
+            bucket.setdefault(lemma, {}).setdefault(gloss, []).append(ch["index"])
+
+    glossary: dict[str, str] = {}
+    polysemy: dict[str, dict[str, list[int]]] = {}
+    for lemma, glosses in bucket.items():
+        if len(glosses) == 1:
+            glossary[lemma] = next(iter(glosses.keys()))
+        else:
+            polysemy[lemma] = {g: sorted(chs) for g, chs in glosses.items()}
+            # canonical = 出现章节最多的 gloss
+            canonical = max(glosses.items(), key=lambda kv: len(kv[1]))[0]
+            glossary[lemma] = canonical
+
+    coll["glossary"] = glossary
+    coll["polysemy"] = polysemy
+    _persist(coll)
+    return coll
 
 
 # ---------- reading 视图适配 ----------
@@ -297,6 +538,8 @@ def flatten_chapter_to_reading(coll: dict, chapter: dict) -> dict:
         "skip": chapter.get("skip") or [],
         "body": chapter.get("body") or "",
         "quizzes": chapter.get("quizzes") or [],
+        "ai_status": chapter.get("ai_status") or "pending",
+        "ai_reason": chapter.get("ai_reason") or "",
         "collection": {
             "id": coll["id"],
             "title": coll.get("title", ""),

@@ -9,8 +9,482 @@
   "intro_zh": "",
   "intro_en": "\"A Little Princess\" by Frances Hodgson Burnett is a children's novel published in 1905. When young Sara Crewe arrives at a London boarding school as a privileged pupil, she wins hearts with her imagination and kindness. But a sudden tragedy strips away her fortune, transforming her from pampered princess to starving servant. As the cruel headmistress exploits her and hardship tests her spirit, Sara clings to one belief: true nobility comes from character, not wealth. A mysterious benefactor watches from next door, harboring secrets that could change everything. (This is an automatically generated summary.)",
   "created_at": 1789825428.608,
-  "glossary": {},
-  "polysemy": {},
+  "glossary": {
+    "schoolroom": "教室",
+    "glimpse": "一瞥",
+    "maid": "女仆",
+    "petticoat": "衬裙",
+    "lace": "蕾丝",
+    "frill": "褶边",
+    "stocking": "长袜",
+    "sniff": "嗤笑",
+    "spite": "恶意",
+    "slipper": "拖鞋",
+    "shoemaker": "鞋匠",
+    "queer": "奇怪的",
+    "eyelash": "睫毛",
+    "abashed": "窘迫",
+    "papa": "爸爸",
+    "whimsy": "奇想",
+    "frock": "连衣裙",
+    "ribbon": "缎带",
+    "downstairs": "下楼",
+    "comme": "多么",
+    "elle": "她",
+    "drole": "古怪",
+    "housemaid": "女仆",
+    "intelligent": "聪慧的",
+    "l'air": "神态",
+    "d'une": "一位",
+    "princesse": "公主",
+    "cette": "这个",
+    "petite": "小",
+    "mistress": "女主人",
+    "rap": "敲",
+    "dignify": "威严地",
+    "acquaint": "相识",
+    "curtsy": "屈膝礼",
+    "sour": "酸溜溜的",
+    "punctilious": "拘谨的",
+    "flush": "红晕",
+    "conceal": "掩饰",
+    "irritate": "恼人的",
+    "tartness": "尖刻",
+    "le": "阳性定冠词",
+    "pere": "父亲",
+    "la": "阴性定冠词",
+    "scrutinizingly": "审视地",
+    "fond": "喜欢",
+    "fil": "儿子",
+    "frere": "兄弟",
+    "madam": "夫人",
+    "prejudice": "偏见",
+    "mademoiselle": "小姐",
+    "disgrace": "丢脸",
+    "fluent": "流利的",
+    "monsieur": "先生",
+    "eyeglass": "眼镜",
+    "indignant": "愤慨地",
+    "fog": "雾",
+    "exquisite": "纯正",
+    "exclaim": "惊呼",
+    "mortify": "羞愧",
+    "giggle": "窃笑",
+    "grammar": "语法书",
+    "infuriate": "大怒",
+    "grudge": "怨恨",
+    "seminar": "学校",
+    "ascend": "登基",
+    "throne": "王位",
+    "surfeit": "暴食",
+    "lamprey": "八目鳗",
+    "misfortune": "不幸",
+    "imperil": "危及",
+    "forever": "永远",
+    "fever": "脑热病",
+    "shatter": "损害",
+    "peril": "危险",
+    "diamond": "钻石",
+    "savin": "仆人",
+    "headache": "头痛",
+    "myself": "我自己",
+    "armchair": "扶手椅",
+    "gown": "睡袍",
+    "forehead": "额头",
+    "sixpence": "六便士",
+    "decorous": "有礼貌",
+    "invalid": "病人",
+    "ram": "拉姆",
+    "attic": "阁楼",
+    "desolate": "荒凉",
+    "plaster": "灰泥",
+    "rust": "锈迹",
+    "grate": "壁炉",
+    "wretch": "可怜人",
+    "pillow": "枕头",
+    "harass": "困扰",
+    "torment": "折磨",
+    "indie": "印度",
+    "discomfort": "困苦",
+    "refurnish": "重新布置",
+    "bit": "咬",
+    "soothe": "安慰",
+    "shrewd": "精明",
+    "unprovided": "无依靠",
+    "motherless": "无母",
+    "magnificent": "辉煌",
+    "glitter": "闪耀",
+    "scarce": "几乎不",
+    "catastrophe": "灾难",
+    "caution": "谨慎",
+    "console": "安慰",
+    "ground": "立场",
+    "groan": "呻吟",
+    "petulant": "烦躁",
+    "misery": "痛苦",
+    "cricket": "板球",
+    "villain": "恶人",
+    "reproach": "自责",
+    "swindle": "骗子",
+    "torture": "折磨",
+    "delirious": "神志不清",
+    "strap": "绑",
+    "rave": "胡言乱语",
+    "dread": "恐惧",
+    "stagger": "踉跄",
+    "hideous": "可怕",
+    "mock": "嘲弄",
+    "verge": "边缘",
+    "sane": "清醒",
+    "droop": "低垂",
+    "haze": "迷雾",
+    "cling": "紧抓",
+    "garret": "阁楼",
+    "slop": "泥泞",
+    "sneer": "嘲笑",
+    "mystify": "使困惑",
+    "scuttle": "仓皇逃跑",
+    "quake": "发抖",
+    "tremble": "颤抖",
+    "peep": "偷看",
+    "furtive": "偷偷地",
+    "patter": "啪嗒声",
+    "slate": "石板",
+    "skylight": "天窗",
+    "dull": "无聊的",
+    "reign": "笼罩",
+    "reconnoiter": "探察",
+    "ramble": "四处走动",
+    "crumb": "碎屑",
+    "palpitate": "悸动",
+    "invade": "侵入",
+    "aperture": "孔口",
+    "dexterity": "灵巧",
+    "precipitate": "仓促地",
+    "timid": "胆小的",
+    "coax": "哄诱",
+    "vanish": "消失",
+    "sahib": "大人",
+    "terrify": "使恐惧",
+    "exponent": "代表",
+    "sparrow": "麻雀",
+    "tame": "驯服",
+    "worship": "崇拜",
+    "pariah": "贱民",
+    "midnight": "午夜",
+    "midst": "中间",
+    "pencil": "铅笔",
+    "tablet": "便笺本",
+    "miserable": "悲惨的",
+    "mattress": "床垫",
+    "utter": "发出",
+    "dingy": "暗淡的",
+    "ragged": "破烂的",
+    "fireplace": "壁炉",
+    "leaf": "一页",
+    "apologetic": "歉意的",
+    "obeisance": "敬礼",
+    "naught": "无",
+    "whatsoever": "无论什么",
+    "velvet": "天鹅绒",
+    "soundly": "酣畅地",
+    "robe": "长袍",
+    "orient": "东方人",
+    "comprehend": "理解",
+    "ominous": "不祥的",
+    "footstool": "脚凳",
+    "hammer": "锤子",
+    "thrust": "塞",
+    "scuffle": "窸窣走动",
+    "squeak": "吱吱声",
+    "scamperings": "乱跑声",
+    "tumble": "打滚",
+    "click": "咔哒声",
+    "lithe": "轻盈的",
+    "crouch": "蹲伏",
+    "cosy": "温暖舒适",
+    "murmur": "低语",
+    "bedclothe": "铺盖",
+    "satin": "缎子",
+    "eider": "绒鸭",
+    "quilt": "棉被",
+    "crackle": "劈啪响",
+    "mournful": "悲恸地",
+    "elbow": "手肘",
+    "blaze": "火焰",
+    "hob": "炉边",
+    "brass": "黄铜",
+    "kettle": "水壶",
+    "hiss": "嘘声",
+    "crimson": "深红色",
+    "rug": "小块地毯",
+    "cushion": "垫子",
+    "saucer": "茶碟",
+    "teapot": "茶壶",
+    "wad": "小软团",
+    "fairyland": "仙境",
+    "rosy": "蔷薇色的",
+    "pant": "喘息",
+    "rapturous": "兴高采烈的",
+    "bewitch": "施魔法于",
+    "oh": "哦",
+    "kneel": "跪下",
+    "clutch": "抓紧",
+    "sob": "啜泣",
+    "flyleaf": "飞页",
+    "candle": "蜡烛",
+    "bedside": "床边",
+    "upright": "直挺地",
+    "aghast": "惊骇的",
+    "smudge": "污点",
+    "threshold": "门槛",
+    "reel": "眩晕",
+    "nursery": "育儿室",
+    "banquet": "宴会",
+    "hearth": "壁炉前",
+    "irritable": "烦躁",
+    "distract": "分散注意",
+    "oftener": "更常",
+    "drudge": "苦工",
+    "errand": "差事",
+    "rapture": "欣喜",
+    "enlarge": "详述",
+    "weary": "疲惫",
+    "lantern": "提灯",
+    "prophesy": "预言",
+    "loathe": "厌恶",
+    "tuck": "塞",
+    "paw": "爪子",
+    "splendid": "漂亮的",
+    "boarhound": "大猎犬",
+    "collar": "项圈",
+    "inscription": "铭文",
+    "recollect": "回忆",
+    "rag": "破布",
+    "tatter": "破衣",
+    "rejoice": "欢聚",
+    "bun": "小圆面包",
+    "fourpence": "四便士",
+    "dreadful": "糟糕的",
+    "populace": "穷人",
+    "stool": "凳子",
+    "carriage": "马车",
+    "owner": "主人",
+    "waif": "流浪儿",
+    "astonish": "惊讶",
+    "involuntary": "不由自主",
+    "ravenous": "饥饿的",
+    "lap": "膝上",
+    "meanin": "本意",
+    "knowin": "知道",
+    "parlour": "里屋",
+    "savage": "野人",
+    "she'd": "她已经",
+    "muff": "手笼"
+  },
+  "polysemy": {
+    "sniff": {
+      "嗤笑": [
+        2
+      ],
+      "嗅": [
+        14
+      ]
+    },
+    "whimsy": {
+      "奇想": [
+        2
+      ],
+      "奇思": [
+        20
+      ]
+    },
+    "mistress": {
+      "女主人": [
+        2,
+        14
+      ],
+      "小姐": [
+        20
+      ]
+    },
+    "acquaint": {
+      "相识": [
+        2
+      ],
+      "熟悉": [
+        20
+      ]
+    },
+    "irritate": {
+      "恼人的": [
+        2
+      ],
+      "刺眼": [
+        20
+      ]
+    },
+    "disgrace": {
+      "丢脸": [
+        2
+      ],
+      "蒙羞": [
+        12
+      ]
+    },
+    "exclaim": {
+      "惊呼": [
+        2,
+        12,
+        14
+      ],
+      "叫道": [
+        20
+      ]
+    },
+    "myself": {
+      "我自己": [
+        12
+      ],
+      "自己": [
+        20
+      ]
+    },
+    "gown": {
+      "睡袍": [
+        12
+      ],
+      "睡衣": [
+        16
+      ]
+    },
+    "ram": {
+      "拉姆": [
+        12,
+        20
+      ],
+      "公羊": [
+        14
+      ]
+    },
+    "rust": {
+      "锈迹": [
+        12
+      ],
+      "锈": [
+        14
+      ]
+    },
+    "grate": {
+      "壁炉": [
+        12
+      ],
+      "炉栅": [
+        14
+      ],
+      "炉格": [
+        16
+      ]
+    },
+    "wretch": {
+      "可怜的": [
+        12
+      ],
+      "可怜人": [
+        14,
+        20
+      ]
+    },
+    "bit": {
+      "咬": [
+        12
+      ],
+      "一点": [
+        20
+      ]
+    },
+    "scarce": {
+      "几乎不": [
+        12,
+        16
+      ],
+      "难以": [
+        20
+      ]
+    },
+    "stagger": {
+      "踉跄": [
+        12
+      ],
+      "蹒跚": [
+        16
+      ]
+    },
+    "dull": {
+      "无聊的": [
+        14
+      ],
+      "无聊": [
+        20
+      ]
+    },
+    "reign": {
+      "笼罩": [
+        14
+      ],
+      "充满": [
+        20
+      ]
+    },
+    "sahib": {
+      "大人": [
+        14
+      ],
+      "老爷": [
+        20
+      ]
+    },
+    "soundly": {
+      "酣畅地": [
+        14
+      ],
+      "深沉地": [
+        16
+      ]
+    },
+    "robe": {
+      "长袍": [
+        14
+      ],
+      "宽松长袍": [
+        16
+      ]
+    },
+    "blaze": {
+      "火焰": [
+        16
+      ],
+      "燃烧": [
+        20
+      ]
+    },
+    "rug": {
+      "小块地毯": [
+        16
+      ],
+      "小地毯": [
+        20
+      ]
+    },
+    "rosy": {
+      "蔷薇色的": [
+        16
+      ],
+      "红润": [
+        20
+      ]
+    }
+  },
   "chapters": [
     {
       "index": 1,
@@ -31,10 +505,76 @@
       "title_zh": "",
       "body": "When Sara entered the schoolroom the next morning everybody looked at\r\nher with wide, interested eyes.  By that time every pupil--from Lavinia\r\nHerbert, who was nearly thirteen and felt quite grown up, to Lottie\r\nLegh, who was only just four and the baby of the school--had heard a\r\ngreat deal about her.  They knew very certainly that she was Miss\r\nMinchin's show pupil and was considered a credit to the establishment.\r\nOne or two of them had even caught a glimpse of her French maid,\r\nMariette, who had arrived the evening before. Lavinia had managed to\r\npass Sara's room when the door was open, and had seen Mariette opening\r\na box which had arrived late from some shop.\r\n\r\n\"It was full of petticoats with lace frills on them--frills and\r\nfrills,\" she whispered to her friend Jessie as she bent over her\r\ngeography. \"I saw her shaking them out.  I heard Miss Minchin say to\r\nMiss Amelia that her clothes were so grand that they were ridiculous\r\nfor a child.  My mamma says that children should be dressed simply. She\r\nhas got one of those petticoats on now.  I saw it when she sat down.\"\r\n\r\n\"She has silk stockings on!\" whispered Jessie, bending over her\r\ngeography also.  \"And what little feet!  I never saw such little feet.\"\r\n\r\n\"Oh,\" sniffed Lavinia, spitefully, \"that is the way her slippers are\r\nmade.  My mamma says that even big feet can be made to look small if\r\nyou have a clever shoemaker.  I don't think she is pretty at all. Her\r\neyes are such a queer color.\"\r\n\r\n\"She isn't pretty as other pretty people are,\" said Jessie, stealing a\r\nglance across the room; \"but she makes you want to look at her again.\r\nShe has tremendously long eyelashes, but her eyes are almost green.\"\r\n\r\nSara was sitting quietly in her seat, waiting to be told what to do.\r\nShe had been placed near Miss Minchin's desk.  She was not abashed at\r\nall by the many pairs of eyes watching her.  She was interested and\r\nlooked back quietly at the children who looked at her. She wondered\r\nwhat they were thinking of, and if they liked Miss Minchin, and if they\r\ncared for their lessons, and if any of them had a papa at all like her\r\nown.  She had had a long talk with Emily about her papa that morning.\r\n\r\n\"He is on the sea now, Emily,\" she had said.  \"We must be very great\r\nfriends to each other and tell each other things.  Emily, look at me.\r\nYou have the nicest eyes I ever saw--but I wish you could speak.\"\r\n\r\nShe was a child full of imaginings and whimsical thoughts, and one of\r\nher fancies was that there would be a great deal of comfort in even\r\npretending that Emily was alive and really heard and understood. After\r\nMariette had dressed her in her dark-blue schoolroom frock and tied her\r\nhair with a dark-blue ribbon, she went to Emily, who sat in a chair of\r\nher own, and gave her a book.\r\n\r\n\"You can read that while I am downstairs,\" she said; and, seeing\r\nMariette looking at her curiously, she spoke to her with a serious\r\nlittle face.\r\n\r\n\"What I believe about dolls,\" she said, \"is that they can do things\r\nthey will not let us know about.  Perhaps, really, Emily can read and\r\ntalk and walk, but she will only do it when people are out of the room.\r\nThat is her secret.  You see, if people knew that dolls could do\r\nthings, they would make them work.  So, perhaps, they have promised\r\neach other to keep it a secret.  If you stay in the room, Emily will\r\njust sit there and stare; but if you go out, she will begin to read,\r\nperhaps, or go and look out of the window. Then if she heard either of\r\nus coming, she would just run back and jump into her chair and pretend\r\nshe had been there all the time.\"\r\n\r\n\"Comme elle est drole!\"  Mariette said to herself, and when she went\r\ndownstairs she told the head housemaid about it.  But she had already\r\nbegun to like this odd little girl who had such an intelligent small\r\nface and such perfect manners.  She had taken care of children before\r\nwho were not so polite.  Sara was a very fine little person, and had a\r\ngentle, appreciative way of saying, \"If you please, Mariette,\" \"Thank\r\nyou, Mariette,\" which was very charming.  Mariette told the head\r\nhousemaid that she thanked her as if she was thanking a lady.\r\n\r\n\"Elle a l'air d'une princesse, cette petite,\" she said. Indeed, she was\r\nvery much pleased with her new little mistress and liked her place\r\ngreatly.\r\n\r\nAfter Sara had sat in her seat in the schoolroom for a few minutes,\r\nbeing looked at by the pupils, Miss Minchin rapped in a dignified\r\nmanner upon her desk.\r\n\r\n\"Young ladies,\" she said, \"I wish to introduce you to your new\r\ncompanion.\"  All the little girls rose in their places, and Sara rose\r\nalso.  \"I shall expect you all to be very agreeable to Miss Crewe; she\r\nhas just come to us from a great distance--in fact, from India. As soon\r\nas lessons are over you must make each other's acquaintance.\"\r\n\r\nThe pupils bowed ceremoniously, and Sara made a little curtsy, and then\r\nthey sat down and looked at each other again.\r\n\r\n\"Sara,\" said Miss Minchin in her schoolroom manner, \"come here to me.\"\r\n\r\nShe had taken a book from the desk and was turning over its leaves.\r\nSara went to her politely.\r\n\r\n\"As your papa has engaged a French maid for you,\" she began, \"I\r\nconclude that he wishes you to make a special study of the French\r\nlanguage.\"\r\n\r\nSara felt a little awkward.\r\n\r\n\"I think he engaged her,\" she said, \"because he--he thought I would\r\nlike her, Miss Minchin.\"\r\n\r\n\"I am afraid,\" said Miss Minchin, with a slightly sour smile, \"that you\r\nhave been a very spoiled little girl and always imagine that things are\r\ndone because you like them.  My impression is that your papa wished you\r\nto learn French.\"\r\n\r\nIf Sara had been older or less punctilious about being quite polite to\r\npeople, she could have explained herself in a very few words. But, as\r\nit was, she felt a flush rising on her cheeks.  Miss Minchin was a very\r\nsevere and imposing person, and she seemed so absolutely sure that Sara\r\nknew nothing whatever of French that she felt as if it would be almost\r\nrude to correct her.  The truth was that Sara could not remember the\r\ntime when she had not seemed to know French. Her father had often\r\nspoken it to her when she had been a baby. Her mother had been a French\r\nwoman, and Captain Crewe had loved her language, so it happened that\r\nSara had always heard and been familiar with it.\r\n\r\n\"I--I have never really learned French, but--but--\" she began, trying\r\nshyly to make herself clear.\r\n\r\nOne of Miss Minchin's chief secret annoyances was that she did not\r\nspeak French herself, and was desirous of concealing the irritating\r\nfact. She, therefore, had no intention of discussing the matter and\r\nlaying herself open to innocent questioning by a new little pupil.\r\n\r\n\"That is enough,\" she said with polite tartness.  \"If you have not\r\nlearned, you must begin at once.  The French master, Monsieur Dufarge,\r\nwill be here in a few minutes.  Take this book and look at it until he\r\narrives.\"\r\n\r\nSara's cheeks felt warm.  She went back to her seat and opened the\r\nbook. She looked at the first page with a grave face.  She knew it\r\nwould be rude to smile, and she was very determined not to be rude. But\r\nit was very odd to find herself expected to study a page which told her\r\nthat \"le pere\" meant \"the father,\" and \"la mere\" meant \"the mother.\"\r\n\r\nMiss Minchin glanced toward her scrutinizingly.\r\n\r\n\"You look rather cross, Sara,\" she said.  \"I am sorry you do not like\r\nthe idea of learning French.\"\r\n\r\n\"I am very fond of it,\" answered Sara, thinking she would try again;\r\n\"but--\"\r\n\r\n\"You must not say 'but' when you are told to do things,\" said Miss\r\nMinchin.  \"Look at your book again.\"\r\n\r\nAnd Sara did so, and did not smile, even when she found that \"le fils\"\r\nmeant \"the son,\" and \"le frere\" meant \"the brother.\"\r\n\r\n\"When Monsieur Dufarge comes,\" she thought, \"I can make him understand.\"\r\n\r\nMonsieur Dufarge arrived very shortly afterward.  He was a very nice,\r\nintelligent, middle-aged Frenchman, and he looked interested when his\r\neyes fell upon Sara trying politely to seem absorbed in her little book\r\nof phrases.\r\n\r\n\"Is this a new pupil for me, madame?\" he said to Miss Minchin.  \"I hope\r\nthat is my good fortune.\"\r\n\r\n\"Her papa--Captain Crewe--is very anxious that she should begin the\r\nlanguage.  But I am afraid she has a childish prejudice against it. She\r\ndoes not seem to wish to learn,\" said Miss Minchin.\r\n\r\n\"I am sorry of that, mademoiselle,\" he said kindly to Sara.  \"Perhaps,\r\nwhen we begin to study together, I may show you that it is a charming\r\ntongue.\"\r\n\r\nLittle Sara rose in her seat.  She was beginning to feel rather\r\ndesperate, as if she were almost in disgrace.  She looked up into\r\nMonsieur Dufarge's face with her big, green-gray eyes, and they were\r\nquite innocently appealing.  She knew that he would understand as soon\r\nas she spoke.  She began to explain quite simply in pretty and fluent\r\nFrench.  Madame had not understood.  She had not learned French\r\nexactly--not out of books--but her papa and other people had always\r\nspoken it to her, and she had read it and written it as she had read\r\nand written English. Her papa loved it, and she loved it because he\r\ndid.  Her dear mamma, who had died when she was born, had been French.\r\nShe would be glad to learn anything monsieur would teach her, but what\r\nshe had tried to explain to madame was that she already knew the words\r\nin this book--and she held out the little book of phrases.\r\n\r\nWhen she began to speak Miss Minchin started quite violently and sat\r\nstaring at her over her eyeglasses, almost indignantly, until she had\r\nfinished.  Monsieur Dufarge began to smile, and his smile was one of\r\ngreat pleasure.  To hear this pretty childish voice speaking his own\r\nlanguage so simply and charmingly made him feel almost as if he were in\r\nhis native land--which in dark, foggy days in London sometimes seemed\r\nworlds away.  When she had finished, he took the phrase book from her,\r\nwith a look almost affectionate. But he spoke to Miss Minchin.\r\n\r\n\"Ah, madame,\" he said, \"there is not much I can teach her.  She has not\r\nLEARNED French; she is French.  Her accent is exquisite.\"\r\n\r\n\"You ought to have told me,\" exclaimed Miss Minchin, much mortified,\r\nturning to Sara.\r\n\r\n\"I--I tried,\" said Sara.  \"I--I suppose I did not begin right.\"\r\n\r\nMiss Minchin knew she had tried, and that it had not been her fault\r\nthat she was not allowed to explain.  And when she saw that the pupils\r\nhad been listening and that Lavinia and Jessie were giggling behind\r\ntheir French grammars, she felt infuriated.\r\n\r\n\"Silence, young ladies!\" she said severely, rapping upon the desk.\r\n\"Silence at once!\"\r\n\r\nAnd she began from that minute to feel rather a grudge against her show\r\npupil.",
       "target_level": 3000,
-      "glosses": {},
+      "glosses": {
+        "schoolroom": "教室",
+        "glimpse": "一瞥",
+        "maid": "女仆",
+        "petticoat": "衬裙",
+        "lace": "蕾丝",
+        "frill": "褶边",
+        "stocking": "长袜",
+        "sniff": "嗤笑",
+        "spite": "恶意",
+        "slipper": "拖鞋",
+        "shoemaker": "鞋匠",
+        "queer": "奇怪的",
+        "eyelash": "睫毛",
+        "abashed": "窘迫",
+        "papa": "爸爸",
+        "whimsy": "奇想",
+        "frock": "连衣裙",
+        "ribbon": "缎带",
+        "downstairs": "下楼",
+        "comme": "多么",
+        "elle": "她",
+        "drole": "古怪",
+        "housemaid": "女仆",
+        "intelligent": "聪慧的",
+        "l'air": "神态",
+        "d'une": "一位",
+        "princesse": "公主",
+        "cette": "这个",
+        "petite": "小",
+        "mistress": "女主人",
+        "rap": "敲",
+        "dignify": "威严地",
+        "acquaint": "相识",
+        "curtsy": "屈膝礼",
+        "sour": "酸溜溜的",
+        "punctilious": "拘谨的",
+        "flush": "红晕",
+        "conceal": "掩饰",
+        "irritate": "恼人的",
+        "tartness": "尖刻",
+        "le": "阳性定冠词",
+        "pere": "父亲",
+        "la": "阴性定冠词",
+        "scrutinizingly": "审视地",
+        "fond": "喜欢",
+        "fil": "儿子",
+        "frere": "兄弟",
+        "madam": "夫人",
+        "prejudice": "偏见",
+        "mademoiselle": "小姐",
+        "disgrace": "丢脸",
+        "fluent": "流利的",
+        "monsieur": "先生",
+        "eyeglass": "眼镜",
+        "indignant": "愤慨地",
+        "fog": "雾",
+        "exquisite": "纯正",
+        "exclaim": "惊呼",
+        "mortify": "羞愧",
+        "giggle": "窃笑",
+        "grammar": "语法书",
+        "infuriate": "大怒",
+        "grudge": "怨恨"
+      },
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "done",
+      "ai_reason": ""
     },
     {
       "index": 3,
@@ -70,7 +610,9 @@
       "glosses": {},
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "pending",
+      "ai_reason": ""
     },
     {
       "index": 6,
@@ -106,7 +648,9 @@
       "glosses": {},
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "pending",
+      "ai_reason": ""
     },
     {
       "index": 9,
@@ -151,10 +695,88 @@
       "title_zh": "",
       "body": "When one lives in a row of houses, it is interesting to think of the\r\nthings which are being done and said on the other side of the wall of\r\nthe very rooms one is living in.  Sara was fond of amusing herself by\r\ntrying to imagine the things hidden by the wall which divided the\r\nSelect Seminary from the Indian gentleman's house. She knew that the\r\nschoolroom was next to the Indian gentleman's study, and she hoped that\r\nthe wall was thick so that the noise made sometimes after lesson hours\r\nwould not disturb him.\r\n\r\n\"I am growing quite fond of him,\" she said to Ermengarde; \"I should not\r\nlike him to be disturbed.  I have adopted him for a friend. You can do\r\nthat with people you never speak to at all.  You can just watch them,\r\nand think about them and be sorry for them, until they seem almost like\r\nrelations.  I'm quite anxious sometimes when I see the doctor call\r\ntwice a day.\"\r\n\r\n\"I have very few relations,\" said Ermengarde, reflectively, \"and I'm\r\nvery glad of it.  I don't like those I have.  My two aunts are always\r\nsaying, 'Dear me, Ermengarde!  You are very fat.  You shouldn't eat\r\nsweets,' and my uncle is always asking me things like, 'When did Edward\r\nthe Third ascend the throne?' and, 'Who died of a surfeit of lampreys?'\"\r\n\r\nSara laughed.\r\n\r\n\"People you never speak to can't ask you questions like that,\" she\r\nsaid; \"and I'm sure the Indian gentleman wouldn't even if he was quite\r\nintimate with you.  I am fond of him.\"\r\n\r\nShe had become fond of the Large Family because they looked happy; but\r\nshe had become fond of the Indian gentleman because he looked unhappy.\r\nHe had evidently not fully recovered from some very severe illness.  In\r\nthe kitchen--where, of course, the servants, through some mysterious\r\nmeans, knew everything--there was much discussion of his case.  He was\r\nnot an Indian gentleman really, but an Englishman who had lived in\r\nIndia.  He had met with great misfortunes which had for a time so\r\nimperilled his whole fortune that he had thought himself ruined and\r\ndisgraced forever. The shock had been so great that he had almost died\r\nof brain fever; and ever since he had been shattered in health, though\r\nhis fortunes had changed and all his possessions had been restored to\r\nhim. His trouble and peril had been connected with mines.\r\n\r\n\"And mines with diamonds in 'em!\" said the cook.  \"No savin's of mine\r\nnever goes into no mines--particular diamond ones\"--with a side glance\r\nat Sara.  \"We all know somethin' of THEM.\"\r\n\r\n\"He felt as my papa felt,\" Sara thought.  \"He was ill as my papa was;\r\nbut he did not die.\"\r\n\r\nSo her heart was more drawn to him than before.  When she was sent out\r\nat night she used sometimes to feel quite glad, because there was\r\nalways a chance that the curtains of the house next door might not yet\r\nbe closed and she could look into the warm room and see her adopted\r\nfriend.  When no one was about she used sometimes to stop, and, holding\r\nto the iron railings, wish him good night as if he could hear her.\r\n\r\n\"Perhaps you can FEEL if you can't hear,\" was her fancy.  \"Perhaps kind\r\nthoughts reach people somehow, even through windows and doors and\r\nwalls.  Perhaps you feel a little warm and comforted, and don't know\r\nwhy, when I am standing here in the cold and hoping you will get well\r\nand happy again.  I am so sorry for you,\" she would whisper in an\r\nintense little voice.  \"I wish you had a 'Little Missus' who could pet\r\nyou as I used to pet papa when he had a headache. I should like to be\r\nyour 'Little Missus' myself, poor dear! Good night--good night.  God\r\nbless you!\"\r\n\r\nShe would go away, feeling quite comforted and a little warmer herself.\r\nHer sympathy was so strong that it seemed as if it MUST reach him\r\nsomehow as he sat alone in his armchair by the fire, nearly always in a\r\ngreat dressing gown, and nearly always with his forehead resting in his\r\nhand as he gazed hopelessly into the fire. He looked to Sara like a man\r\nwho had a trouble on his mind still, not merely like one whose troubles\r\nlay all in the past.\r\n\r\n\"He always seems as if he were thinking of something that hurts him\r\nNOW,\" she said to herself, \"but he has got his money back and he will\r\nget over his brain fever in time, so he ought not to look like that.  I\r\nwonder if there is something else.\"\r\n\r\nIf there was something else--something even servants did not hear\r\nof--she could not help believing that the father of the Large Family\r\nknew it--the gentleman she called Mr. Montmorency.  Mr. Montmorency\r\nwent to see him often, and Mrs. Montmorency and all the little\r\nMontmorencys went, too, though less often.  He seemed particularly fond\r\nof the two elder little girls--the Janet and Nora who had been so\r\nalarmed when their small brother Donald had given Sara his sixpence. He\r\nhad, in fact, a very tender place in his heart for all children, and\r\nparticularly for little girls.  Janet and Nora were as fond of him as\r\nhe was of them, and looked forward with the greatest pleasure to the\r\nafternoons when they were allowed to cross the square and make their\r\nwell-behaved little visits to him. They were extremely decorous little\r\nvisits because he was an invalid.\r\n\r\n\"He is a poor thing,\" said Janet, \"and he says we cheer him up.  We try\r\nto cheer him up very quietly.\"\r\n\r\nJanet was the head of the family, and kept the rest of it in order. It\r\nwas she who decided when it was discreet to ask the Indian gentleman to\r\ntell stories about India, and it was she who saw when he was tired and\r\nit was the time to steal quietly away and tell Ram Dass to go to him.\r\nThey were very fond of Ram Dass.  He could have told any number of\r\nstories if he had been able to speak anything but Hindustani.  The\r\nIndian gentleman's real name was Mr. Carrisford, and Janet told Mr.\r\nCarrisford about the encounter with the\r\nlittle-girl-who-was-not-a-beggar.  He was very much interested, and all\r\nthe more so when he heard from Ram Dass of the adventure of the monkey\r\non the roof.  Ram Dass made for him a very clear picture of the attic\r\nand its desolateness--of the bare floor and broken plaster, the rusty,\r\nempty grate, and the hard, narrow bed.\r\n\r\n\"Carmichael,\" he said to the father of the Large Family, after he had\r\nheard this description, \"I wonder how many of the attics in this square\r\nare like that one, and how many wretched little servant girls sleep on\r\nsuch beds, while I toss on my down pillows, loaded and harassed by\r\nwealth that is, most of it--not mine.\"\r\n\r\n\"My dear fellow,\" Mr. Carmichael answered cheerily, \"the sooner you\r\ncease tormenting yourself the better it will be for you. If you\r\npossessed all the wealth of all the Indies, you could not set right all\r\nthe discomforts in the world, and if you began to refurnish all the\r\nattics in this square, there would still remain all the attics in all\r\nthe other squares and streets to put in order. And there you are!\"\r\n\r\nMr. Carrisford sat and bit his nails as he looked into the glowing bed\r\nof coals in the grate.\r\n\r\n\"Do you suppose,\" he said slowly, after a pause--\"do you think it is\r\npossible that the other child--the child I never cease thinking of, I\r\nbelieve--could be--could POSSIBLY be reduced to any such condition as\r\nthe poor little soul next door?\"\r\n\r\nMr. Carmichael looked at him uneasily.  He knew that the worst thing\r\nthe man could do for himself, for his reason and his health, was to\r\nbegin to think in the particular way of this particular subject.\r\n\r\n\"If the child at Madame Pascal's school in Paris was the one you are in\r\nsearch of,\" he answered soothingly, \"she would seem to be in the hands\r\nof people who can afford to take care of her. They adopted her because\r\nshe had been the favorite companion of their little daughter who died.\r\nThey had no other children, and Madame Pascal said that they were\r\nextremely well-to-do Russians.\"\r\n\r\n\"And the wretched woman actually did not know where they had taken\r\nher!\" exclaimed Mr. Carrisford.\r\n\r\nMr. Carmichael shrugged his shoulders.\r\n\r\n\"She was a shrewd, worldly Frenchwoman, and was evidently only too glad\r\nto get the child so comfortably off her hands when the father's death\r\nleft her totally unprovided for.  Women of her type do not trouble\r\nthemselves about the futures of children who might prove burdens. The\r\nadopted parents apparently disappeared and left no trace.\"\r\n\r\n\"But you say 'IF the child was the one I am in search of. You say 'if.'\r\nWe are not sure.  There was a difference in the name.\"\r\n\r\n\"Madame Pascal pronounced it as if it were Carew instead of Crewe--but\r\nthat might be merely a matter of pronunciation.  The circumstances were\r\ncuriously similar.  An English officer in India had placed his\r\nmotherless little girl at the school.  He had died suddenly after\r\nlosing his fortune.\"  Mr. Carmichael paused a moment, as if a new\r\nthought had occurred to him.  \"Are you SURE the child was left at a\r\nschool in Paris?  Are you sure it was Paris?\"\r\n\r\n\"My dear fellow,\" broke forth Carrisford, with restless bitterness, \"I\r\nam SURE of nothing.  I never saw either the child or her mother. Ralph\r\nCrewe and I loved each other as boys, but we had not met since our\r\nschool days, until we met in India.  I was absorbed in the magnificent\r\npromise of the mines.  He became absorbed, too. The whole thing was so\r\nhuge and glittering that we half lost our heads.  When we met we\r\nscarcely spoke of anything else. I only knew that the child had been\r\nsent to school somewhere. I do not even remember, now, HOW I knew it.\"\r\n\r\nHe was beginning to be excited.  He always became excited when his\r\nstill weakened brain was stirred by memories of the catastrophes of the\r\npast.\r\n\r\nMr. Carmichael watched him anxiously.  It was necessary to ask some\r\nquestions, but they must be put quietly and with caution.\r\n\r\n\"But you had reason to think the school WAS in Paris?\"\r\n\r\n\"Yes,\" was the answer, \"because her mother was a Frenchwoman, and I had\r\nheard that she wished her child to be educated in Paris.  It seemed\r\nonly likely that she would be there.\"\r\n\r\n\"Yes,\" Mr. Carmichael said, \"it seems more than probable.\"\r\n\r\nThe Indian gentleman leaned forward and struck the table with a long,\r\nwasted hand.\r\n\r\n\"Carmichael,\" he said, \"I MUST find her.  If she is alive, she is\r\nsomewhere.  If she is friendless and penniless, it is through my fault.\r\nHow is a man to get back his nerve with a thing like that on his mind?\r\nThis sudden change of luck at the mines has made realities of all our\r\nmost fantastic dreams, and poor Crewe's child may be begging in the\r\nstreet!\"\r\n\r\n\"No, no,\" said Carmichael.  \"Try to be calm.  Console yourself with the\r\nfact that when she is found you have a fortune to hand over to her.\"\r\n\r\n\"Why was I not man enough to stand my ground when things looked black?\"\r\nCarrisford groaned in petulant misery.  \"I believe I should have stood\r\nmy ground if I had not been responsible for other people's money as\r\nwell as my own.  Poor Crewe had put into the scheme every penny that he\r\nowned.  He trusted me--he LOVED me.  And he died thinking I had ruined\r\nhim--I--Tom Carrisford, who played cricket at Eton with him.  What a\r\nvillain he must have thought me!\"\r\n\r\n\"Don't reproach yourself so bitterly.\"\r\n\r\n\"I don't reproach myself because the speculation threatened to fail--I\r\nreproach myself for losing my courage.  I ran away like a swindler and\r\na thief, because I could not face my best friend and tell him I had\r\nruined him and his child.\"\r\n\r\nThe good-hearted father of the Large Family put his hand on his\r\nshoulder comfortingly.\r\n\r\n\"You ran away because your brain had given way under the strain of\r\nmental torture,\" he said.  \"You were half delirious already.  If you\r\nhad not been you would have stayed and fought it out. You were in a\r\nhospital, strapped down in bed, raving with brain fever, two days after\r\nyou left the place.  Remember that.\"\r\n\r\nCarrisford dropped his forehead in his hands.\r\n\r\n\"Good God!  Yes,\" he said.  \"I was driven mad with dread and horror. I\r\nhad not slept for weeks.  The night I staggered out of my house all the\r\nair seemed full of hideous things mocking and mouthing at me.\"\r\n\r\n\"That is explanation enough in itself,\" said Mr. Carmichael.  \"How\r\ncould a man on the verge of brain fever judge sanely!\"\r\n\r\nCarrisford shook his drooping head.\r\n\r\n\"And when I returned to consciousness poor Crewe was dead--and buried.\r\nAnd I seemed to remember nothing.  I did not remember the child for\r\nmonths and months.  Even when I began to recall her existence\r\neverything seemed in a sort of haze.\"\r\n\r\nHe stopped a moment and rubbed his forehead.  \"It sometimes seems so\r\nnow when I try to remember.  Surely I must sometime have heard Crewe\r\nspeak of the school she was sent to.  Don't you think so?\"\r\n\r\n\"He might not have spoken of it definitely.  You never seem even to\r\nhave heard her real name.\"\r\n\r\n\"He used to call her by an odd pet name he had invented. He called her\r\nhis 'Little Missus.'  But the wretched mines drove everything else out\r\nof our heads.  We talked of nothing else. If he spoke of the school, I\r\nforgot--I forgot.  And now I shall never remember.\"\r\n\r\n\"Come, come,\" said Carmichael.  \"We shall find her yet.  We will\r\ncontinue to search for Madame Pascal's good-natured Russians.  She\r\nseemed to have a vague idea that they lived in Moscow. We will take\r\nthat as a clue.  I will go to Moscow.\"\r\n\r\n\"If I were able to travel, I would go with you,\" said Carrisford; \"but\r\nI can only sit here wrapped in furs and stare at the fire. And when I\r\nlook into it I seem to see Crewe's gay young face gazing back at me.\r\nHe looks as if he were asking me a question. Sometimes I dream of him\r\nat night, and he always stands before me and asks the same question in\r\nwords.  Can you guess what he says, Carmichael?\"\r\n\r\nMr. Carmichael answered him in a rather low voice.\r\n\r\n\"Not exactly,\" he said.\r\n\r\n\"He always says, 'Tom, old man--Tom--where is the Little Missus?'\" He\r\ncaught at Carmichael's hand and clung to it.  \"I must be able to answer\r\nhim--I must!\" he said.  \"Help me to find her.  Help me.\"\r\n\r\n\r\nOn the other side of the wall Sara was sitting in her garret talking to\r\nMelchisedec, who had come out for his evening meal.\r\n\r\n\"It has been hard to be a princess today, Melchisedec,\" she said. \"It\r\nhas been harder than usual.  It gets harder as the weather grows colder\r\nand the streets get more sloppy.  When Lavinia laughed at my muddy\r\nskirt as I passed her in the hall, I thought of something to say all in\r\na flash--and I only just stopped myself in time. You can't sneer back\r\nat people like that--if you are a princess. But you have to bite your\r\ntongue to hold yourself in.  I bit mine. It was a cold afternoon,\r\nMelchisedec.  And it's a cold night.\"\r\n\r\nQuite suddenly she put her black head down in her arms, as she often\r\ndid when she was alone.\r\n\r\n\"Oh, papa,\" she whispered, \"what a long time it seems since I was your\r\n'Little Missus'!\"\r\n\r\nThis was what happened that day on both sides of the wall.",
       "target_level": 3000,
-      "glosses": {},
+      "glosses": {
+        "fond": "喜欢",
+        "seminar": "学校",
+        "schoolroom": "教室",
+        "ascend": "登基",
+        "throne": "王位",
+        "surfeit": "暴食",
+        "lamprey": "八目鳗",
+        "misfortune": "不幸",
+        "imperil": "危及",
+        "disgrace": "蒙羞",
+        "forever": "永远",
+        "fever": "脑热病",
+        "shatter": "损害",
+        "peril": "危险",
+        "diamond": "钻石",
+        "savin": "仆人",
+        "papa": "爸爸",
+        "headache": "头痛",
+        "myself": "我自己",
+        "armchair": "扶手椅",
+        "gown": "睡袍",
+        "forehead": "额头",
+        "sixpence": "六便士",
+        "decorous": "有礼貌",
+        "invalid": "病人",
+        "ram": "拉姆",
+        "attic": "阁楼",
+        "desolate": "荒凉",
+        "plaster": "灰泥",
+        "rust": "锈迹",
+        "grate": "壁炉",
+        "wretch": "可怜的",
+        "pillow": "枕头",
+        "harass": "困扰",
+        "torment": "折磨",
+        "indie": "印度",
+        "discomfort": "困苦",
+        "refurnish": "重新布置",
+        "bit": "咬",
+        "madam": "夫人",
+        "soothe": "安慰",
+        "exclaim": "惊呼",
+        "shrewd": "精明",
+        "unprovided": "无依靠",
+        "motherless": "无母",
+        "magnificent": "辉煌",
+        "glitter": "闪耀",
+        "scarce": "几乎不",
+        "catastrophe": "灾难",
+        "caution": "谨慎",
+        "console": "安慰",
+        "ground": "立场",
+        "groan": "呻吟",
+        "petulant": "烦躁",
+        "misery": "痛苦",
+        "cricket": "板球",
+        "villain": "恶人",
+        "reproach": "自责",
+        "swindle": "骗子",
+        "torture": "折磨",
+        "delirious": "神志不清",
+        "strap": "绑",
+        "rave": "胡言乱语",
+        "dread": "恐惧",
+        "stagger": "踉跄",
+        "hideous": "可怕",
+        "mock": "嘲弄",
+        "verge": "边缘",
+        "sane": "清醒",
+        "droop": "低垂",
+        "haze": "迷雾",
+        "cling": "紧抓",
+        "garret": "阁楼",
+        "slop": "泥泞",
+        "sneer": "嘲笑"
+      },
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "done",
+      "ai_reason": ""
     },
     {
       "index": 13,
@@ -175,10 +797,82 @@
       "title_zh": "",
       "body": "On this very afternoon, while Sara was out, a strange thing happened in\r\nthe attic.  Only Melchisedec saw and heard it; and he was so much\r\nalarmed and mystified that he scuttled back to his hole and hid there,\r\nand really quaked and trembled as he peeped out furtively and with\r\ngreat caution to watch what was going on.\r\n\r\nThe attic had been very still all the day after Sara had left it in the\r\nearly morning.  The stillness had only been broken by the pattering of\r\nthe rain upon the slates and the skylight.  Melchisedec had, in fact,\r\nfound it rather dull; and when the rain ceased to patter and perfect\r\nsilence reigned, he decided to come out and reconnoiter, though\r\nexperience taught him that Sara would not return for some time.  He had\r\nbeen rambling and sniffing about, and had just found a totally\r\nunexpected and unexplained crumb left from his last meal, when his\r\nattention was attracted by a sound on the roof.  He stopped to listen\r\nwith a palpitating heart. The sound suggested that something was moving\r\non the roof.  It was approaching the skylight; it reached the skylight.\r\nThe skylight was being mysteriously opened.  A dark face peered into\r\nthe attic; then another face appeared behind it, and both looked in\r\nwith signs of caution and interest.  Two men were outside on the roof,\r\nand were making silent preparations to enter through the skylight\r\nitself. One was Ram Dass and the other was a young man who was the\r\nIndian gentleman's secretary; but of course Melchisedec did not know\r\nthis. He only knew that the men were invading the silence and privacy\r\nof the attic; and as the one with the dark face let himself down\r\nthrough the aperture with such lightness and dexterity that he did not\r\nmake the slightest sound, Melchisedec turned tail and fled\r\nprecipitately back to his hole.  He was frightened to death. He had\r\nceased to be timid with Sara, and knew she would never throw anything\r\nbut crumbs, and would never make any sound other than the soft, low,\r\ncoaxing whistling; but strange men were dangerous things to remain\r\nnear.  He lay close and flat near the entrance of his home, just\r\nmanaging to peep through the crack with a bright, alarmed eye. How much\r\nhe understood of the talk he heard I am not in the least able to say;\r\nbut, even if he had understood it all, he would probably have remained\r\ngreatly mystified.\r\n\r\nThe secretary, who was light and young, slipped through the skylight as\r\nnoiselessly as Ram Dass had done; and he caught a last glimpse of\r\nMelchisedec's vanishing tail.\r\n\r\n\"Was that a rat?\" he asked Ram Dass in a whisper.\r\n\r\n\"Yes; a rat, Sahib,\" answered Ram Dass, also whispering. \"There are\r\nmany in the walls.\"\r\n\r\n\"Ugh!\" exclaimed the young man.  \"It is a wonder the child is not\r\nterrified of them.\"\r\n\r\nRam Dass made a gesture with his hands.  He also smiled respectfully.\r\nHe was in this place as the intimate exponent of Sara, though she had\r\nonly spoken to him once.\r\n\r\n\"The child is the little friend of all things, Sahib,\" he answered.\r\n\"She is not as other children.  I see her when she does not see me. I\r\nslip across the slates and look at her many nights to see that she is\r\nsafe.  I watch her from my window when she does not know I am near. She\r\nstands on the table there and looks out at the sky as if it spoke to\r\nher.  The sparrows come at her call.  The rat she has fed and tamed in\r\nher loneliness.  The poor slave of the house comes to her for comfort.\r\nThere is a little child who comes to her in secret; there is one older\r\nwho worships her and would listen to her forever if she might.  This I\r\nhave seen when I have crept across the roof. By the mistress of the\r\nhouse--who is an evil woman--she is treated like a pariah; but she has\r\nthe bearing of a child who is of the blood of kings!\"\r\n\r\n\"You seem to know a great deal about her,\" the secretary said.\r\n\r\n\"All her life each day I know,\" answered Ram Dass.  \"Her going out I\r\nknow, and her coming in; her sadness and her poor joys; her coldness\r\nand her hunger.  I know when she is alone until midnight, learning from\r\nher books; I know when her secret friends steal to her and she is\r\nhappier--as children can be, even in the midst of poverty--because they\r\ncome and she may laugh and talk with them in whispers. If she were ill\r\nI should know, and I would come and serve her if it might be done.\"\r\n\r\n\"You are sure no one comes near this place but herself, and that she\r\nwill not return and surprise us.  She would be frightened if she found\r\nus here, and the Sahib Carrisford's plan would be spoiled.\"\r\n\r\nRam Dass crossed noiselessly to the door and stood close to it.\r\n\r\n\"None mount here but herself, Sahib,\" he said.  \"She has gone out with\r\nher basket and may be gone for hours.  If I stand here I can hear any\r\nstep before it reaches the last flight of the stairs.\"\r\n\r\nThe secretary took a pencil and a tablet from his breast pocket.\r\n\r\n\"Keep your ears open,\" he said; and he began to walk slowly and softly\r\nround the miserable little room, making rapid notes on his tablet as he\r\nlooked at things.\r\n\r\nFirst he went to the narrow bed.  He pressed his hand upon the mattress\r\nand uttered an exclamation.\r\n\r\n\"As hard as a stone,\" he said.  \"That will have to be altered some day\r\nwhen she is out.  A special journey can be made to bring it across. It\r\ncannot be done tonight.\"  He lifted the covering and examined the one\r\nthin pillow.\r\n\r\n\"Coverlet dingy and worn, blanket thin, sheets patched and ragged,\" he\r\nsaid.  \"What a bed for a child to sleep in--and in a house which calls\r\nitself respectable!  There has not been a fire in that grate for many a\r\nday,\" glancing at the rusty fireplace.\r\n\r\n\"Never since I have seen it,\" said Ram Dass.  \"The mistress of the\r\nhouse is not one who remembers that another than herself may be cold.\"\r\n\r\nThe secretary was writing quickly on his tablet.  He looked up from it\r\nas he tore off a leaf and slipped it into his breast pocket.\r\n\r\n\"It is a strange way of doing the thing,\" he said.  \"Who planned it?\"\r\n\r\nRam Dass made a modestly apologetic obeisance.\r\n\r\n\"It is true that the first thought was mine, Sahib,\" he said; \"though\r\nit was naught but a fancy.  I am fond of this child; we are both\r\nlonely.  It is her way to relate her visions to her secret friends.\r\nBeing sad one night, I lay close to the open skylight and listened. The\r\nvision she related told what this miserable room might be if it had\r\ncomforts in it.  She seemed to see it as she talked, and she grew\r\ncheered and warmed as she spoke.  Then she came to this fancy; and the\r\nnext day, the Sahib being ill and wretched, I told him of the thing to\r\namuse him.  It seemed then but a dream, but it pleased the Sahib.  To\r\nhear of the child's doings gave him entertainment. He became interested\r\nin her and asked questions.  At last he began to please himself with\r\nthe thought of making her visions real things.\"\r\n\r\n\"You think that it can be done while she sleeps?  Suppose she\r\nawakened,\" suggested the secretary; and it was evident that whatsoever\r\nthe plan referred to was, it had caught and pleased his fancy as well\r\nas the Sahib Carrisford's.\r\n\r\n\"I can move as if my feet were of velvet,\" Ram Dass replied; \"and\r\nchildren sleep soundly--even the unhappy ones.  I could have entered\r\nthis room in the night many times, and without causing her to turn upon\r\nher pillow.  If the other bearer passes to me the things through the\r\nwindow, I can do all and she will not stir. When she awakens she will\r\nthink a magician has been here.\"\r\n\r\nHe smiled as if his heart warmed under his white robe, and the\r\nsecretary smiled back at him.\r\n\r\n\"It will be like a story from the Arabian Nights,\" he said.  \"Only an\r\nOriental could have planned it.  It does not belong to London fogs.\"\r\n\r\nThey did not remain very long, to the great relief of Melchisedec, who,\r\nas he probably did not comprehend their conversation, felt their\r\nmovements and whispers ominous.  The young secretary seemed interested\r\nin everything.  He wrote down things about the floor, the fireplace,\r\nthe broken footstool, the old table, the walls--which last he touched\r\nwith his hand again and again, seeming much pleased when he found that\r\na number of old nails had been driven in various places.\r\n\r\n\"You can hang things on them,\" he said.\r\n\r\nRam Dass smiled mysteriously.\r\n\r\n\"Yesterday, when she was out,\" he said, \"I entered, bringing with me\r\nsmall, sharp nails which can be pressed into the wall without blows\r\nfrom a hammer.  I placed many in the plaster where I may need them.\r\nThey are ready.\"\r\n\r\nThe Indian gentleman's secretary stood still and looked round him as he\r\nthrust his tablets back into his pocket.\r\n\r\n\"I think I have made notes enough; we can go now,\" he said. \"The Sahib\r\nCarrisford has a warm heart.  It is a thousand pities that he has not\r\nfound the lost child.\"\r\n\r\n\"If he should find her his strength would be restored to him,\" said Ram\r\nDass.  \"His God may lead her to him yet.\"\r\n\r\nThen they slipped through the skylight as noiselessly as they had\r\nentered it.  And, after he was quite sure they had gone, Melchisedec\r\nwas greatly relieved, and in the course of a few minutes felt it safe\r\nto emerge from his hole again and scuffle about in the hope that even\r\nsuch alarming human beings as these might have chanced to carry crumbs\r\nin their pockets and drop one or two of them.",
       "target_level": 3000,
-      "glosses": {},
+      "glosses": {
+        "attic": "阁楼",
+        "mystify": "使困惑",
+        "scuttle": "仓皇逃跑",
+        "quake": "发抖",
+        "tremble": "颤抖",
+        "peep": "偷看",
+        "furtive": "偷偷地",
+        "caution": "谨慎",
+        "patter": "啪嗒声",
+        "slate": "石板",
+        "skylight": "天窗",
+        "dull": "无聊的",
+        "reign": "笼罩",
+        "reconnoiter": "探察",
+        "ramble": "四处走动",
+        "sniff": "嗅",
+        "crumb": "碎屑",
+        "palpitate": "悸动",
+        "ram": "公羊",
+        "invade": "侵入",
+        "aperture": "孔口",
+        "dexterity": "灵巧",
+        "precipitate": "仓促地",
+        "timid": "胆小的",
+        "coax": "哄诱",
+        "glimpse": "一瞥",
+        "vanish": "消失",
+        "sahib": "大人",
+        "exclaim": "惊呼",
+        "terrify": "使恐惧",
+        "exponent": "代表",
+        "sparrow": "麻雀",
+        "tame": "驯服",
+        "worship": "崇拜",
+        "forever": "永远",
+        "mistress": "女主人",
+        "pariah": "贱民",
+        "midnight": "午夜",
+        "midst": "中间",
+        "pencil": "铅笔",
+        "tablet": "便笺本",
+        "miserable": "悲惨的",
+        "mattress": "床垫",
+        "utter": "发出",
+        "pillow": "枕头",
+        "dingy": "暗淡的",
+        "ragged": "破烂的",
+        "grate": "炉栅",
+        "rust": "锈",
+        "fireplace": "壁炉",
+        "leaf": "一页",
+        "apologetic": "歉意的",
+        "obeisance": "敬礼",
+        "naught": "无",
+        "fond": "喜欢",
+        "wretch": "可怜人",
+        "whatsoever": "无论什么",
+        "velvet": "天鹅绒",
+        "soundly": "酣畅地",
+        "robe": "长袍",
+        "orient": "东方人",
+        "fog": "雾",
+        "comprehend": "理解",
+        "ominous": "不祥的",
+        "footstool": "脚凳",
+        "hammer": "锤子",
+        "plaster": "灰泥",
+        "thrust": "塞",
+        "scuffle": "窸窣走动"
+      },
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "done",
+      "ai_reason": ""
     },
     {
       "index": 15,
@@ -199,10 +893,68 @@
       "title_zh": "",
       "body": "She did not know how long she slept.  But she had been tired enough to\r\nsleep deeply and profoundly--too deeply and soundly to be disturbed by\r\nanything, even by the squeaks and scamperings of Melchisedec's entire\r\nfamily, if all his sons and daughters had chosen to come out of their\r\nhole to fight and tumble and play.\r\n\r\nWhen she awakened it was rather suddenly, and she did not know that any\r\nparticular thing had called her out of her sleep. The truth was,\r\nhowever, that it was a sound which had called her back--a real\r\nsound--the click of the skylight as it fell in closing after a lithe\r\nwhite figure which slipped through it and crouched down close by upon\r\nthe slates of the roof--just near enough to see what happened in the\r\nattic, but not near enough to be seen.\r\n\r\nAt first she did not open her eyes.  She felt too sleepy and--curiously\r\nenough--too warm and comfortable.  She was so warm and comfortable,\r\nindeed, that she did not believe she was really awake. She never was as\r\nwarm and cozy as this except in some lovely vision.\r\n\r\n\"What a nice dream!\" she murmured.  \"I feel quite warm.\r\nI--don't--want--to--wake--up.\"\r\n\r\nOf course it was a dream.  She felt as if warm, delightful bedclothes\r\nwere heaped upon her.  She could actually FEEL blankets, and when she\r\nput out her hand it touched something exactly like a satin-covered\r\neider-down quilt.  She must not awaken from this delight--she must be\r\nquite still and make it last.\r\n\r\nBut she could not--even though she kept her eyes closed tightly, she\r\ncould not.  Something was forcing her to awaken--something in the room.\r\nIt was a sense of light, and a sound--the sound of a crackling, roaring\r\nlittle fire.\r\n\r\n\"Oh, I am awakening,\" she said mournfully.  \"I can't help it--I can't.\"\r\n\r\nHer eyes opened in spite of herself.  And then she actually smiled--for\r\nwhat she saw she had never seen in the attic before, and knew she never\r\nshould see.\r\n\r\n\"Oh, I HAVEN'T awakened,\" she whispered, daring to rise on her elbow\r\nand look all about her.  \"I am dreaming yet.\"  She knew it MUST be a\r\ndream, for if she were awake such things could not--could not be.\r\n\r\nDo you wonder that she felt sure she had not come back to earth?  This\r\nis what she saw.  In the grate there was a glowing, blazing fire; on\r\nthe hob was a little brass kettle hissing and boiling; spread upon the\r\nfloor was a thick, warm crimson rug; before the fire a folding-chair,\r\nunfolded, and with cushions on it; by the chair a small folding-table,\r\nunfolded, covered with a white cloth, and upon it spread small covered\r\ndishes, a cup, a saucer, a teapot; on the bed were new warm coverings\r\nand a satin-covered down quilt; at the foot a curious wadded silk robe,\r\na pair of quilted slippers, and some books.  The room of her dream\r\nseemed changed into fairyland--and it was flooded with warm light, for\r\na bright lamp stood on the table covered with a rosy shade.\r\n\r\nShe sat up, resting on her elbow, and her breathing came short and fast.\r\n\r\n\"It does not--melt away,\" she panted.  \"Oh, I never had such a dream\r\nbefore.\"  She scarcely dared to stir; but at last she pushed the\r\nbedclothes aside, and put her feet on the floor with a rapturous smile.\r\n\r\n\"I am dreaming--I am getting out of bed,\" she heard her own voice say;\r\nand then, as she stood up in the midst of it all, turning slowly from\r\nside to side--\"I am dreaming it stays--real! I'm dreaming it FEELS\r\nreal.  It's bewitched--or I'm bewitched. I only THINK I see it all.\"\r\nHer words began to hurry themselves.  \"If I can only keep on thinking\r\nit,\" she cried, \"I don't care! I don't care!\"\r\n\r\nShe stood panting a moment longer, and then cried out again.\r\n\r\n\"Oh, it isn't true!\" she said.  \"It CAN'T be true!  But oh, how true it\r\nseems!\"\r\n\r\nThe blazing fire drew her to it, and she knelt down and held out her\r\nhands close to it--so close that the heat made her start back.\r\n\r\n\"A fire I only dreamed wouldn't be HOT,\" she cried.\r\n\r\nShe sprang up, touched the table, the dishes, the rug; she went to the\r\nbed and touched the blankets.  She took up the soft wadded\r\ndressing-gown, and suddenly clutched it to her breast and held it to\r\nher cheek.\r\n\r\n\"It's warm.  It's soft!\" she almost sobbed.  \"It's real. It must be!\"\r\n\r\nShe threw it over her shoulders, and put her feet into the slippers.\r\n\r\n\"They are real, too.  It's all real!\" she cried.  \"I am NOT--I am NOT\r\ndreaming!\"\r\n\r\nShe almost staggered to the books and opened the one which lay upon the\r\ntop.  Something was written on the flyleaf--just a few words, and they\r\nwere these:\r\n\r\n\"To the little girl in the attic.  From a friend.\"\r\n\r\nWhen she saw that--wasn't it a strange thing for her to do--she put her\r\nface down upon the page and burst into tears.\r\n\r\n\"I don't know who it is,\" she said; \"but somebody cares for me a\r\nlittle.  I have a friend.\"\r\n\r\nShe took her candle and stole out of her own room and into Becky's, and\r\nstood by her bedside.\r\n\r\n\"Becky, Becky!\" she whispered as loudly as she dared.  \"Wake up!\"\r\n\r\nWhen Becky wakened, and she sat upright staring aghast, her face still\r\nsmudged with traces of tears, beside her stood a little figure in a\r\nluxurious wadded robe of crimson silk.  The face she saw was a shining,\r\nwonderful thing.  The Princess Sara--as she remembered her--stood at\r\nher very bedside, holding a candle in her hand.\r\n\r\n\"Come,\" she said.  \"Oh, Becky, come!\"\r\n\r\nBecky was too frightened to speak.  She simply got up and followed her,\r\nwith her mouth and eyes open, and without a word.\r\n\r\nAnd when they crossed the threshold, Sara shut the door gently and drew\r\nher into the warm, glowing midst of things which made her brain reel\r\nand her hungry senses faint.  \"It's true!  It's true!\" she cried.\r\n\"I've touched them all.  They are as real as we are. The Magic has come\r\nand done it, Becky, while we were asleep--the Magic that won't let\r\nthose worst things EVER quite happen.\"",
       "target_level": 3000,
-      "glosses": {},
+      "glosses": {
+        "soundly": "深沉地",
+        "squeak": "吱吱声",
+        "scamperings": "乱跑声",
+        "tumble": "打滚",
+        "click": "咔哒声",
+        "skylight": "天窗",
+        "lithe": "轻盈的",
+        "crouch": "蹲伏",
+        "slate": "石板",
+        "attic": "阁楼",
+        "cosy": "温暖舒适",
+        "murmur": "低语",
+        "bedclothe": "铺盖",
+        "satin": "缎子",
+        "eider": "绒鸭",
+        "quilt": "棉被",
+        "crackle": "劈啪响",
+        "mournful": "悲恸地",
+        "spite": "恶意",
+        "elbow": "手肘",
+        "grate": "炉格",
+        "blaze": "火焰",
+        "hob": "炉边",
+        "brass": "黄铜",
+        "kettle": "水壶",
+        "hiss": "嘘声",
+        "crimson": "深红色",
+        "rug": "小块地毯",
+        "cushion": "垫子",
+        "saucer": "茶碟",
+        "teapot": "茶壶",
+        "wad": "小软团",
+        "robe": "宽松长袍",
+        "slipper": "拖鞋",
+        "fairyland": "仙境",
+        "rosy": "蔷薇色的",
+        "pant": "喘息",
+        "scarce": "几乎不",
+        "rapturous": "兴高采烈的",
+        "midst": "中间",
+        "bewitch": "施魔法于",
+        "oh": "哦",
+        "kneel": "跪下",
+        "gown": "睡衣",
+        "clutch": "抓紧",
+        "sob": "啜泣",
+        "stagger": "蹒跚",
+        "flyleaf": "飞页",
+        "candle": "蜡烛",
+        "bedside": "床边",
+        "upright": "直挺地",
+        "aghast": "惊骇的",
+        "smudge": "污点",
+        "threshold": "门槛",
+        "reel": "眩晕"
+      },
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "done",
+      "ai_reason": ""
     },
     {
       "index": 17,
@@ -226,7 +978,9 @@
       "glosses": {},
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "pending",
+      "ai_reason": ""
     },
     {
       "index": 19,
@@ -247,10 +1001,79 @@
       "title_zh": "",
       "body": "Never had such joy reigned in the nursery of the Large Family.  Never\r\nhad they dreamed of such delights as resulted from an intimate\r\nacquaintance with the little-girl-who-was-not-a-beggar.  The mere fact\r\nof her sufferings and adventures made her a priceless possession.\r\nEverybody wanted to be told over and over again the things which had\r\nhappened to her.  When one was sitting by a warm fire in a big, glowing\r\nroom, it was quite delightful to hear how cold it could be in an attic.\r\nIt must be admitted that the attic was rather delighted in, and that\r\nits coldness and bareness quite sank into insignificance when\r\nMelchisedec was remembered, and one heard about the sparrows and things\r\none could see if one climbed on the table and stuck one's head and\r\nshoulders out of the skylight.\r\n\r\nOf course the thing loved best was the story of the banquet and the\r\ndream which was true.  Sara told it for the first time the day after\r\nshe had been found.  Several members of the Large Family came to take\r\ntea with her, and as they sat or curled up on the hearth-rug she told\r\nthe story in her own way, and the Indian gentleman listened and watched\r\nher. When she had finished she looked up at him and put her hand on his\r\nknee.\r\n\r\n\"That is my part,\" she said.  \"Now won't you tell your part of it,\r\nUncle Tom?\"  He had asked her to call him always \"Uncle Tom.\" \"I don't\r\nknow your part yet, and it must be beautiful.\"\r\n\r\nSo he told them how, when he sat alone, ill and dull and irritable, Ram\r\nDass had tried to distract him by describing the passers by, and there\r\nwas one child who passed oftener than any one else; he had begun to be\r\ninterested in her--partly perhaps because he was thinking a great deal\r\nof a little girl, and partly because Ram Dass had been able to relate\r\nthe incident of his visit to the attic in chase of the monkey.  He had\r\ndescribed its cheerless look, and the bearing of the child, who seemed\r\nas if she was not of the class of those who were treated as drudges and\r\nservants.  Bit by bit, Ram Dass had made discoveries concerning the\r\nwretchedness of her life. He had found out how easy a matter it was to\r\nclimb across the few yards of roof to the skylight, and this fact had\r\nbeen the beginning of all that followed.\r\n\r\n\"Sahib,\" he had said one day, \"I could cross the slates and make the\r\nchild a fire when she is out on some errand.  When she returned, wet\r\nand cold, to find it blazing, she would think a magician had done it.\"\r\n\r\nThe idea had been so fanciful that Mr. Carrisford's sad face had\r\nlighted with a smile, and Ram Dass had been so filled with rapture that\r\nhe had enlarged upon it and explained to his master how simple it would\r\nbe to accomplish numbers of other things.  He had shown a childlike\r\npleasure and invention, and the preparations for the carrying out of\r\nthe plan had filled many a day with interest which would otherwise have\r\ndragged wearily.  On the night of the frustrated banquet Ram Dass had\r\nkept watch, all his packages being in readiness in the attic which was\r\nhis own; and the person who was to help him had waited with him, as\r\ninterested as himself in the odd adventure. Ram Dass had been lying\r\nflat upon the slates, looking in at the skylight, when the banquet had\r\ncome to its disastrous conclusion; he had been sure of the profoundness\r\nof Sara's wearied sleep; and then, with a dark lantern, he had crept\r\ninto the room, while his companion remained outside and handed the\r\nthings to him. When Sara had stirred ever so faintly, Ram Dass had\r\nclosed the lantern-slide and lain flat upon the floor.  These and many\r\nother exciting things the children found out by asking a thousand\r\nquestions.\r\n\r\n\"I am so glad,\" Sara said. \"I am so GLAD it was you who were my friend!\"\r\n\r\nThere never were such friends as these two became.  Somehow, they\r\nseemed to suit each other in a wonderful way.  The Indian gentleman had\r\nnever had a companion he liked quite as much as he liked Sara. In a\r\nmonth's time he was, as Mr. Carmichael had prophesied he would be, a\r\nnew man.  He was always amused and interested, and he began to find an\r\nactual pleasure in the possession of the wealth he had imagined that he\r\nloathed the burden of.  There were so many charming things to plan for\r\nSara.  There was a little joke between them that he was a magician, and\r\nit was one of his pleasures to invent things to surprise her.  She\r\nfound beautiful new flowers growing in her room, whimsical little gifts\r\ntucked under pillows, and once, as they sat together in the evening,\r\nthey heard the scratch of a heavy paw on the door, and when Sara went\r\nto find out what it was, there stood a great dog--a splendid Russian\r\nboarhound--with a grand silver and gold collar bearing an inscription.\r\n\"I am Boris,\" it read; \"I serve the Princess Sara.\"\r\n\r\nThere was nothing the Indian gentleman loved more than the recollection\r\nof the little princess in rags and tatters.  The afternoons in which\r\nthe Large Family, or Ermengarde and Lottie, gathered to rejoice\r\ntogether were very delightful.  But the hours when Sara and the Indian\r\ngentleman sat alone and read or talked had a special charm of their\r\nown.  During their passing many interesting things occurred.\r\n\r\nOne evening, Mr. Carrisford, looking up from his book, noticed that his\r\ncompanion had not stirred for some time, but sat gazing into the fire.\r\n\r\n\"What are you 'supposing,' Sara?\" he asked.\r\n\r\nSara looked up, with a bright color on her cheek.\r\n\r\n\"I WAS supposing,\" she said; \"I was remembering that hungry day, and a\r\nchild I saw.\"\r\n\r\n\"But there were a great many hungry days,\" said the Indian gentleman,\r\nwith rather a sad tone in his voice.  \"Which hungry day was it?\"\r\n\r\n\"I forgot you didn't know,\" said Sara.  \"It was the day the dream came\r\ntrue.\"\r\n\r\nThen she told him the story of the bun shop, and the fourpence she\r\npicked up out of the sloppy mud, and the child who was hungrier than\r\nherself.  She told it quite simply, and in as few words as possible;\r\nbut somehow the Indian gentleman found it necessary to shade his eyes\r\nwith his hand and look down at the carpet.\r\n\r\n\"And I was supposing a kind of plan,\" she said, when she had finished.\r\n\"I was thinking I should like to do something.\"\r\n\r\n\"What was it?\" said Mr. Carrisford, in a low tone.  \"You may do\r\nanything you like to do, princess.\"\r\n\r\n\"I was wondering,\" rather hesitated Sara--\"you know, you say I have so\r\nmuch money--I was wondering if I could go to see the bun-woman, and\r\ntell her that if, when hungry children--particularly on those dreadful\r\ndays--come and sit on the steps, or look in at the window, she would\r\njust call them in and give them something to eat, she might send the\r\nbills to me.  Could I do that?\"\r\n\r\n\"You shall do it tomorrow morning,\" said the Indian gentleman.\r\n\r\n\"Thank you,\" said Sara.  \"You see, I know what it is to be hungry, and\r\nit is very hard when one cannot even PRETEND it away.\"\r\n\r\n\"Yes, yes, my dear,\" said the Indian gentleman.  \"Yes, yes, it must be.\r\nTry to forget it.  Come and sit on this footstool near my knee, and\r\nonly remember you are a princess.\"\r\n\r\n\"Yes,\" said Sara, smiling; \"and I can give buns and bread to the\r\npopulace.\"  And she went and sat on the stool, and the Indian gentleman\r\n(he used to like her to call him that, too, sometimes) drew her small\r\ndark head down on his knee and stroked her hair.\r\n\r\nThe next morning, Miss Minchin, in looking out of her window, saw the\r\nthings she perhaps least enjoyed seeing.  The Indian gentleman's\r\ncarriage, with its tall horses, drew up before the door of the next\r\nhouse, and its owner and a little figure, warm with soft, rich furs,\r\ndescended the steps to get into it. The little figure was a familiar\r\none, and reminded Miss Minchin of days in the past.  It was followed by\r\nanother as familiar--the sight of which she found very irritating.  It\r\nwas Becky, who, in the character of delighted attendant, always\r\naccompanied her young mistress to her carriage, carrying wraps and\r\nbelongings.  Already Becky had a pink, round face.\r\n\r\nA little later the carriage drew up before the door of the baker's\r\nshop, and its occupants got out, oddly enough, just as the bun-woman\r\nwas putting a tray of smoking-hot buns into the window.\r\n\r\nWhen Sara entered the shop the woman turned and looked at her, and,\r\nleaving the buns, came and stood behind the counter. For a moment she\r\nlooked at Sara very hard indeed, and then her good-natured face lighted\r\nup.\r\n\r\n\"I'm sure that I remember you, miss,\" she said.  \"And yet--\"\r\n\r\n\"Yes,\" said Sara; \"once you gave me six buns for fourpence, and--\"\r\n\r\n\"And you gave five of 'em to a beggar child,\" the woman broke in on\r\nher. \"I've always remembered it.  I couldn't make it out at first.\" She\r\nturned round to the Indian gentleman and spoke her next words to him.\r\n\"I beg your pardon, sir, but there's not many young people that notices\r\na hungry face in that way; and I've thought of it many a time.  Excuse\r\nthe liberty, miss,\"--to Sara--\"but you look rosier and--well, better\r\nthan you did that--that--\"\r\n\r\n\"I am better, thank you,\" said Sara.  \"And--I am much happier--and I\r\nhave come to ask you to do something for me.\"\r\n\r\n\"Me, miss!\" exclaimed the bun-woman, smiling cheerfully. \"Why, bless\r\nyou!  Yes, miss.  What can I do?\"\r\n\r\nAnd then Sara, leaning on the counter, made her little proposal\r\nconcerning the dreadful days and the hungry waifs and the buns.\r\n\r\nThe woman watched her, and listened with an astonished face.\r\n\r\n\"Why, bless me!\" she said again when she had heard it all; \"it'll be a\r\npleasure to me to do it.  I am a working-woman myself and cannot afford\r\nto do much on my own account, and there's sights of trouble on every\r\nside; but, if you'll excuse me, I'm bound to say I've given away many a\r\nbit of bread since that wet afternoon, just along o' thinking of\r\nyou--an' how wet an' cold you was, an' how hungry you looked; an' yet\r\nyou gave away your hot buns as if you was a princess.\"\r\n\r\nThe Indian gentleman smiled involuntarily at this, and Sara smiled a\r\nlittle, too, remembering what she had said to herself when she put the\r\nbuns down on the ravenous child's ragged lap.\r\n\r\n\"She looked so hungry,\" she said.  \"She was even hungrier than I was.\"\r\n\r\n\"She was starving,\" said the woman.  \"Many's the time she's told me of\r\nit since--how she sat there in the wet, and felt as if a wolf was\r\na-tearing at her poor young insides.\"\r\n\r\n\"Oh, have you seen her since then?\" exclaimed Sara.  \"Do you know where\r\nshe is?\"\r\n\r\n\"Yes, I do,\" answered the woman, smiling more good-naturedly than ever.\r\n\"Why, she's in that there back room, miss, an' has been for a month;\r\nan' a decent, well-meanin' girl she's goin' to turn out, an' such a\r\nhelp to me in the shop an' in the kitchen as you'd scarce believe,\r\nknowin' how she's lived.\"\r\n\r\nShe stepped to the door of the little back parlor and spoke; and the\r\nnext minute a girl came out and followed her behind the counter. And\r\nactually it was the beggar-child, clean and neatly clothed, and looking\r\nas if she had not been hungry for a long time. She looked shy, but she\r\nhad a nice face, now that she was no longer a savage, and the wild look\r\nhad gone from her eyes.  She knew Sara in an instant, and stood and\r\nlooked at her as if she could never look enough.\r\n\r\n\"You see,\" said the woman, \"I told her to come when she was hungry, and\r\nwhen she'd come I'd give her odd jobs to do; an' I found she was\r\nwilling, and somehow I got to like her; and the end of it was, I've\r\ngiven her a place an' a home, and she helps me, an' behaves well, an'\r\nis as thankful as a girl can be.  Her name's Anne. She has no other.\"\r\n\r\nThe children stood and looked at each other for a few minutes; and then\r\nSara took her hand out of her muff and held it out across the counter,\r\nand Anne took it, and they looked straight into each other's eyes.\r\n\r\n\"I am so glad,\" Sara said.  \"And I have just thought of something.\r\nPerhaps Mrs. Brown will let you be the one to give the buns and bread\r\nto the children.  Perhaps you would like to do it because you know what\r\nit is to be hungry, too.\"\r\n\r\n\"Yes, miss,\" said the girl.\r\n\r\nAnd, somehow, Sara felt as if she understood her, though she said so\r\nlittle, and only stood still and looked and looked after her as she\r\nwent out of the shop with the Indian gentleman, and they got into the\r\ncarriage and drove away.\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nEnd of Project Gutenberg's A Little Princess, by Frances Hodgson Burnett",
       "target_level": 3000,
-      "glosses": {},
+      "glosses": {
+        "reign": "充满",
+        "nursery": "育儿室",
+        "acquaint": "熟悉",
+        "attic": "阁楼",
+        "sparrow": "麻雀",
+        "skylight": "天窗",
+        "banquet": "宴会",
+        "hearth": "壁炉前",
+        "rug": "小地毯",
+        "dull": "无聊",
+        "irritable": "烦躁",
+        "ram": "拉姆",
+        "distract": "分散注意",
+        "oftener": "更常",
+        "drudge": "苦工",
+        "bit": "一点",
+        "wretch": "可怜人",
+        "sahib": "老爷",
+        "slate": "石板",
+        "errand": "差事",
+        "blaze": "燃烧",
+        "rapture": "欣喜",
+        "enlarge": "详述",
+        "weary": "疲惫",
+        "lantern": "提灯",
+        "prophesy": "预言",
+        "loathe": "厌恶",
+        "whimsy": "奇思",
+        "tuck": "塞",
+        "pillow": "枕头",
+        "paw": "爪子",
+        "splendid": "漂亮的",
+        "boarhound": "大猎犬",
+        "collar": "项圈",
+        "inscription": "铭文",
+        "recollect": "回忆",
+        "rag": "破布",
+        "tatter": "破衣",
+        "rejoice": "欢聚",
+        "bun": "小圆面包",
+        "fourpence": "四便士",
+        "slop": "泥泞",
+        "dreadful": "糟糕的",
+        "footstool": "脚凳",
+        "populace": "穷人",
+        "stool": "凳子",
+        "carriage": "马车",
+        "owner": "主人",
+        "irritate": "刺眼",
+        "mistress": "小姐",
+        "rosy": "红润",
+        "exclaim": "叫道",
+        "waif": "流浪儿",
+        "astonish": "惊讶",
+        "myself": "自己",
+        "involuntary": "不由自主",
+        "ravenous": "饥饿的",
+        "ragged": "破烂的",
+        "lap": "膝上",
+        "meanin": "本意",
+        "scarce": "难以",
+        "knowin": "知道",
+        "parlour": "里屋",
+        "savage": "野人",
+        "she'd": "她已经",
+        "muff": "手笼"
+      },
       "terms": {},
       "skip": [],
-      "quizzes": []
+      "quizzes": [],
+      "ai_status": "done",
+      "ai_reason": ""
     }
   ]
 }

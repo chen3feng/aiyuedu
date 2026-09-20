@@ -73,6 +73,12 @@
   .modal-body { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
   .modal .actions { display: flex; justify-content: flex-end; gap: 10px;
     margin-top: 18px; flex-shrink: 0; background: #fff; padding-top: 8px; }
+  .status-pending, .status-analyzing { display: inline-block; padding: 2px 8px;
+    border-radius: 6px; font-size: 12px; background: #fef3c7; color: #92400e; }
+  .status-done { display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 12px; background: #d1fae5; color: #065f46; }
+  .status-error { display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 12px; background: #fee2e2; color: #991b1b; }
 </style>
 </head>
 <body>
@@ -601,6 +607,8 @@ async function renderCollections() {
 
 async function renderCollectionDetail() {
   const c = state.collectionDetail;
+  const glossarySize = Object.keys(c.glossary || {}).length;
+  const polysemySize = Object.keys(c.polysemy || {}).length;
   main().innerHTML = `
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:14px">
@@ -608,7 +616,8 @@ async function renderCollectionDetail() {
         <button onclick="closeCollectionDetail()">返回列表</button>
       </div>
       <div class="muted" style="margin-bottom:14px">
-        ${esc(c.title)} · ${esc(c.author || "")} · 共 ${c.chapters.length} 章 · glossary ${Object.keys(c.glossary || {}).length} 词
+        ${esc(c.title)} · ${esc(c.author || "")} · 共 ${c.chapters.length} 章 ·
+        glossary ${glossarySize} 词 · 多义 ${polysemySize} 个
       </div>
       <div class="field"><label>中文标题</label>
         <input type="text" id="coll-title-zh" value="${esc(c.title_zh || "")}" placeholder="例如：小公主"></div>
@@ -616,19 +625,57 @@ async function renderCollectionDetail() {
         <textarea id="coll-intro-zh" placeholder="一两句话介绍这本书">${esc(c.intro_zh || "")}</textarea></div>
       <div class="row" style="margin-bottom:14px">
         <button class="primary" onclick="saveCollectionMeta('${esc(c.id)}')">保存标题/简介</button>
+        <button onclick="analyzeAllChapters('${esc(c.id)}')">全本 AI 释义</button>
+        <button onclick="reconcileCollection('${esc(c.id)}')">对齐词汇表</button>
       </div>
-      <div class="muted" style="margin-bottom:10px">章节列表（点击标题可编辑正文；标题翻译 / 词汇标注待补）</div>
+      <div class="muted" style="margin-bottom:10px">章节列表（点击「重跑 AI」= force 模式；导入后已自动跑一遍）</div>
       ${(c.chapters || []).map((ch, i) => `
         <div class="item">
           <div class="grow">
             <strong>${ch.index}. ${esc(ch.title || "")}</strong>
             <span class="muted">${ch.title_zh ? esc(ch.title_zh) : ""}</span>
-            <div class="muted">${(ch.body || "").split(/\s+/).length} 词</div>
+            <div class="muted">${(ch.body || "").split(/\s+/).length} 词 ·
+              <span class="status-${esc(ch.ai_status || "pending")}">${statusLabel(ch.ai_status)}</span>
+              ${ch.ai_reason ? `<span class="err">${esc(ch.ai_reason)}</span>` : ""}
+              · ${Object.keys(ch.glosses || {}).length} 词条
+            </div>
           </div>
           <input type="text" placeholder="中文标题" value="${esc(ch.title_zh || "")}"
             onchange="setChapterTitleZh('${esc(c.id)}', ${ch.index}, this.value)" style="max-width:200px">
+          <button class="small" onclick="analyzeOneChapter('${esc(c.id)}', ${ch.index})">重跑 AI</button>
         </div>`).join("")}
     </div>`;
+}
+
+function statusLabel(s) {
+  return ({pending: "待分析", analyzing: "分析中…", done: "完成", error: "失败"})[s] || "未知";
+}
+
+async function analyzeOneChapter(collId, idx) {
+  if (!confirm(`确认重跑第 ${idx} 章的 AI 释义（force 覆盖现有词条）？`)) return;
+  try {
+    await api(`/collections/${collId}/chapters/${idx}/analyze`, "POST", { force: true });
+    toast(`第 ${idx} 章已重新分析`);
+    await openCollectionDetail(collId);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function analyzeAllChapters(collId) {
+  if (!confirm("全本重跑：所有未完成章节并发调 AI 释义。")) return;
+  try {
+    const r = await api(`/collections/${collId}/analyze-all`, "POST");
+    toast(`已调度 ${r.scheduled.length} 章`);
+    await openCollectionDetail(collId);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function reconcileCollection(collId) {
+  if (!confirm("对齐全书词汇表：扫描所有章节 glosses，写入 collection.glossary + polysemy。继续？")) return;
+  try {
+    const r = await api(`/collections/${collId}/reconcile`, "POST");
+    toast(`对齐完成：glossary ${r.glossary_size} 词，多义 ${r.polysemy_size} 个`);
+    await openCollectionDetail(collId);
+  } catch (e) { toast(e.message, true); }
 }
 
 async function importGutenberg() {
