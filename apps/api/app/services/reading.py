@@ -137,6 +137,10 @@ GLOSS_LEVEL = 2000
 
 # 句子切分：句末标点 + 空白（"9.58" 里的点后无空白，不会被误切）
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
+# 古腾堡等长文本里有三种行尾：\r\n（Windows） / \r（旧 Mac，已罕见） / \n（Unix）。
+# 先归一为 \n：1) 单 \n 软回车 → 空格；2) \n\n+ 段落分隔保留。
+_CRLF_RE = re.compile(r"\r\n?")
+_SOFT_WRAP_RE = re.compile(r"(?<!\n)\n(?!\n)")
 # 词 token：数字（可含小数点与序数后缀 20th/21st/2nd/3rd，序数整体按数字处理，
 # 避免把 "20th" 拆成 "20"+"th"，使 "th" 沦为生词/噪声）或字母词（内部可含撇号，
 # 如 can't / don't）；其余为标点
@@ -243,7 +247,10 @@ def _head_of(lower: str) -> str:
 
 
 def _sentences(body: str) -> list[str]:
-    return [s.strip() for s in _SENT_SPLIT.split(body.strip()) if s.strip()]
+    # 归一行尾（\r\n / \r → \n）→ 软回车 → 空格；保留段落分隔（\n\n）。
+    # 修复古腾堡"句中强制换行"造成的断句错误。
+    pre = _SOFT_WRAP_RE.sub(" ", _CRLF_RE.sub("\n", body))
+    return [s.strip() for s in _SENT_SPLIT.split(pre.strip()) if s.strip()]
 
 
 def _tokenize(sentence: str) -> list[dict]:

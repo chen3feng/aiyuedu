@@ -51,6 +51,37 @@ def test_sentences_split_on_terminal_punctuation():
     assert s == ["The fox jumped.", "It ran fast!", "Did it?", "9.58 seconds."]
 
 
+def test_sentences_collapses_soft_wrap_in_lf():
+    """古腾堡正文行宽 70 字符强制换行（LF）：非段落分隔，需折叠为空格。"""
+    body = "Once on a dark winter's day, when the fog hung so thick and\nheavy in the streets of London."
+    s = reading._sentences(body)
+    assert s == ["Once on a dark winter's day, when the fog hung so thick and heavy in the streets of London."]
+
+
+def test_sentences_collapses_soft_wrap_in_crlf():
+    """古腾堡正文用 CRLF（Windows）行尾：同样需折叠为单句。"""
+    body = "Once on a dark winter's day, when the fog hung so thick and\r\nheavy in the streets."
+    s = reading._sentences(body)
+    assert s == ["Once on a dark winter's day, when the fog hung so thick and heavy in the streets."]
+
+
+def test_sentences_keeps_paragraph_break():
+    """段落分隔（\n\n / \r\n\r\n）必须保留作为句子边界，不能折叠。"""
+    body = "First paragraph ends here.\n\nSecond paragraph starts here."
+    s = reading._sentences(body)
+    assert len(s) == 2
+    assert s[0] == "First paragraph ends here."
+    assert s[1] == "Second paragraph starts here."
+
+
+def test_sentences_keeps_paragraph_break_with_crlf():
+    body = "First paragraph ends here.\r\n\r\nSecond paragraph starts here."
+    s = reading._sentences(body)
+    assert len(s) == 2
+    assert s[0] == "First paragraph ends here."
+    assert s[1] == "Second paragraph starts here."
+
+
 def test_tokenize_splits_punctuation_and_keeps_contraction():
     toks = reading._tokenize("can't you see the hand-drawn map?")
     kinds = [(t["kind"], t["text"]) for t in toks]
