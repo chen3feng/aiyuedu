@@ -207,73 +207,12 @@ def delete_collection(id: str) -> bool:
 
 
 # ---------- 古腾堡导入 ----------
-
-def _slug_from_title(title: str, fallback: str) -> str:
-    """从英文书名生成 collection id（限长 + 去前缀噪音）。"""
-    # 去掉常见前缀（The / A / An）
-    s = re.sub(r"^(the|a|an)\s+", "", (title or "").lower(), flags=re.IGNORECASE)
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-    # 限长 40 字符，按词边界截断
-    if len(s) > 40:
-        s = "-".join(s.split("-")[:5])
-    return s or fallback
-
-
+# 实现已拆到 services/gutenberg_import.py（拆 collections 大文件的第一步）；
+# 此处保留入口，调用路径（routers/collections.py）保持不变。
 def import_from_gutenberg(book_id: int) -> dict:
-    """从古腾堡拉取 + 拆章节 → 创建 collection 文件。
+    from .gutenberg_import import import_from_gutenberg as _do_import
 
-    不做 AI 标注（词汇分析留给后台「重跑 AI 分析」按钮）。
-
-    返回完整 collection dict。失败抛 RuntimeError。
-    """
-    # 避免循环引用
-    from . import gutenberg
-
-    data = gutenberg.fetch_book(book_id)
-    chapters = gutenberg.split_chapters(data["text"])
-
-    cid = _slug_from_title(data["title"], f"gutenberg-{book_id}")
-    # 已存在则加后缀
-    if get_collection(cid) is not None:
-        cid = f"{cid}-{book_id}"
-
-    chapter_dicts = []
-    for ch in chapters:
-        cid_ch = f"r-{cid}-{ch.index}"
-        chapter_dicts.append({
-            "index": ch.index,
-            "id": cid_ch,
-            "title": ch.title,
-            "title_zh": "",  # 待后台 AI 补
-            "body": ch.body,
-            "target_level": 3000,  # 默认初中级
-            "glosses": {},
-            "terms": {},
-            "skip": [],
-            "quizzes": [],
-        })
-
-    collection = {
-        "id": cid,
-        "title": data["title"],
-        "title_zh": "",  # 待后台 AI 补
-        "author": data["author"],
-        "source": data["source"],
-        "total_chapters": len(chapter_dicts),
-        "cover_url": data.get("cover_url") or "",
-        "intro_zh": "",  # 待后台 AI 补
-        "intro_en": data.get("summary") or "",
-        "created_at": round(time.time(), 3),
-        "glossary": {},
-        "polysemy": {},
-        "ai_status": "pending",  # pending / analyzing / done / error
-        "ai_reason": "",
-        "chapters": chapter_dicts,
-    }
-    # 自动启动全本 AI 释义（后台线程）：导入即可用，学生打开章节能看到生词
-    _persist(collection)
-    analyze_collection(cid)
-    return collection
+    return _do_import(book_id)
 
 
 # ---------- 章节 AI 释义（提取生词 + 跨章一致性） ----------
