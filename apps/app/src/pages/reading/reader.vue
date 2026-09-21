@@ -38,23 +38,7 @@
       </view>
 
       <!-- 文末生词表 -->
-      <view v-if="detail.vocabulary.length" class="vocab">
-        <view class="vocab-head">
-          <view class="vocab-title">{{ t("reading.reader.vocabList", { n: detail.vocabulary.length }) }}</view>
-          <view class="vocab-sort" @click="toggleVocabSort">
-            {{ vocabSort === "alpha" ? t("reading.reader.sortAppearance") : t("reading.reader.sortAlpha") }}
-          </view>
-        </view>
-        <view v-for="(v, i) in sortedVocabulary" :key="i" class="vocab-item" @click="onVocab(v)">
-          <view class="v-row">
-            <text class="v-word">{{ v.word }}</text>
-            <text v-if="v.phonetic" class="v-phonetic">{{ v.phonetic }}</text>
-            <text class="v-speak" @click.stop="speakVocab(v)">🔊</text>
-          </view>
-          <text class="v-gloss">{{ v.gloss }}</text>
-          <text v-if="v.full_gloss && v.full_gloss !== v.gloss" class="v-full">{{ v.full_gloss }}</text>
-        </view>
-      </view>
+      <VocabList :items="detail.vocabulary" @select="onVocab" />
 
       <!-- 课后小测：答完所有选择题后才能「完成」 -->
       <QuizSection :quizzes="choiceQuizList" v-model="answers" />
@@ -95,6 +79,7 @@ import ChapterBreadcrumb from "../../components/ChapterBreadcrumb.vue";
 import ChapterNav from "../../components/ChapterNav.vue";
 import StateView from "../../components/StateView.vue";
 import ReaderHeader from "../../components/ReaderHeader.vue";
+import VocabList from "../../components/VocabList.vue";
 
 const { t, locale } = useI18n();
 
@@ -105,18 +90,6 @@ const detail = ref<ReadingDetail | null>(null);
 const loading = ref(false);
 const error = ref("");
 const activeWord = ref<ActiveWord | null>(null);
-// 生词表排序：appearance=文中出现顺序（默认），alpha=字母顺序，方便快速定位单词
-const vocabSort = ref<"appearance" | "alpha">("appearance");
-const sortedVocabulary = computed(() => {
-  const list = detail.value?.vocabulary || [];
-  if (vocabSort.value !== "alpha") return list;
-  return [...list].sort((a, b) =>
-    (a.word || a.lemma || "").toLowerCase().localeCompare((b.word || b.lemma || "").toLowerCase()),
-  );
-});
-function toggleVocabSort() {
-  vocabSort.value = vocabSort.value === "alpha" ? "appearance" : "alpha";
-}
 const playing = ref(false);
 const currentLine = ref(-1); // 朗读时高亮的当前句下标
 const instance = getCurrentInstance();
@@ -201,10 +174,6 @@ function closePopup() {
 
 function speakWord() {
   if (activeWord.value) speak(activeWord.value.w);
-}
-
-function speakVocab(v: VocabItem) {
-  speak(v.word);
 }
 
 // 朗读时保持当前句可见：即将滚出视口才滚动，避免每句都跳
@@ -345,67 +314,6 @@ function finish() {
   color: #e68a00;
   font-weight: 700;
   border-bottom: 2rpx dashed #e6a94d;
-}
-.vocab {
-  margin-top: 32rpx;
-  border-top: 2rpx solid #eef0f6;
-  padding-top: 24rpx;
-}
-.vocab-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16rpx;
-}
-.vocab-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: var(--ink);
-}
-.vocab-sort {
-  flex-shrink: 0;
-  font-size: 24rpx;
-  color: var(--brand);
-  background: var(--soft);
-  padding: 8rpx 20rpx;
-  border-radius: 999rpx;
-}
-.vocab-item {
-  padding: 20rpx 16rpx;
-  border-radius: 12rpx;
-  background: #fafbfe;
-  margin-bottom: 12rpx;
-}
-.v-row {
-  display: flex;
-  align-items: baseline;
-  gap: 16rpx;
-}
-.v-word {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #e68a00;
-}
-.v-phonetic {
-  font-size: 24rpx;
-  color: var(--ink-4);
-}
-.v-speak {
-  margin-left: auto;
-  font-size: 28rpx;
-}
-.v-gloss {
-  display: block;
-  margin-top: 6rpx;
-  font-size: 28rpx;
-  color: var(--ink-2);
-}
-.v-full {
-  display: block;
-  margin-top: 4rpx;
-  font-size: 24rpx;
-  color: var(--ink-4);
-  line-height: 1.5;
 }
 .finish-btn {
   margin-top: 24rpx;
