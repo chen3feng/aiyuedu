@@ -21,6 +21,7 @@ from pathlib import Path
 
 from ..config import settings
 from . import ecdict, mwe
+from .storage import atomic_write_json
 
 # 领域标签（[医][计] 等）对少儿不友好，full_gloss 里剥掉
 _BRACKET = re.compile(r"\[[^\]]*\]")
@@ -210,10 +211,7 @@ def _load_readings() -> list:
 
 def _save_readings(items: list) -> None:
     """写盘并失效 mtime 缓存（后台增删改文章后即时可见）。"""
-    path = Path(settings.readings_path)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+    atomic_write_json(settings.readings_path, items)
     _readings_cache["mtime"] = None
     _readings_cache["data"] = None
 

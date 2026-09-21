@@ -12,6 +12,7 @@ from pathlib import Path
 import httpx
 
 from ..config import settings
+from .storage import atomic_write_json
 
 _lock = threading.Lock()
 
@@ -43,11 +44,7 @@ def _read() -> dict:
 
 
 def _write(cfg: dict) -> None:
-    path = Path(settings.ai_config_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(cfg, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    atomic_write_json(settings.ai_config_path, cfg)
 
 
 def _validate(name: str, base_url: str, model: str) -> tuple[str, str, str]:

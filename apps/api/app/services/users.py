@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 from ..config import settings
+from .storage import atomic_write_json
 
 _lock = threading.Lock()
 
@@ -37,9 +38,7 @@ def _read() -> dict:
 
 
 def _write(users: dict) -> None:
-    path = Path(settings.users_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(users, ensure_ascii=False, indent=2), encoding="utf-8")
+    atomic_write_json(settings.users_path, users)
 
 
 def get_profile(user_id: str | None) -> dict:

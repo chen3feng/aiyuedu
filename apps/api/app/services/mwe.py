@@ -9,9 +9,9 @@
 """
 import json
 from functools import lru_cache
-from pathlib import Path
 
 from ..config import settings
+from .storage import atomic_write_json
 
 # 可分离短语中「动词」与「小品词」之间允许隔的最大单词数（take the clock apart）
 SEPARABLE_MAX_GAP = 4
@@ -138,10 +138,6 @@ def add_phrases(entries: list) -> int:
         existing.add(text)
         added += 1
     if added:
-        path = Path(settings.mwe_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-            f.write("\n")
+        atomic_write_json(settings.mwe_path, data)
         _load.cache_clear()
     return added

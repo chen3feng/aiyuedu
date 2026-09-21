@@ -18,6 +18,7 @@ from pathlib import Path
 
 from ..config import settings
 from . import ai, prompts
+from .storage import atomic_write_json
 
 _lock = threading.Lock()
 
@@ -56,9 +57,7 @@ def _read() -> dict:
 
 
 def _write(data: dict) -> None:
-    path = Path(settings.writings_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    atomic_write_json(settings.writings_path, data)
 
 
 # ---------- 业务函数 ----------

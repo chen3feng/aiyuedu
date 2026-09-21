@@ -12,7 +12,6 @@ API 不暴露 chapter 子概念，统一以 reading 视图呈现
 from __future__ import annotations
 
 import json
-import os
 import re
 import threading
 import time
@@ -20,6 +19,7 @@ import uuid
 from pathlib import Path
 
 from . import ai
+from .storage import atomic_write_json
 from ..config import settings
 
 _lock = threading.Lock()
@@ -127,18 +127,8 @@ def get_chapter_for_reading(reading_id: str) -> tuple[dict, dict] | None:
 # ---------- 写入 ----------
 
 def _write_index_atomic(items: list[dict]) -> None:
-    """原子写入 _index.json：临时文件 + os.replace，避免并发 open('w') 撕文件。
-
-    调用方需已持有 _lock（或保证单线程），否则多个并发调用仍可能竞争临时文件名。
-    """
-    idx = Path(settings.collections_index)
-    idx.parent.mkdir(parents=True, exist_ok=True)
-    tmp = idx.with_suffix(".json.tmp")
-    tmp.write_text(
-        json.dumps(items, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    os.replace(tmp, idx)
+    """原子写入 _index.json（调用方需已持有 _lock）。"""
+    atomic_write_json(settings.collections_index, items)
 
 
 def _persist(collection: dict) -> None:
@@ -156,11 +146,7 @@ def _persist_locked(collection: dict) -> None:
     d = Path(settings.collections_dir)
     d.mkdir(parents=True, exist_ok=True)
     cid = collection["id"]
-    path = _collection_path(cid)
-    path.write_text(
-        json.dumps(collection, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    atomic_write_json(_collection_path(cid), collection)
     _write_index_atomic(_scan_list())
 
 
