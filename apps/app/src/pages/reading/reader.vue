@@ -144,23 +144,12 @@
     </view>
 
     <!-- 生词弹窗 -->
-    <view v-if="activeWord" class="mask" @click="closePopup">
-      <view class="popup" @click.stop>
-        <view class="popup-word">{{ activeWord.w }}</view>
-        <view v-if="activeWord.lemma && activeWord.lemma !== activeWord.w.toLowerCase()" class="popup-lemma">
-          {{ t("reading.reader.lemma") }}{{ activeWord.lemma }}
-        </view>
-        <view v-if="activeWord.phonetic" class="popup-phonetic">{{ activeWord.phonetic }}</view>
-        <view class="popup-gloss">{{ activeWord.gloss || t("reading.reader.noGloss") }}</view>
-        <view v-if="activeWord.full_gloss && activeWord.full_gloss !== activeWord.gloss" class="popup-full">
-          {{ activeWord.full_gloss }}
-        </view>
-        <view class="popup-actions">
-          <button class="act speak" @click="speakWord">{{ t("reading.reader.speak") }}</button>
-          <button class="act save" @click="addToNotebook">{{ t("reading.reader.addNotebook") }}</button>
-        </view>
-      </view>
-    </view>
+    <WordPopup
+      :word="activeWord"
+      @close="closePopup"
+      @speak="speakWord"
+      @add="addToNotebook"
+    />
   </view>
 </template>
 
@@ -169,8 +158,9 @@ import { computed, getCurrentInstance, nextTick, ref } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { getReading, recordReading } from "../../api/reading";
-import type { ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
+import type { ActiveWord, ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
+import WordPopup from "../../components/WordPopup.vue";
 
 const { t, locale } = useI18n();
 
@@ -184,14 +174,6 @@ function topicTags(d: ReadingDetail): string[] {
 const zhShown = ref<Record<number, boolean>>({});
 function toggleZh(qi: number) {
   zhShown.value[qi] = !zhShown.value[qi];
-}
-
-interface ActiveWord {
-  w: string;
-  lemma: string;
-  phonetic: string;
-  gloss: string;
-  full_gloss: string;
 }
 
 const id = ref("");
@@ -828,71 +810,5 @@ function finish() {
   margin-top: 8rpx;
   font-size: 24rpx;
   color: var(--ink-3);
-}
-.mask {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-.popup {
-  width: 560rpx;
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 48rpx 40rpx;
-}
-.popup-word {
-  font-size: 56rpx;
-  font-weight: 800;
-  color: var(--ink);
-  text-align: center;
-}
-.popup-lemma {
-  margin-top: 12rpx;
-  text-align: center;
-  font-size: 26rpx;
-  color: var(--ink-4);
-}
-.popup-phonetic {
-  margin-top: 8rpx;
-  text-align: center;
-  font-size: 28rpx;
-  color: var(--ink-3);
-}
-.popup-gloss {
-  margin-top: 24rpx;
-  text-align: center;
-  font-size: 32rpx;
-  color: var(--ink-2);
-  line-height: 1.6;
-}
-.popup-full {
-  margin-top: 12rpx;
-  text-align: center;
-  font-size: 24rpx;
-  color: var(--ink-4);
-  line-height: 1.5;
-}
-.popup-actions {
-  margin-top: 40rpx;
-  display: flex;
-  gap: 24rpx;
-}
-.act {
-  flex: 1;
-  border-radius: 16rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-}
-.act.speak {
-  background: var(--soft);
-  color: var(--brand);
-}
-.act.save {
-  background: var(--brand);
-  color: #fff;
 }
 </style>

@@ -105,6 +105,15 @@ export interface TrueFalseQuiz {
 
 export type Quiz = ChoiceQuiz | TrueFalseQuiz;
 
+// 生词弹窗展示数据（由 reader 页面的词汇/单词点击构造）
+export interface ActiveWord {
+  w: string;
+  lemma: string;
+  phonetic: string;
+  gloss: string;
+  full_gloss: string;
+}
+
 export interface RecordPayload {
   level: number;
   completed_ratio: number;
