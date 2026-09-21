@@ -1,24 +1,7 @@
 <template>
   <view class="page">
     <!-- 选题页（pick=1） -->
-    <view v-if="phase === 'pick'" class="phase">
-      <text class="title">{{ t("writing.pickPrompt") }}</text>
-      <StateView v-if="loadingPrompts" type="loading" class="f26" :message="t('common.loading')" />
-      <view v-else class="cards">
-        <Card class="p28" v-for="p in prompts" :key="p.key"  @click="onPick(p)">
-          <text class="prompt-title">{{ promptTitle(p) }}</text>
-          <text class="prompt-body">{{ p.body_zh }}</text>
-          <view class="prompt-meta">
-            <text class="meta-item">{{ t("writing.target", { n: p.target_words }) }}</text>
-          </view>
-        </Card>
-        <StateView v-if="!prompts.length" type="empty" class="pad60" :message="t('common.loading')" />
-      </view>
-      <view class="prompt-free" @click="onPick(null)">
-        <text class="free-title">自由写作</text>
-        <text class="free-hint">不选题目，自由发挥</text>
-      </view>
-    </view>
+    <PromptPicker v-if="phase === 'pick'" @pick="onPick" />
 
     <!-- 写作页 -->
     <view v-else class="phase">
@@ -70,7 +53,7 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listPrompts, submitEssay } from "../../api/writing";
 import StateView from "../../components/StateView.vue";
-import Card from "../../components/Card.vue";
+import PromptPicker from "../../components/PromptPicker.vue";
 import type { Prompt } from "../../api/writing";
 
 const { t, locale } = useI18n();
@@ -131,10 +114,6 @@ const selectedPromptBody = computed(() => {
   return p?.body_zh ?? "";
 });
 
-function promptTitle(p: Prompt): string {
-  return locale.value === "en" && p.title_en ? p.title_en : p.title_zh;
-}
-
 const DRAFT_KEY = "writing_draft";
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -184,6 +163,9 @@ async function loadPrompts() {
 function onPick(p: Prompt | null) {
   if (p) {
     promptKey.value = p.key;
+    // 选题阶段由 PromptPicker 自行加载题目；把选中项存下来供 target/标题查找，
+    // 页面无需再请求一次
+    prompts.value = [p];
   } else {
     promptKey.value = null;
   }
@@ -230,11 +212,10 @@ onLoad((query) => {
   } else {
     phase.value = "pick";
   }
-  loadPrompts().then(() => {
-    if (phase.value === "compose") {
-      restoreDraft();
-    }
-  });
+  // 选题阶段 PromptPicker 自己加载；只有直接进写作页才需要页面取题
+  if (phase.value === "compose") {
+    loadPrompts().then(() => restoreDraft());
+  }
 });
 
 onShow(() => {
@@ -257,27 +238,6 @@ onBeforeUnmount(() => {
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
 }
-.title {
-  display: block;
-  font-size: 36rpx;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 24rpx;
-}
-.cards {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-.prompt-free {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 28rpx 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
-}
-.prompt-free:active {
-  transform: scale(0.99);
-}
 .prompt-title {
   display: block;
   font-size: 32rpx;
@@ -291,30 +251,6 @@ onBeforeUnmount(() => {
   color: var(--ink-3);
   line-height: 1.5;
   margin-bottom: 12rpx;
-}
-.prompt-meta {
-  display: flex;
-  gap: 16rpx;
-}
-.meta-item {
-  font-size: 24rpx;
-  color: var(--ink-4);
-}
-.prompt-free {
-  margin-top: 32rpx;
-  text-align: center;
-}
-.free-title {
-  display: block;
-  font-size: 30rpx;
-  font-weight: 600;
-  color: var(--brand);
-}
-.free-hint {
-  display: block;
-  font-size: 24rpx;
-  color: var(--ink-4);
-  margin-top: 6rpx;
 }
 
 /* compose */
