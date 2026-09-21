@@ -26,6 +26,7 @@ jobs:
       - name: Merge labeled PRs when all checks pass
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}  # 无 checkout：让 gh 知道操作哪个仓库
           LABEL: auto-merge
         run: |
           set -u
