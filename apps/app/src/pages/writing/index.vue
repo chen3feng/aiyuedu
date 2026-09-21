@@ -13,7 +13,7 @@
       <text class="empty-hint">{{ t("writing.emptyHint") }}</text>
     </StateView>
     <view v-else class="cards">
-      <view v-for="e in items" :key="e.id" class="card" @click="openReport(e.id)">
+      <Card class="p28" v-for="e in items" :key="e.id"  @click="openReport(e.id)">
         <view class="card-top">
           <text class="title-text">{{ promptTitle(e) }}</text>
           <view class="status" :class="{ ok: e.ai_used, err: !e.ai_used }">
@@ -32,7 +32,7 @@
           <button class="btn-link" @click.stop="openReport(e.id)">{{ t("writing.viewReport") }}</button>
           <button class="btn-danger" @click.stop="onDelete(e.id)">{{ t("writing.delete") }}</button>
         </view>
-      </view>
+      </Card>
     </view>
   </view>
 </template>
@@ -45,6 +45,7 @@ import { listEssays, deleteEssay } from "../../api/writing";
 import type { Essay, Prompt } from "../../api/writing";
 import { getUserId } from "../../utils/user";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 
 const { t, locale } = useI18n();
 
@@ -157,12 +158,6 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
-}
-.card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 28rpx 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
 }
 .card-top {
   display: flex;

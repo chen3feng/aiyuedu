@@ -24,7 +24,7 @@
       </view>
 
       <!-- 章节列表 -->
-      <view class="card">
+      <Card class="p24 mb" >
         <text class="card-label">章节列表</text>
         <view
           v-for="ch in detail.chapters"
@@ -42,10 +42,10 @@
           <text class="ch-arrow">›</text>
         </view>
         <StateView v-if="!detail.chapters.length" type="empty" class="compact" message="暂无章节" />
-      </view>
+      </Card>
 
       <!-- 全书统一词汇表 -->
-      <view v-if="glossaryCount" class="card">
+      <Card class="p24 mb" v-if="glossaryCount" >
         <text class="card-label">全书词汇表（{{ glossaryCount }}）</text>
         <view class="glossary-grid">
           <view v-for="(gloss, word) in detail.glossary" :key="word" class="gl-item">
@@ -53,7 +53,7 @@
             <text class="gloss">{{ gloss }}</text>
           </view>
         </view>
-      </view>
+      </Card>
     </view>
   </view>
 </template>
@@ -65,6 +65,7 @@ import { useI18n } from "vue-i18n";
 import { getCollection } from "../../api/collections";
 import type { CollectionDetail } from "../../api/collections";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 
 const { t } = useI18n();
 
@@ -185,13 +186,6 @@ onShow(() => {
   border-radius: 6rpx;
 }
 
-.card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 24rpx 28rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
-}
 .card-label {
   display: block;
   font-size: 28rpx;

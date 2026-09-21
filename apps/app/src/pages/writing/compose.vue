@@ -5,13 +5,13 @@
       <text class="title">{{ t("writing.pickPrompt") }}</text>
       <StateView v-if="loadingPrompts" type="loading" class="f26" :message="t('common.loading')" />
       <view v-else class="cards">
-        <view v-for="p in prompts" :key="p.key" class="card" @click="onPick(p)">
+        <Card class="p28" v-for="p in prompts" :key="p.key"  @click="onPick(p)">
           <text class="prompt-title">{{ promptTitle(p) }}</text>
           <text class="prompt-body">{{ p.body_zh }}</text>
           <view class="prompt-meta">
             <text class="meta-item">{{ t("writing.target", { n: p.target_words }) }}</text>
           </view>
-        </view>
+        </Card>
         <StateView v-if="!prompts.length" type="empty" class="pad60" :message="t('common.loading')" />
       </view>
       <view class="prompt-free" @click="onPick(null)">
@@ -70,6 +70,7 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listPrompts, submitEssay } from "../../api/writing";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 import type { Prompt } from "../../api/writing";
 
 const { t, locale } = useI18n();
@@ -268,14 +269,12 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 20rpx;
 }
-.card,
 .prompt-free {
   background: #fff;
   border-radius: 20rpx;
   padding: 28rpx 32rpx;
   box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
 }
-.card:active,
 .prompt-free:active {
   transform: scale(0.99);
 }
