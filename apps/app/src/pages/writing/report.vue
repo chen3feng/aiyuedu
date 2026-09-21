@@ -260,22 +260,11 @@ function onSpeakSentence(i: number) {
   const s = sentences.value[i];
   const text = s.polished || s.corrected || s.original;
   if (!text) return;
-  const ok = speak(text, "en-US");
-  if (ok) {
-    speakingIdx.value = i;
-    // listen for end: speak() 没有 onEnd 回调，用 polling fallback
-    const start = Date.now();
-    const max = Math.max(8000, text.length * 80);
-    const tick = () => {
-      if (speakingIdx.value !== i) return;
-      if (Date.now() - start > max) {
-        speakingIdx.value = -1;
-        return;
-      }
-      setTimeout(tick, 200);
-    };
-    setTimeout(tick, 500);
-  }
+  const ok = speak(text, "en-US", () => {
+    // 自然播完（或回退浏览器 TTS 结束）→ 清除高亮；手动 stopSpeak 不走这里
+    if (speakingIdx.value === i) speakingIdx.value = -1;
+  });
+  if (ok) speakingIdx.value = i;
 }
 
 function onSpeakAll() {

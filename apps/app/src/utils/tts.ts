@@ -153,10 +153,12 @@ function playUrl(url: string, fallback: () => boolean, onEnd?: () => void): bool
   // #endif
 }
 
-export function speak(text: string, lang = "en-US"): boolean {
+export function speak(text: string, lang = "en-US", onEnd?: () => void): boolean {
   if (!text) return false;
   acquireWake();
-  return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang, finish()), finish());
+  // edge-tts 与浏览器回退共用同一个结束回调（finish 内先释放屏幕常亮）
+  const done = finish(onEnd);
+  return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang, done), done);
 }
 
 // 逐句朗读：后端 edge-tts 每句一个音频、顺序播放，onLine 回调当前句下标（供高亮 + 滚屏）。
