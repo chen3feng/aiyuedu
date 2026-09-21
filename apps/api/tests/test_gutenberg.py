@@ -367,3 +367,75 @@ def test_strip_illustrations_nested_bracket_line_is_caption():
     """闭合行前缀非标题（版权注 [_Copyright …_]）→ 仍是 caption，整块删。"""
     text = "A.\n\n[Illustration:\n\n“quote”\n\n[_Copyright 1894 by George Allen._]]\n\nB."
     assert gutenberg.strip_illustrations(text) == "A.\n\nB."
+
+
+# ---------- /* … */ 排版指令 / 装饰星标 ----------
+
+def test_unwrap_nind_directives():
+    text = "Jane read it aloud.\n\n     /* NIND “My dear friend, */\n\n     “Letter body.”"
+    out = gutenberg.unwrap_format_directives(text)
+    assert "/* NIND" not in out and "*/" not in out
+    # 内层称呼与缩进保留
+    assert "     “My dear friend," in out
+
+
+def test_unwrap_right_and_bare_directives():
+    """RIGHT 信头剥关键字留正文；无关键字的裸指令只剥壳。"""
+    text = (
+        "as you will hear.\n\n"
+        '     /* RIGHT “Hunsford, Kent, 15th October. */\n\n'
+        "Dear Sir,\n\n"
+        '     /* “My dear Sir, */\n\n'
+        "     “Letter body.”"
+    )
+    out = gutenberg.unwrap_format_directives(text)
+    assert "/*" not in out and "*/" not in out and "RIGHT" not in out
+    assert "     “Hunsford, Kent, 15th October." in out
+    assert "     “My dear Sir," in out
+
+
+def test_unwrap_inline_directive():
+    """指令行被并入上一行时，壳与多余空格一起清理，正文保持可读。"""
+    text = "as you will hear.”       /* RIGHT “Hunsford, Kent. */ \r\nDear Sir,"
+    out = gutenberg.unwrap_format_directives(text)
+    assert "/*" not in out
+    assert "hear.” “Hunsford, Kent." in out
+
+
+def test_drop_asterism_three_star_rows():
+    """爱丽丝式：连续三段星号行（7/6/7），整组删除只留一个段落分隔。"""
+    text = (
+        "She finished it off.\r\n\r\n"
+        "*      *      *      *      *      *      *\r\n\r\n"
+        "    *      *      *      *      *      *\r\n\r\n"
+        "*      *      *      *      *      *      *\r\n\r\n"
+        "“What a curious feeling!”"
+    )
+    out = gutenberg.drop_asterism_paragraphs(text)
+    assert "*" not in out
+    assert out == "She finished it off.\r\n\r\n“What a curious feeling!”"
+
+
+def test_drop_asterism_single_row():
+    """小公主式：单行 "* * *" 删除；非星号正文不动。"""
+    text = "Hard up for bread.\r\n\r\n     *    *    *\r\n\r\nSara found comfort."
+    out = gutenberg.drop_asterism_paragraphs(text)
+    assert "*" not in out
+    assert out == "Hard up for bread.\r\n\r\nSara found comfort."
+
+
+def test_split_chapters_cleans_asterisks_and_nind():
+    """整条流水线：NIND 称呼还原、星标段消失，且章节正常切出。"""
+    text = (
+        "CHAPTER I.\r\n\r\n"
+        "Jane read it aloud.\r\n\r\n"
+        "     /* NIND “My dear friend, */\r\n\r\n"
+        "She finished it off.\r\n\r\n"
+        "*      *      *\r\n\r\n"
+        "“What a curious feeling!”\r\n\r\n"
+        "CHAPTER II.\r\n\r\n" + "Next chapter body. " * 200
+    )
+    chapters = gutenberg.split_chapters(text)
+    body = chapters[0].body
+    assert "NIND" not in body and "*" not in body
+    assert "“My dear friend," in body

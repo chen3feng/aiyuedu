@@ -232,6 +232,59 @@ def _is_chapter_heading(line: str) -> bool:
     return any(p.match(s) for p in _CHAPTER_PATTERNS)
 
 
+# 信件排版指令（傲慢与偏见 1342-0.txt）：
+#   /* NIND “My dear friend, */  不缩进的信件称呼行
+#   /* RIGHT “Hunsford, ... */   右对齐的信头（地址 / 日期）
+#   /* “My dear Sir, */          个别不带关键字的同类指令
+# 内层文字都是正文，只剥指令壳。行尾含 \r：CRLF 下 $ 之前有 \r，须显式放行
+_DIRECTIVE_LINE_RE = re.compile(r"(?m)^([ \t]*)/\*\s*(.*?)\s*\*/[ \t\r]*$")
+# 入库后的个别章节里指令行被并进了上一行（"hear.”       /* RIGHT X */"）
+_DIRECTIVE_INLINE_RE = re.compile(r"(?<=\S)[ \t]+/\*\s*(.*?)\s*\*/[ \t]*")
+_DIRECTIVE_KEYWORD_RE = re.compile(r"^(?:NIND|RIGHT)\s+")
+
+
+def unwrap_format_directives(text: str) -> str:
+    """把 /* … */ 排版指令还原为内层正文（NIND / RIGHT 关键字一并剥掉）。"""
+
+    def unwrap(inner: str) -> str:
+        return _DIRECTIVE_KEYWORD_RE.sub("", inner)
+
+    text = _DIRECTIVE_LINE_RE.sub(lambda m: m.group(1) + unwrap(m.group(2)), text)
+    return _DIRECTIVE_INLINE_RE.sub(lambda m: " " + unwrap(m.group(1)), text)
+
+
+def drop_asterism_paragraphs(text: str) -> str:
+    """删除整段只由星号 + 空白组成的「装饰星标」段。
+
+    古腾堡部分书用星号行作场景切换装饰（爱丽丝：三行 7/6/7 个星号；
+    小公主：单行 "* * *"）。渲染出来就是一串连续星号。整段删除，
+    前后段落间保留一个空行作段落分隔；其余内容与换行风格不动。
+    """
+    # 带捕获组切分：偶数下标 = 段落，奇数下标 = 段落间分隔符
+    parts = re.split(r"(\r?\n[ \t]*\r?\n)", text)
+    out: list[str] = []
+    i = 0
+    while i < len(parts):
+        if i % 2 == 0:  # 段落
+            seg = parts[i]
+            if _is_asterism(seg):
+                # 丢掉本段，并额外吞掉段后的一个分隔符，
+                # 让前后段落只共享 out 末尾（段前）的那个分隔符
+                i += 2
+                continue
+            out.append(seg)
+        else:
+            out.append(parts[i])  # 段落间分隔符（不可用 seg：那是上一段的残留）
+        i += 1
+    return "".join(out)
+
+
+def _is_asterism(seg: str) -> bool:
+    """一段（去掉首尾空白后）是否只含星号与空白（如 "*   *   *"）。"""
+    body = seg.strip()
+    return bool(body) and all(c == "*" or c.isspace() for c in body)
+
+
 def _word_count(text: str) -> int:
     """粗略词数（按空白拆；英文 / 中文都适用）。"""
     return len(text.split())
@@ -249,6 +302,8 @@ def split_chapters(text: str, config: SplitConfig | None = None) -> list[Chapter
     cfg = config or SplitConfig()
     text = _strip_table_of_contents(text)
     text = strip_illustrations(text)
+    text = unwrap_format_directives(text)
+    text = drop_asterism_paragraphs(text)
     raw = _hard_split(text)
     raw = _split_long_chapters(raw, cfg)
     raw = _merge_short_chapters(raw, cfg)
