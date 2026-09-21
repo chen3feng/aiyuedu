@@ -5,12 +5,11 @@
     <view v-else-if="detail">
       <!-- 书籍信息卡 -->
       <view class="header">
-        <view class="cover-wrap">
-          <image v-if="detail.cover_url" :src="detail.cover_url" mode="aspectFill" class="cover"></image>
-          <view v-else class="cover cover-fallback">
-            <text>{{ (detail.title_zh || detail.title).slice(0, 2) }}</text>
-          </view>
-        </view>
+        <BookCover
+          size="lg"
+          :cover-url="detail.cover_url"
+          :fallback="(detail.title_zh || detail.title).slice(0, 2)"
+        />
         <view class="meta-block">
           <text v-if="detail.title_zh" class="title-zh">{{ detail.title_zh }}</text>
           <text class="title">{{ detail.title }}</text>
@@ -66,6 +65,7 @@ import { getCollection } from "../../api/collections";
 import type { CollectionDetail } from "../../api/collections";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
+import BookCover from "../../components/BookCover.vue";
 
 const { t } = useI18n();
 
@@ -118,28 +118,6 @@ onShow(() => {
   padding: 24rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
-}
-.cover-wrap {
-  flex-shrink: 0;
-  width: 180rpx;
-  height: 240rpx;
-  border-radius: 12rpx;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--brand) 0%, #6c5ce7 100%);
-}
-.cover {
-  width: 100%;
-  height: 100%;
-}
-.cover-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.cover-fallback text {
-  font-size: 60rpx;
-  font-weight: 800;
-  color: #fff;
 }
 .meta-block {
   flex: 1;

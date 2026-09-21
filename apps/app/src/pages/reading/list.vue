@@ -24,10 +24,10 @@
         <!-- 作品集整体入口：书籍卡片 -->
         <template v-if="r.is_collection">
           <view class="book-row">
-            <view class="book-cover">
-              <image v-if="r.cover_url" :src="r.cover_url" mode="aspectFill" class="cover-img"></image>
-              <text v-else class="cover-fallback">{{ (r.title_zh || r.title).slice(0, 2) }}</text>
-            </view>
+            <BookCover
+              :cover-url="r.cover_url"
+              :fallback="(r.title_zh || r.title).slice(0, 2)"
+            />
             <view class="book-info">
               <text v-if="r.title_zh" class="book-title-zh">{{ r.title_zh }}</text>
               <text class="book-title">{{ r.title }}</text>
@@ -67,6 +67,7 @@ import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
+import BookCover from "../../components/BookCover.vue";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
 import { topicTags } from "../../utils/topics";
@@ -227,26 +228,6 @@ function open(r: ReadingSummary) {
   display: flex;
   align-items: center;
   gap: 20rpx;
-}
-.book-cover {
-  flex-shrink: 0;
-  width: 100rpx;
-  height: 134rpx;
-  border-radius: 10rpx;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--brand) 0%, #6c5ce7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.cover-img {
-  width: 100%;
-  height: 100%;
-}
-.cover-fallback {
-  font-size: 40rpx;
-  font-weight: 800;
-  color: #fff;
 }
 .book-info {
   flex: 1;
