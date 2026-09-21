@@ -1,0 +1,60 @@
+name: Auto merge
+
+# 私有仓库（无 GitHub Pro 分支保护）下的自动合并：
+# PR 打上 auto-merge 标签，或任一检查完成时，扫描带标签的 PR，
+# 所有检查通过 → 自动 squash 合入并删分支；有失败/进行中 → 不合（保持开启）。
+on:
+  pull_request:
+    types: [labeled]
+  check_run:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-worker
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge labeled PRs when all checks pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABEL: auto-merge
+        run: |
+          set -u
+          # 标签事件只处理刚被打标的 PR；check 事件扫描全部带标签 PR
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            [ "${{ github.event.label.name }}" = "$LABEL" ] || { echo "不是 $LABEL 标签，退出"; exit 0; }
+            PRS="${{ github.event.pull_request.number }}"
+          else
+            PRS=$(gh pr list --state open --label "$LABEL" --json number --jq '.[].number' | tr '\n' ' ')
+          fi
+          [ -n "$PRS" ] || { echo "没有待自动合并的 PR"; exit 0; }
+
+          deadline=$((SECONDS + 1200))  # 单任务最多轮询 20 分钟
+          for pr in $PRS; do
+            echo "=== PR #$pr ==="
+            while :; do
+              buckets=$(gh pr checks "$pr" --json bucket --jq '.[].bucket' 2>/dev/null || true)
+              echo "检查状态: $(echo "$buckets" | tr '\n' ' ')"
+              if echo "$buckets" | grep -qE 'fail|cancelled|timed_out|action_required'; then
+                echo "PR #$pr 有检查失败，不合并（标签保留，修复后自动重试）"
+                break
+              fi
+              if ! echo "$buckets" | grep -q pending; then
+                gh pr merge "$pr" --squash --delete-branch
+                echo "PR #$pr 已自动合入"
+                break
+              fi
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "PR #$pr 等待超时，退出（后续 check 完成事件会再次触发）"
+                break
+              fi
+              sleep 15
+            done
+          done
