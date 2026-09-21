@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from ..services import chapter_ai, collections
+from ..services import chapter_ai, collection_jobs, collections
 
 router = APIRouter(prefix="/collections", tags=["collections"])
 
@@ -160,7 +160,7 @@ def analyze_all(collection_id: str,
 
     返回 {"scheduled": [chapter_indices]}；不存在返回 404。
     """
-    result = collections.analyze_collection(collection_id)
+    result = collection_jobs.analyze_collection(collection_id)
     if result is None:
         raise HTTPException(status_code=404, detail="作品集不存在")
     return {"scheduled": result["scheduled"]}
@@ -173,7 +173,7 @@ def backfill_terms(collection_id: str,
 
     返回 {"scheduled": [chapter_indices]}；不存在返回 404。
     """
-    result = collections.backfill_terms(collection_id)
+    result = collection_jobs.backfill_terms(collection_id)
     if result is None:
         raise HTTPException(status_code=404, detail="作品集不存在")
     return {"scheduled": result["scheduled"]}
@@ -186,7 +186,7 @@ def reconcile(collection_id: str,
 
     规则：同词所有章节 gloss 一致 → glossary[lemma]；不同 → polysemy[lemma][gloss]=[ch_indices]。
     """
-    coll = collections.reconcile_collection(collection_id)
+    coll = collection_jobs.reconcile_collection(collection_id)
     if coll is None:
         raise HTTPException(status_code=404, detail="作品集不存在")
     return {"ok": True, "glossary_size": len(coll["glossary"]),

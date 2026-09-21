@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from app.services import chapter_ai, collections
+from app.services import chapter_ai, collection_jobs, collections
 from app.config import settings
 from app.services import reading as reading_service  # noqa: F401 (test isolation needs reset)
 
@@ -311,7 +311,7 @@ def test_analyze_collection_skips_done(isolated_collections):
         lambda *a, **k: json.dumps({}, ensure_ascii=False),
     )
     try:
-        result = collections.analyze_collection("batch")
+        result = collection_jobs.analyze_collection("batch")
         assert sorted(result["scheduled"]) == [2, 3]
         # 等后台线程跑完 — 显式 join 避免 mock 被 undo 时线程还在跑导致超时
         for t in result["threads"]:
@@ -347,7 +347,7 @@ def test_analyze_collection_no_status_clobber(isolated_collections):
     monkey = pytest.MonkeyPatch()
     monkey.setattr(chapter_ai.ai, "chat", fake_chat)
     try:
-        result = collections.analyze_collection("race")
+        result = collection_jobs.analyze_collection("race")
         assert result["scheduled"] == list(range(1, n + 1))
         for t in result["threads"]:
             t.join(timeout=15.0)
@@ -369,7 +369,7 @@ def test_reconcile_collection_mixed_glosses(isolated_collections):
     coll["chapters"][2]["glosses"] = {"apple": "苹果", "bank": "银行"}
     collections._persist(coll)
 
-    new = collections.reconcile_collection("rec")
+    new = collection_jobs.reconcile_collection("rec")
     assert new["glossary"]["apple"] == "苹果"           # 全书一致 → glossary
     assert new["glossary"]["bank"] == "银行"            # canonical = 最多 sense
     assert new["glossary"]["pear"] == "梨"
@@ -380,7 +380,7 @@ def test_reconcile_collection_mixed_glosses(isolated_collections):
 
 
 def test_reconcile_collection_missing_returns_none(isolated_collections):
-    assert collections.reconcile_collection("ghost") is None
+    assert collection_jobs.reconcile_collection("ghost") is None
 
 # ---------- 章节编辑 ----------
 
@@ -645,7 +645,7 @@ def test_backfill_terms_only_done_and_terms_empty(isolated_collections, monkeypa
     collections._persist(coll)
     monkeypatch.setattr(chapter_ai.ai, "chat", _terms_fake_chat())
 
-    r = collections.backfill_terms("bt")
+    r = collection_jobs.backfill_terms("bt")
     assert r["scheduled"] == [1]
     for t in r["threads"]:
         t.join()
@@ -660,4 +660,4 @@ def test_backfill_terms_only_done_and_terms_empty(isolated_collections, monkeypa
 
 
 def test_backfill_terms_missing_returns_none(isolated_collections):
-    assert collections.backfill_terms("nope") is None
+    assert collection_jobs.backfill_terms("nope") is None
