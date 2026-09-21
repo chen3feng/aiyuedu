@@ -41,8 +41,11 @@ jobs:
           for pr in $PRS; do
             echo "=== PR #$pr ==="
             while :; do
-              # 检查尚未注册时 gh pr checks 会报错 / 返回空——按 pending 处理，严禁当成功
-              if ! raw=$(gh pr checks "$pr" --json bucket --jq '.[].bucket' 2>/dev/null) || [ -z "$raw" ]; then
+              # 只看 CI 检查，排除本 worker 自身（auto-merge job：它在合并前永远 pending，
+              # 等它等于死锁；旧实例 cancelled 也不能阻塞）。
+              # 检查尚未注册时 gh pr checks 会报错 / 返回空——按 pending 处理，严禁当成功。
+              if ! raw=$(gh pr checks "$pr" --json name,bucket \
+                   --jq '.[] | select(.name != "auto-merge") | .bucket' 2>/dev/null) || [ -z "$raw" ]; then
                 buckets="pending"
               else
                 buckets="$raw"
