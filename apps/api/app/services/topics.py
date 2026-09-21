@@ -9,6 +9,7 @@ import threading
 from pathlib import Path
 
 from ..config import settings
+from .storage import atomic_write_json
 
 _KEY_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
@@ -28,9 +29,7 @@ def _read() -> list[dict]:
 
 
 def _write(topics: list[dict]) -> None:
-    path = Path(settings.topics_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(topics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    atomic_write_json(settings.topics_path, topics)
 
 
 def list_topics() -> list[dict]:
