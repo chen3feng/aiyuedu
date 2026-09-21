@@ -15,10 +15,9 @@
     <StateView v-if="loading" type="loading" :message="t('common.loading')" />
     <StateView v-else-if="error" type="error" :message="error" />
     <view v-else class="cards">
-      <view
+      <Card
         v-for="r in items"
-        :key="r.id"
-        class="card"
+        :key="r.id" 
         :class="{ 'book-card': r.is_collection }"
         @click="open(r)"
       >
@@ -55,7 +54,7 @@
             <text class="meta-item">{{ t("reading.list.newWordRate", { n: (r.new_word_rate * 100).toFixed(1) }) }}</text>
           </view>
         </template>
-      </view>
+      </Card>
       <StateView v-if="!items.length" type="empty" :message="t('reading.list.empty')" />
     </view>
   </view>
@@ -67,6 +66,7 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
 
@@ -175,15 +175,6 @@ function open(r: ReadingSummary) {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
-}
-.card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
-}
-.card:active {
-  transform: scale(0.99);
 }
 .card-top {
   display: flex;

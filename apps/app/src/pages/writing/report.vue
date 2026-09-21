@@ -34,7 +34,7 @@
           <text class="progress-text">{{ currentIdx + 1 }} / {{ sentences.length }}</text>
         </view>
 
-        <view class="card">
+        <Card class="p28 mb" >
           <view class="s-header">
             <text class="s-index">#{{ currentSentence.index }}</text>
             <text class="s-original">{{ currentSentence.original }}</text>
@@ -71,7 +71,7 @@
             <text class="reason-label">💡 {{ t("writing.polishedReason") }}</text>
             <text class="reason-text">{{ currentSentence.polished_reason }}</text>
           </view>
-        </view>
+        </Card>
 
         <view class="nav-row">
           <button class="btn-secondary" :disabled="currentIdx === 0" @click="prev">
@@ -88,12 +88,12 @@
 
       <!-- 阶段二：总结 + 全文朗读 -->
       <view v-else-if="sentences.length && phase === 'summary'" class="summary-screen">
-        <view class="card">
+        <Card class="p28 mb" >
           <text class="card-label">{{ t("writing.yourOriginal") }}</text>
           <text class="polished-full original">{{ essay.original }}</text>
-        </view>
+        </Card>
 
-        <view class="card">
+        <Card class="p28 mb" >
           <text class="card-label">{{ t("writing.fullPolishedTitle") }}</text>
           <text class="polished-full">{{ fullPolishedText }}</text>
           <button
@@ -103,9 +103,9 @@
           >
             {{ speakingAll ? "■ 停止朗读" : "🔊 " + t("writing.listenFull") }}
           </button>
-        </view>
+        </Card>
 
-        <view v-if="essay.report?.summary_table?.length" class="card">
+        <Card class="p28 mb" v-if="essay.report?.summary_table?.length" >
           <text class="card-label">{{ t("writing.summaryTable") }}</text>
           <view class="table">
             <view class="thead">
@@ -119,12 +119,12 @@
               <text class="td col-rule">{{ r.rule }}</text>
             </view>
           </view>
-        </view>
+        </Card>
 
-        <view v-if="essay.report?.praise" class="card praise-card">
+        <Card class="p28 mb praise-card" v-if="essay.report?.praise" >
           <text class="praise-label">{{ t("writing.praise") }}</text>
           <text class="praise-text">{{ essay.report.praise }}</text>
-        </view>
+        </Card>
 
         <view class="nav-row">
           <button class="btn-secondary" @click="goSentence(sentences.length - 1)">
@@ -135,10 +135,10 @@
       </view>
 
       <!-- 没有任何句子的报告（AI 整体失败）：直接展示原文 + 横幅，不进入逐句 -->
-      <view v-else class="card">
+      <Card class="p28 mb" v-else >
         <text class="card-label">{{ t("writing.composeTitle") }}</text>
         <text class="original">{{ essay.original }}</text>
-      </view>
+      </Card>
 
       <view v-if="phase === 'summary'" class="spacer"></view>
     </view>
@@ -153,6 +153,7 @@ import { getEssay } from "../../api/writing";
 import type { Essay, EssaySentenceReport } from "../../api/writing";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 
 const { t, locale } = useI18n();
 
@@ -401,13 +402,6 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-.card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 28rpx 32rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(31, 45, 80, 0.05);
-}
 .card-label {
   display: block;
   font-size: 28rpx;

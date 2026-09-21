@@ -2,7 +2,7 @@
   <view class="page">
     <!-- 介绍页 -->
     <view v-if="phase === 'intro'" class="intro">
-      <view class="card">
+      <Card class="lg p48" >
         <view class="title">{{ t("assessment.title") }}</view>
         <view class="subtitle">{{ t("assessment.subtitle") }}</view>
         <view class="rules">
@@ -26,7 +26,7 @@
         <view class="hint">{{ t("assessment.honestHint") }}</view>
         <button class="btn primary" :loading="loading" @click="start">{{ t("assessment.start") }}</button>
         <StateView v-if="error" type="error" class="mt24" :message="error" />
-      </view>
+      </Card>
     </view>
 
     <!-- 答题页 -->
@@ -78,7 +78,7 @@
 
     <!-- 结果页 -->
     <view v-else class="result">
-      <view class="card">
+      <Card class="lg p48" >
         <view class="big-label">{{ t("assessment.yourVocab") }}</view>
         <view class="big-number">{{ result?.vocab_size }}</view>
         <view class="score-line">
@@ -86,7 +86,7 @@
         </view>
         <view class="message">{{ result?.message }}</view>
         <button class="btn primary" @click="again">{{ t("assessment.again") }}</button>
-      </view>
+      </Card>
     </view>
   </view>
 </template>
@@ -99,6 +99,7 @@ import { startTest, answer, finishTest } from "../../api/vocab";
 import type { Question, Feedback, Progress, Result } from "../../api/vocab";
 import { saveProfile } from "../../api/users";
 import StateView from "../../components/StateView.vue";
+import Card from "../../components/Card.vue";
 
 const { t } = useI18n();
 
@@ -253,13 +254,6 @@ function again() {
   background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
-}
-
-.card {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 48rpx 40rpx;
-  box-shadow: 0 8rpx 32rpx rgba(31, 45, 80, 0.06);
 }
 
 /* 介绍页 */

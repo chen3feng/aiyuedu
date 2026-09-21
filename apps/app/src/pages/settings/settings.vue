@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <view class="card">
+    <Card class="lg p40" >
       <view class="section-title">{{ t("settings.language") }}</view>
       <view
         v-for="opt in options"
@@ -12,9 +12,9 @@
         <text class="label">{{ t(opt.key) }}</text>
         <text v-if="langSetting === opt.value" class="check">✓</text>
       </view>
-    </view>
+    </Card>
 
-    <view class="card">
+    <Card class="lg p40" >
       <view class="section-title">{{ t("settings.topicPref") }}</view>
       <view
         v-for="tp in TOPICS"
@@ -26,9 +26,9 @@
         <text class="label">{{ t(tp.labelKey) }}</text>
         <text v-if="prefs.includes(tp.key)" class="check">✓</text>
       </view>
-    </view>
+    </Card>
 
-    <view class="card">
+    <Card class="lg p40" >
       <view class="section-title">{{ t("settings.vocab") }}</view>
       <view class="option">
         <text class="label">{{ t("settings.vocabLabel") }}</text>
@@ -42,7 +42,7 @@
         />
       </view>
       <view class="hint">{{ t("settings.vocabHint") }}</view>
-    </view>
+    </Card>
   </view>
 </template>
 
@@ -52,6 +52,7 @@ import { useI18n } from "vue-i18n";
 import { onShow } from "@dcloudio/uni-app";
 import { langSetting, setLanguage, type LangSetting } from "../../locale";
 import { getProfile, saveProfile } from "../../api/users";
+import Card from "../../components/Card.vue";
 
 const { t } = useI18n();
 
@@ -127,12 +128,6 @@ function saveVocab() {
   background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
-}
-.card {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 40rpx 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(31, 45, 80, 0.06);
 }
 .section-title {
   font-size: 26rpx;
