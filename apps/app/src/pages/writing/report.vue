@@ -20,71 +20,12 @@
       </view>
 
       <!-- 阶段一：逐句分屏 -->
-      <view v-if="sentences.length && phase === 'sentences'" class="sentence-screen">
-        <view class="progress">
-          <view class="dots">
-            <view
-              v-for="(s, i) in sentences"
-              :key="s.index"
-              class="dot"
-              :class="{ active: i === currentIdx, done: i < currentIdx, has_err: (s.errors?.length || 0) > 0 }"
-              @click="goTo(i)"
-            ></view>
-          </view>
-          <text class="progress-text">{{ currentIdx + 1 }} / {{ sentences.length }}</text>
-        </view>
-
-        <Card class="p28 mb" >
-          <view class="s-header">
-            <text class="s-index">#{{ currentSentence.index }}</text>
-            <text class="s-original">{{ currentSentence.original }}</text>
-          </view>
-
-          <view v-if="currentSentence.errors?.length" class="errors">
-            <view v-for="(e, i) in currentSentence.errors" :key="i" class="error-row">
-              <text class="cb">{{ categoryLabel(e.category) }}</text>
-              <text class="ce">{{ e.explanation }}</text>
-              <text v-if="e.fix" class="cf">→ {{ e.fix }}</text>
-            </view>
-          </view>
-          <view v-else class="ok-row">
-            <text class="ok-icon">✓</text>
-            <text class="ok-text">{{ noErrorText }}</text>
-          </view>
-
-          <view v-if="currentSentence.corrected" class="alt-row">
-            <text class="alt-label">{{ t("writing.corrected") }}：</text>
-            <text class="alt-text corrected">{{ currentSentence.corrected }}</text>
-          </view>
-          <view v-if="currentSentence.polished" class="alt-row">
-            <text class="alt-label">{{ t("writing.polished") }}：</text>
-            <text class="alt-text polished">{{ currentSentence.polished }}</text>
-            <button
-              class="speak-btn"
-              :class="{ playing: speakingIdx === currentIdx }"
-              @click="onSpeakSentence(currentIdx)"
-            >
-              {{ speakingIdx === currentIdx ? "■ 停止" : "🔊 朗读" }}
-            </button>
-          </view>
-          <view v-if="currentSentence.polished_reason" class="reason-row">
-            <text class="reason-label">💡 {{ t("writing.polishedReason") }}</text>
-            <text class="reason-text">{{ currentSentence.polished_reason }}</text>
-          </view>
-        </Card>
-
-        <view class="nav-row">
-          <button class="btn-secondary" :disabled="currentIdx === 0" @click="prev">
-            ← {{ t("writing.prevSentence") }}
-          </button>
-          <button v-if="currentIdx < sentences.length - 1" class="btn-primary" @click="next">
-            {{ t("writing.nextSentence") }} →
-          </button>
-          <button v-else class="btn-primary" @click="goSummary">
-            {{ t("writing.viewSummary") }} →
-          </button>
-        </view>
-      </view>
+      <SentenceReview
+        v-if="sentences.length && phase === 'sentences'"
+        :sentences="sentences"
+        :start-index="reviewStart"
+        @done="goSummary"
+      />
 
       <!-- 阶段二：总结 + 全文朗读 -->
       <view v-else-if="sentences.length && phase === 'summary'" class="summary-screen">
@@ -151,9 +92,10 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { getEssay } from "../../api/writing";
 import type { Essay, EssaySentenceReport } from "../../api/writing";
-import { speak, speakLines, stopSpeak } from "../../utils/tts";
+import { speakLines, stopSpeak } from "../../utils/tts";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
+import SentenceReview from "../../components/SentenceReview.vue";
 
 const { t, locale } = useI18n();
 
@@ -162,26 +104,10 @@ const loading = ref(false);
 const error = ref("");
 
 const phase = ref<"sentences" | "summary">("sentences");
-const currentIdx = ref(0);
+// 逐句页重新挂载时的起始句下标（从总结页返回时定位到最后一句）
+const reviewStart = ref(0);
 const speakingIdx = ref(-1);
 const speakingAll = ref(false);
-
-const CATEGORY_KEYS: Record<string, string> = {
-  spell: "writing.categories.spell",
-  plural: "writing.categories.plural",
-  tense: "writing.categories.tense",
-  sv_agree: "writing.categories.sv_agree",
-  no_subject: "writing.categories.no_subject",
-  literal: "writing.categories.literal",
-  verb: "writing.categories.verb",
-  prep: "writing.categories.prep",
-  other: "writing.categories.other",
-};
-
-function categoryLabel(cat: string): string {
-  const key = CATEGORY_KEYS[cat] || "writing.categories.other";
-  return t(key);
-}
 
 function promptTitle(e: Essay): string {
   if (locale.value === "en" && e.prompt_title_en) return e.prompt_title_en;
@@ -191,18 +117,11 @@ function promptTitle(e: Essay): string {
 const sentences = computed<EssaySentenceReport[]>(
   () => essay.value?.report?.sentences ?? [],
 );
-const currentSentence = computed<EssaySentenceReport>(
-  () =>
-      sentences.value[currentIdx.value] || { index: 0, original: "", errors: [], corrected: "", polished: "" },
-);
 const fullPolishedText = computed(() =>
   sentences.value
     .map((s) => s.polished || s.corrected || s.original)
     .filter(Boolean)
     .join(" "),
-);
-const noErrorText = computed(() =>
-  locale.value === "en" ? "No errors in this sentence. Nice!" : "这句没问题，很棒！",
 );
 
 async function fetchEssay(id: string) {
@@ -217,27 +136,12 @@ async function fetchEssay(id: string) {
   }
 }
 
-function goTo(i: number) {
-  if (i < 0 || i >= sentences.value.length) return;
-  // 切句前停掉上一句的朗读
-  if (speakingIdx.value !== -1) {
-    stopSpeak();
-    speakingIdx.value = -1;
-  }
-  currentIdx.value = i;
-  phase.value = "sentences";
-}
-
-function prev() {
-  goTo(currentIdx.value - 1);
-}
-
-function next() {
-  goTo(currentIdx.value + 1);
-}
-
 function goSentence(i: number) {
-  currentIdx.value = i;
+  // 逐句页随 v-if 重新挂载：停掉全文朗读，并把起始句传进去
+  stopSpeak();
+  speakingAll.value = false;
+  speakingIdx.value = -1;
+  reviewStart.value = i;
   phase.value = "sentences";
 }
 
@@ -247,26 +151,6 @@ function goSummary() {
     speakingIdx.value = -1;
   }
   phase.value = "summary";
-}
-
-function onSpeakSentence(i: number) {
-  // 切换播放：点同一句 → 停；点不同句 → 切到新句
-  if (speakingIdx.value === i) {
-    stopSpeak();
-    speakingIdx.value = -1;
-    return;
-  }
-  if (speakingIdx.value !== -1 || speakingAll) {
-    stopSpeak();
-  }
-  const s = sentences.value[i];
-  const text = s.polished || s.corrected || s.original;
-  if (!text) return;
-  const ok = speak(text, "en-US", () => {
-    // 自然播完（或回退浏览器 TTS 结束）→ 清除高亮；手动 stopSpeak 不走这里
-    if (speakingIdx.value === i) speakingIdx.value = -1;
-  });
-  if (ok) speakingIdx.value = i;
 }
 
 function onSpeakAll() {
@@ -362,183 +246,12 @@ onBeforeUnmount(() => {
   line-height: 1.5;
 }
 
-/* 进度条 */
-.progress {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rpx;
-  margin-bottom: 20rpx;
-}
-.dots {
-  display: flex;
-  gap: 12rpx;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.dot {
-  width: 20rpx;
-  height: 20rpx;
-  border-radius: 50%;
-  background: #e0e6f0;
-  transition: background 0.2s;
-}
-.dot.active {
-  background: var(--brand);
-  transform: scale(1.3);
-}
-.dot.done {
-  background: #b8c5e0;
-}
-.dot.has_err {
-  background: #ffb84d;
-}
-.dot.done.has_err {
-  background: #ff9d2e;
-}
-.progress-text {
-  font-size: 26rpx;
-  color: var(--ink-3);
-  font-weight: 600;
-}
-
 .card-label {
   display: block;
   font-size: 28rpx;
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 16rpx;
-}
-
-.s-index {
-  flex-shrink: 0;
-  font-size: 22rpx;
-  color: var(--ink-4);
-  background: var(--soft);
-  padding: 4rpx 12rpx;
-  border-radius: 6rpx;
-}
-.s-header {
-  display: flex;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
-  align-items: flex-start;
-}
-.s-original {
-  font-size: 30rpx;
-  line-height: 1.6;
-  color: var(--ink);
-  flex: 1;
-}
-
-.errors {
-  margin-bottom: 12rpx;
-}
-.error-row {
-  background: #fff8e1;
-  border-left: 4rpx solid #ffb84d;
-  padding: 14rpx 18rpx;
-  margin-bottom: 8rpx;
-  border-radius: 6rpx;
-}
-.cb {
-  display: inline-block;
-  font-size: 22rpx;
-  color: #b35a00;
-  background: #fff;
-  padding: 2rpx 10rpx;
-  border-radius: 4rpx;
-  margin-right: 12rpx;
-}
-.ce {
-  font-size: 26rpx;
-  color: #5d4400;
-  line-height: 1.5;
-}
-.cf {
-  display: block;
-  font-size: 24rpx;
-  color: var(--brand);
-  margin-top: 6rpx;
-}
-.ok-row {
-  background: #e7faf0;
-  border-left: 4rpx solid var(--success);
-  padding: 14rpx 18rpx;
-  border-radius: 6rpx;
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-.ok-icon {
-  color: var(--success);
-  font-size: 32rpx;
-  font-weight: 700;
-}
-.ok-text {
-  font-size: 26rpx;
-  color: #1f7a3e;
-}
-
-.alt-row {
-  margin-top: 12rpx;
-  display: flex;
-  align-items: flex-start;
-  gap: 12rpx;
-  flex-wrap: wrap;
-}
-.alt-label {
-  font-size: 22rpx;
-  color: var(--ink-4);
-  flex-shrink: 0;
-  padding-top: 4rpx;
-}
-.alt-text {
-  font-size: 26rpx;
-  line-height: 1.6;
-  flex: 1;
-  min-width: 0;
-}
-.corrected {
-  color: var(--ink);
-}
-.polished {
-  color: var(--success);
-}
-
-.speak-btn {
-  flex-shrink: 0;
-  background: var(--soft);
-  color: var(--brand);
-  font-size: 22rpx;
-  padding: 8rpx 18rpx;
-  border-radius: 999rpx;
-  border: none;
-  margin-left: auto;
-}
-.speak-btn.playing {
-  background: var(--brand);
-  color: #fff;
-}
-
-.reason-row {
-  margin-top: 12rpx;
-  background: var(--bg);
-  border-left: 4rpx solid var(--brand);
-  padding: 12rpx 16rpx;
-  border-radius: 6rpx;
-}
-.reason-label {
-  display: block;
-  font-size: 22rpx;
-  font-weight: 600;
-  color: var(--brand);
-  margin-bottom: 4rpx;
-}
-.reason-text {
-  font-size: 24rpx;
-  line-height: 1.5;
-  color: var(--ink);
 }
 
 .nav-row {
