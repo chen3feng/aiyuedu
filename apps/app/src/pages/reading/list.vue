@@ -69,6 +69,7 @@ import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
+import { topicTags } from "../../utils/topics";
 
 const { t } = useI18n();
 
@@ -80,12 +81,6 @@ const tabs = [
   { key: "history", labelKey: "topic.history" },
   { key: "adventure", labelKey: "topic.adventure" },
 ];
-
-// 多主题中文名直接来自后端 topic_labels；标签缺失回退主题 key
-function topicTags(r: ReadingSummary): string[] {
-  const labels = r.topic_labels || [];
-  return (r.topics || []).map((k, i) => labels[i] || k);
-}
 
 // 读者词汇量：优先用评测结果（若已存），否则默认初一估算 3600
 const level = ref<number>(Number(uni.getStorageSync("vocab_size")) || 3600);
