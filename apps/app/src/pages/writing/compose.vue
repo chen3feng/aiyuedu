@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
 }
@@ -259,18 +259,18 @@ onBeforeUnmount(() => {
   display: block;
   font-size: 36rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   margin-bottom: 24rpx;
 }
 .loading {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 26rpx;
   padding: 80rpx 0;
 }
 .empty {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 26rpx;
   padding: 60rpx 0;
 }
@@ -294,13 +294,13 @@ onBeforeUnmount(() => {
   display: block;
   font-size: 32rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   margin-bottom: 8rpx;
 }
 .prompt-body {
   display: block;
   font-size: 26rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   line-height: 1.5;
   margin-bottom: 12rpx;
 }
@@ -310,7 +310,7 @@ onBeforeUnmount(() => {
 }
 .meta-item {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .prompt-free {
   margin-top: 32rpx;
@@ -320,18 +320,18 @@ onBeforeUnmount(() => {
   display: block;
   font-size: 30rpx;
   font-weight: 600;
-  color: #4f7cff;
+  color: var(--brand);
 }
 .free-hint {
   display: block;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   margin-top: 6rpx;
 }
 
 /* compose */
 .prompt-card {
-  background: #eef2fb;
+  background: var(--soft);
   border-radius: 16rpx;
   padding: 24rpx 28rpx;
   margin-bottom: 20rpx;
@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
   min-height: 480rpx;
   font-size: 30rpx;
   line-height: 1.7;
-  color: #1f2d50;
+  color: var(--ink);
   padding: 24rpx;
   box-sizing: border-box;
   background: transparent;
@@ -363,10 +363,10 @@ onBeforeUnmount(() => {
 }
 .word-count {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .word-count .reach {
-  color: #07c160;
+  color: var(--success);
   font-weight: 600;
 }
 .autosave {
@@ -374,10 +374,10 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8rpx;
   font-size: 22rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .autosave-dot {
-  color: #07c160;
+  color: var(--success);
   font-size: 18rpx;
 }
 .actions {
@@ -394,20 +394,20 @@ onBeforeUnmount(() => {
 }
 .btn-secondary {
   background: #fff;
-  color: #4f7cff;
-  border: 1rpx solid #eef2fb;
+  color: var(--brand);
+  border: 1rpx solid var(--soft);
 }
 .btn-primary {
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
 }
 .btn-primary[disabled] {
-  background: #c5cee0;
+  background: var(--line);
   color: #fff;
 }
 .error {
   margin-top: 16rpx;
-  color: #fa5151;
+  color: var(--danger);
   font-size: 26rpx;
   text-align: center;
 }
@@ -418,10 +418,10 @@ onBeforeUnmount(() => {
   gap: 8rpx;
   margin-top: 14rpx;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .elapsed-dot {
-  color: #4f7cff;
+  color: var(--brand);
   font-size: 18rpx;
   animation: pulse 1.2s ease-in-out infinite;
 }

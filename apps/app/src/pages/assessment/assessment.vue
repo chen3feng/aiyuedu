@@ -249,7 +249,7 @@ function again() {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
 }
@@ -265,13 +265,13 @@ function again() {
 .title {
   font-size: 48rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   text-align: center;
 }
 .subtitle {
   display: block;
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 26rpx;
   margin-top: 12rpx;
 }
@@ -281,7 +281,7 @@ function again() {
 .rule-title {
   font-size: 28rpx;
   font-weight: 600;
-  color: #1f2d50;
+  color: var(--ink);
   margin-bottom: 20rpx;
 }
 .rule-row {
@@ -295,21 +295,21 @@ function again() {
   border-radius: 50%;
   margin-right: 20rpx;
 }
-.dot.ok { background: #07c160; }
+.dot.ok { background: var(--success); }
 .dot.neutral { background: #b7c0d4; }
-.dot.bad { background: #fa5151; }
+.dot.bad { background: var(--danger); }
 .rule-text {
   flex: 1;
   font-size: 30rpx;
-  color: #33405f;
+  color: var(--ink-2);
 }
 .score {
   font-size: 26rpx;
   font-weight: 600;
 }
-.score.plus { color: #07c160; }
-.score.zero { color: #8a94ad; }
-.score.minus { color: #fa5151; }
+.score.plus { color: var(--success); }
+.score.zero { color: var(--ink-4); }
+.score.minus { color: var(--danger); }
 .hint {
   margin-top: 32rpx;
   font-size: 26rpx;
@@ -326,12 +326,12 @@ function again() {
   font-weight: 600;
 }
 .btn.primary {
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
 }
 .error {
   margin-top: 24rpx;
-  color: #fa5151;
+  color: var(--danger);
   font-size: 26rpx;
   text-align: center;
 }
@@ -353,12 +353,12 @@ function again() {
 }
 .score-label {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .score-value {
   font-size: 56rpx;
   font-weight: 800;
-  color: #4f7cff;
+  color: var(--brand);
   line-height: 1.1;
 }
 .score-stats {
@@ -369,16 +369,16 @@ function again() {
 }
 .stat {
   font-size: 24rpx;
-  color: #6a7591;
+  color: var(--ink-3);
 }
-.stat.ok { color: #07c160; }
-.stat.neutral { color: #8a94ad; }
-.stat.bad { color: #fa5151; }
+.stat.ok { color: var(--success); }
+.stat.neutral { color: var(--ink-4); }
+.stat.bad { color: var(--danger); }
 
 .word {
   font-size: 72rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   text-align: center;
   margin-bottom: 56rpx;
 }
@@ -405,8 +405,8 @@ function again() {
   line-height: 56rpx;
   text-align: center;
   border-radius: 50%;
-  background: #eef2fb;
-  color: #4f7cff;
+  background: var(--soft);
+  color: var(--brand);
   font-weight: 700;
   margin-right: 24rpx;
   font-size: 28rpx;
@@ -414,20 +414,20 @@ function again() {
 }
 .opt-text {
   font-size: 34rpx;
-  color: #33405f;
+  color: var(--ink-2);
 }
 .option.correct {
   background: #e8f8ef;
 }
 .option.correct .opt-letter {
-  background: #07c160;
+  background: var(--success);
   color: #fff;
 }
 .option.wrong {
-  background: #fdecec;
+  background: var(--danger-bg);
 }
 .option.wrong .opt-letter {
-  background: #fa5151;
+  background: var(--danger);
   color: #fff;
 }
 .option.dim {
@@ -439,27 +439,27 @@ function again() {
   padding: 28rpx;
   border-radius: 16rpx;
   border: 2rpx dashed #b7c0d4;
-  color: #6a7591;
+  color: var(--ink-3);
   font-size: 30rpx;
   background: #fff;
 }
 .unknown-btn.active {
-  background: #eef2fb;
-  border-color: #4f7cff;
-  color: #4f7cff;
+  background: var(--soft);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 .converged-hint {
   margin-top: 28rpx;
   text-align: center;
   font-size: 24rpx;
-  color: #07c160;
+  color: var(--success);
 }
 .finish-btn {
   margin-top: 32rpx;
   text-align: center;
   padding: 28rpx;
   border-radius: 16rpx;
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
   font-size: 32rpx;
   font-weight: 600;
@@ -481,21 +481,21 @@ function again() {
   margin-right: 12rpx;
   font-weight: 700;
 }
-.feedback.correct { color: #07c160; background: #e8f8ef; }
-.feedback.unknown { color: #6a7591; background: #eef2fb; }
-.feedback.wrong { color: #fa5151; background: #fdecec; }
+.feedback.correct { color: var(--success); background: #e8f8ef; }
+.feedback.unknown { color: var(--ink-3); background: var(--soft); }
+.feedback.wrong { color: var(--danger); background: var(--danger-bg); }
 
 /* 结果页 */
 .big-label {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 28rpx;
 }
 .big-number {
   text-align: center;
   font-size: 120rpx;
   font-weight: 800;
-  color: #4f7cff;
+  color: var(--brand);
   line-height: 1.2;
 }
 .score-line {
@@ -505,12 +505,12 @@ function again() {
 }
 .muted {
   font-size: 26rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .message {
   margin-top: 40rpx;
   font-size: 26rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   line-height: 1.6;
 }
 </style>

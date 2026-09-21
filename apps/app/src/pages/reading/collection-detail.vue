@@ -103,25 +103,25 @@ onShow(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
 }
 .loading {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 28rpx;
   padding: 80rpx 0;
 }
 .error {
-  color: #fa5151;
+  color: var(--danger);
   text-align: center;
   padding: 80rpx 0;
   font-size: 28rpx;
 }
 .empty {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 26rpx;
   padding: 40rpx 0;
 }
@@ -141,7 +141,7 @@ onShow(() => {
   height: 240rpx;
   border-radius: 12rpx;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f7cff 0%, #6c5ce7 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, #6c5ce7 100%);
 }
 .cover {
   width: 100%;
@@ -167,21 +167,21 @@ onShow(() => {
 .title-zh {
   font-size: 36rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   line-height: 1.3;
 }
 .title {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .author {
   font-size: 24rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   margin-top: 4rpx;
 }
 .intro {
   font-size: 24rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   line-height: 1.5;
   margin-top: 8rpx;
   display: -webkit-box;
@@ -193,11 +193,11 @@ onShow(() => {
   display: flex;
   gap: 16rpx;
   font-size: 22rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   margin-top: auto;
 }
 .stat-item {
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
 }
@@ -213,7 +213,7 @@ onShow(() => {
   display: block;
   font-size: 28rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   margin-bottom: 16rpx;
 }
 .chapter-row {
@@ -233,8 +233,8 @@ onShow(() => {
   width: 48rpx;
   height: 48rpx;
   border-radius: 50%;
-  background: #eef2fb;
-  color: #4f7cff;
+  background: var(--soft);
+  color: var(--brand);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -252,15 +252,15 @@ onShow(() => {
 .ch-title-zh {
   font-size: 28rpx;
   font-weight: 500;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .ch-title {
   font-size: 22rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .ch-arrow {
   font-size: 36rpx;
-  color: #c5cee0;
+  color: var(--line);
   flex-shrink: 0;
 }
 
@@ -277,10 +277,10 @@ onShow(() => {
 .gl-word {
   font-size: 24rpx;
   font-weight: 600;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .gloss {
   font-size: 22rpx;
-  color: #6a7591;
+  color: var(--ink-3);
 }
 </style>

@@ -146,7 +146,7 @@ function open(r: ReadingSummary) {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 24rpx 32rpx;
   box-sizing: border-box;
 }
@@ -162,11 +162,11 @@ function open(r: ReadingSummary) {
   padding: 14rpx 28rpx;
   border-radius: 999rpx;
   background: #fff;
-  color: #6a7591;
+  color: var(--ink-3);
   font-size: 26rpx;
 }
 .tab.active {
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
   font-weight: 600;
 }
@@ -174,12 +174,12 @@ function open(r: ReadingSummary) {
 .error,
 .empty {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 28rpx;
   padding: 80rpx 0;
 }
 .error {
-  color: #fa5151;
+  color: var(--danger);
 }
 .cards {
   display: flex;
@@ -211,12 +211,12 @@ function open(r: ReadingSummary) {
 .title-zh {
   font-size: 34rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   line-height: 1.3;
 }
 .title {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.4;
 }
 .tags {
@@ -229,8 +229,8 @@ function open(r: ReadingSummary) {
 .tag {
   flex-shrink: 0;
   font-size: 22rpx;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   padding: 6rpx 16rpx;
   border-radius: 8rpx;
 }
@@ -240,7 +240,7 @@ function open(r: ReadingSummary) {
 }
 .meta-item {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 
 /* 作品集（书籍）整体入口卡片 */
@@ -258,7 +258,7 @@ function open(r: ReadingSummary) {
   height: 134rpx;
   border-radius: 10rpx;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f7cff 0%, #6c5ce7 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, #6c5ce7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -282,12 +282,12 @@ function open(r: ReadingSummary) {
 .book-title-zh {
   font-size: 30rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   line-height: 1.3;
 }
 .book-title {
   font-size: 22rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -297,12 +297,12 @@ function open(r: ReadingSummary) {
 }
 .book-author {
   font-size: 22rpx;
-  color: #6a7591;
+  color: var(--ink-3);
 }
 .book-chapters {
   font-size: 22rpx;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
   align-self: flex-start;
@@ -310,7 +310,7 @@ function open(r: ReadingSummary) {
 }
 .book-arrow {
   font-size: 40rpx;
-  color: #c5cee0;
+  color: var(--line);
   flex-shrink: 0;
 }
 </style>

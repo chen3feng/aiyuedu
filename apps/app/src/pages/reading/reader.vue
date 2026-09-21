@@ -438,7 +438,7 @@ function finish() {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 32rpx;
   box-sizing: border-box;
 }
@@ -447,18 +447,18 @@ function finish() {
   align-items: center;
   gap: 8rpx;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   margin-bottom: 16rpx;
   padding: 8rpx 0;
 }
 .crumb-link {
-  color: #4f7cff;
+  color: var(--brand);
 }
 .crumb-sep {
-  color: #c5cee0;
+  color: var(--line);
 }
 .crumb-current {
-  color: #1f2d50;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -469,25 +469,25 @@ function finish() {
   gap: 16rpx;
   margin-top: 28rpx;
   padding: 16rpx;
-  background: #f4f6fb;
+  background: var(--bg);
   border-radius: 12rpx;
 }
 .nav-btn {
   flex: 1;
   background: #fff;
-  color: #4f7cff;
+  color: var(--brand);
   font-size: 24rpx;
   padding: 14rpx 16rpx;
   border-radius: 999rpx;
-  border: 1rpx solid #eef2fb;
+  border: 1rpx solid var(--soft);
 }
 .nav-btn[disabled] {
-  color: #c5cee0;
+  color: var(--line);
   background: #f9fafe;
 }
 .chapter-pos {
   font-size: 24rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -515,13 +515,13 @@ function finish() {
 .title-zh {
   font-size: 40rpx;
   font-weight: 800;
-  color: #1f2d50;
+  color: var(--ink);
   line-height: 1.3;
 }
 .title {
   font-size: 28rpx;
   font-weight: 500;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.4;
 }
 .tags {
@@ -534,8 +534,8 @@ function finish() {
 .tag {
   flex-shrink: 0;
   font-size: 22rpx;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   padding: 6rpx 16rpx;
   border-radius: 8rpx;
 }
@@ -545,7 +545,7 @@ function finish() {
 }
 .meta-item {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .toolbar {
   display: flex;
@@ -556,7 +556,7 @@ function finish() {
 .mode-switch {
   flex: 1;
   display: flex;
-  background: #eef2fb;
+  background: var(--soft);
   border-radius: 12rpx;
   padding: 6rpx;
 }
@@ -565,12 +565,12 @@ function finish() {
   text-align: center;
   padding: 14rpx 0;
   font-size: 26rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   border-radius: 8rpx;
 }
 .mode.active {
   background: #fff;
-  color: #4f7cff;
+  color: var(--brand);
   font-weight: 600;
 }
 .speak-all {
@@ -578,23 +578,23 @@ function finish() {
   padding: 14rpx 28rpx;
   font-size: 26rpx;
   font-weight: 600;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   border-radius: 12rpx;
 }
 .speak-all.playing {
-  color: #fa5151;
-  background: #fdecec;
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 .loading,
 .error {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 28rpx;
   padding: 80rpx 0;
 }
 .error {
-  color: #fa5151;
+  color: var(--danger);
 }
 .body {
   background: #fff;
@@ -609,13 +609,13 @@ function finish() {
   background: #fff7e6;
   border-radius: 10rpx;
   /* 左侧竖条画在文字外侧（负 x 偏移的 outset 阴影），不遮挡正文 */
-  box-shadow: -10rpx 0 0 0 #4f7cff;
+  box-shadow: -10rpx 0 0 0 var(--brand);
   transition: background 0.2s;
 }
 .en-line {
   font-size: 34rpx;
   line-height: 1.9;
-  color: #33405f;
+  color: var(--ink-2);
 }
 /* ruby 内联释义（v-html 内容不受 scoped 属性约束，故用 :deep 穿透） */
 .ruby-body :deep(ruby) {
@@ -633,7 +633,7 @@ function finish() {
   font-style: italic;
 }
 .tok.punct {
-  color: #33405f;
+  color: var(--ink-2);
 }
 .tok.em {
   font-style: italic;
@@ -657,13 +657,13 @@ function finish() {
 .vocab-title {
   font-size: 30rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .vocab-sort {
   flex-shrink: 0;
   font-size: 24rpx;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   padding: 8rpx 20rpx;
   border-radius: 999rpx;
 }
@@ -685,7 +685,7 @@ function finish() {
 }
 .v-phonetic {
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .v-speak {
   margin-left: auto;
@@ -695,18 +695,18 @@ function finish() {
   display: block;
   margin-top: 6rpx;
   font-size: 28rpx;
-  color: #33405f;
+  color: var(--ink-2);
 }
 .v-full {
   display: block;
   margin-top: 4rpx;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.5;
 }
 .finish-btn {
   margin-top: 24rpx;
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
   border-radius: 16rpx;
   font-size: 32rpx;
@@ -724,7 +724,7 @@ function finish() {
 .quiz-title {
   font-size: 30rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
   margin-bottom: 16rpx;
 }
 .quiz-item {
@@ -735,7 +735,7 @@ function finish() {
 }
 .q-question {
   font-size: 30rpx;
-  color: #33405f;
+  color: var(--ink-2);
   font-weight: 600;
   line-height: 1.5;
   margin-bottom: 16rpx;
@@ -758,30 +758,30 @@ function finish() {
   text-align: center;
   font-size: 26rpx;
   font-weight: 700;
-  color: #4f7cff;
-  background: #eef2fb;
+  color: var(--brand);
+  background: var(--soft);
   border-radius: 8rpx;
 }
 .q-opt-text {
   flex: 1;
   font-size: 28rpx;
-  color: #33405f;
+  color: var(--ink-2);
   line-height: 1.5;
 }
 .q-opt.opt-correct {
-  border-color: #07c160;
+  border-color: var(--success);
   background: #f0faf3;
 }
 .q-opt.opt-correct .q-letter {
-  background: #07c160;
+  background: var(--success);
   color: #fff;
 }
 .q-opt.opt-wrong {
-  border-color: #fa5151;
-  background: #fdecec;
+  border-color: var(--danger);
+  background: var(--danger-bg);
 }
 .q-opt.opt-wrong .q-letter {
-  background: #fa5151;
+  background: var(--danger);
   color: #fff;
 }
 .q-opt.opt-dim {
@@ -799,7 +799,7 @@ function finish() {
   color: #1a7a3d;
 }
 .q-explain.wrong {
-  background: #fdecec;
+  background: var(--danger-bg);
   color: #c0392b;
 }
 .q-result {
@@ -820,14 +820,14 @@ function finish() {
 .q-explanation-hint {
   flex-shrink: 0;
   font-size: 22rpx;
-  color: #4f7cff;
-  border-bottom: 2rpx dashed #4f7cff;
+  color: var(--brand);
+  border-bottom: 2rpx dashed var(--brand);
 }
 .q-explanation-zh {
   display: block;
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: #6a7591;
+  color: var(--ink-3);
 }
 .mask {
   position: fixed;
@@ -847,33 +847,33 @@ function finish() {
 .popup-word {
   font-size: 56rpx;
   font-weight: 800;
-  color: #1f2d50;
+  color: var(--ink);
   text-align: center;
 }
 .popup-lemma {
   margin-top: 12rpx;
   text-align: center;
   font-size: 26rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .popup-phonetic {
   margin-top: 8rpx;
   text-align: center;
   font-size: 28rpx;
-  color: #6a7591;
+  color: var(--ink-3);
 }
 .popup-gloss {
   margin-top: 24rpx;
   text-align: center;
   font-size: 32rpx;
-  color: #33405f;
+  color: var(--ink-2);
   line-height: 1.6;
 }
 .popup-full {
   margin-top: 12rpx;
   text-align: center;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.5;
 }
 .popup-actions {
@@ -888,11 +888,11 @@ function finish() {
   font-weight: 600;
 }
 .act.speak {
-  background: #eef2fb;
-  color: #4f7cff;
+  background: var(--soft);
+  color: var(--brand);
 }
 .act.save {
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
 }
 </style>
