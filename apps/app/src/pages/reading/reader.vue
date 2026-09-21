@@ -231,7 +231,8 @@ const choiceQuizzes = computed(() =>
     .filter((x): x is { q: ChoiceQuiz; i: number } => x.q.type === "choice"),
 );
 const remaining = computed(() => choiceQuizzes.value.filter((x) => answers.value[x.i] < 0).length);
-const allAnswered = computed(() => choiceQuizzes.value.length > 0 && remaining.value === 0);
+// 没有题目时视为已满足完成条件（remaining 本来就是 0）
+const allAnswered = computed(() => remaining.value === 0);
 
 function chooseQuiz(qi: number, oi: number) {
   if (answers.value[qi] >= 0) return; // 已作答，锁定不再改
