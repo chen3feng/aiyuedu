@@ -1,0 +1,94 @@
+name: Auto merge
+
+# 私有仓库（无 GitHub Pro 分支保护）下的自动合并：
+# PR 打上 auto-merge 标签，或任一检查完成时，扫描带标签的 PR，
+# 所有检查通过 → 自动 squash 合入（仓库已开「合后删分支」，服务端自动删）；
+# 有失败/进行中 → 不合（保持开启）。
+on:
+  pull_request:
+    types: [labeled]
+  check_run:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: auto-merge-worker
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Merge labeled PRs when all checks pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}  # 无 checkout：让 gh 知道操作哪个仓库
+          LABEL: auto-merge
+        run: |
+          set -u
+
+          # 用 REST 取 commit 的 check-runs（GITHUB_TOKEN 对 GraphQL checks 权限受限）：
+          # 返回 [{name, bucket}]；conclusion 为 null = pending
+          get_checks() {
+            local pr="$1" sha
+            sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid' 2>/dev/null) || { echo ""; return; }
+            gh api "repos/$GH_REPO/commits/$sha/check-runs" --jq '
+              [.check_runs[] | {name: .name, bucket: (if .conclusion == null then "pending" else .conclusion end)}]
+            ' 2>/dev/null
+          }
+
+          # 标签事件只处理刚被打标的 PR；check 事件扫描全部带标签 PR
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            [ "${{ github.event.label.name }}" = "$LABEL" ] || { echo "不是 $LABEL 标签，退出"; exit 0; }
+            PRS="${{ github.event.pull_request.number }}"
+          else
+            PRS=$(gh pr list --state open --label "$LABEL" --json number --jq '.[].number' | tr '\n' ' ')
+          fi
+          [ -n "$PRS" ] || { echo "没有待自动合并的 PR"; exit 0; }
+
+          deadline=$((SECONDS + 840))  # 单任务最多轮询 14 分钟
+          for pr in $PRS; do
+            echo "=== PR #$pr ==="
+            while :; do
+              json=$(get_checks "$pr") || true
+              if [ -z "$json" ]; then
+                # 诊断：把底层错误打出来（不再吞 stderr）
+                echo "取不到检查，原始错误:"
+                gh pr view "$pr" --json headRefOid 2>&1 | sed 's/^/  /' | head -3
+                sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid' 2>/dev/null) || sha=""
+                if [ -n "$sha" ]; then gh api "repos/$GH_REPO/commits/$sha/check-runs" 2>&1 | sed 's/^/  /' | head -3; fi
+                pending=1; failed=0
+              else
+                echo "$json" | jq -r '.[] | "  \(.name): \(.bucket)"'
+                # 排除本 worker 自身（合并前永远 pending，等它等于死锁）
+                # 一个检查都没注册时（CI 尚未启动）同样按 pending，严禁空列表当全绿
+                total=$(echo "$json" | jq '[.[] | select(.name != "auto-merge")] | length')
+                pending=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket == "pending")] | length')
+                [ "$total" -eq 0 ] && pending=1
+                failed=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket | test("fail|cancelled|timed_out|action_required"))] | length')
+              fi
+              if [ "$failed" -gt 0 ]; then
+                echo "PR #$pr 有检查失败，不合并（标签保留，修复后自动重试）"
+                break
+              fi
+              if [ "$pending" -eq 0 ]; then
+                if merge_out=$(gh pr merge "$pr" --squash 2>&1); then
+                  echo "PR #$pr 已自动合入（分支由仓库设置自动删除）"
+                  break
+                else
+                  echo "!!! MERGE FAILED: $merge_out"
+                  break
+                fi
+              fi
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "PR #$pr 等待超时，退出（后续 check 完成事件会再次触发）"
+                break
+              fi
+              sleep 15
+            done
+          done
