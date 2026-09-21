@@ -23,25 +23,7 @@
       </view>
 
       <!-- 章节列表 -->
-      <Card class="p24 mb" >
-        <text class="card-label">章节列表</text>
-        <view
-          v-for="ch in detail.chapters"
-          :key="ch.index"
-          class="chapter-row"
-          @click="openChapter(ch.id)"
-        >
-          <view class="ch-num">
-            <text>{{ ch.index }}</text>
-          </view>
-          <view class="ch-info">
-            <text v-if="ch.title_zh" class="ch-title-zh">{{ ch.title_zh }}</text>
-            <text class="ch-title">{{ ch.title }}</text>
-          </view>
-          <text class="ch-arrow">›</text>
-        </view>
-        <StateView v-if="!detail.chapters.length" type="empty" class="compact" message="暂无章节" />
-      </Card>
+      <ChapterList :chapters="detail.chapters" @open="openChapter" />
 
       <!-- 全书统一词汇表 -->
       <Card class="p24 mb" v-if="glossaryCount" >
@@ -66,6 +48,7 @@ import type { CollectionDetail } from "../../api/collections";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
 import BookCover from "../../components/BookCover.vue";
+import ChapterList from "../../components/ChapterList.vue";
 
 const { t } = useI18n();
 
@@ -171,54 +154,6 @@ onShow(() => {
   color: var(--ink);
   margin-bottom: 16rpx;
 }
-.chapter-row {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 0;
-  border-top: 1rpx solid #f0f2f8;
-}
-.chapter-row:first-of-type {
-  border-top: none;
-}
-.chapter-row:active {
-  background: #f9fafe;
-}
-.ch-num {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  background: var(--soft);
-  color: var(--brand);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22rpx;
-  flex-shrink: 0;
-}
-.ch-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-.ch-title-zh {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: var(--ink);
-}
-.ch-title {
-  font-size: 22rpx;
-  color: var(--ink-4);
-}
-.ch-arrow {
-  font-size: 36rpx;
-  color: var(--line);
-  flex-shrink: 0;
-}
-
 .glossary-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
