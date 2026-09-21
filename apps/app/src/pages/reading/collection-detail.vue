@@ -26,15 +26,7 @@
       <ChapterList :chapters="detail.chapters" @open="openChapter" />
 
       <!-- 全书统一词汇表 -->
-      <Card class="p24 mb" v-if="glossaryCount" >
-        <text class="card-label">全书词汇表（{{ glossaryCount }}）</text>
-        <view class="glossary-grid">
-          <view v-for="(gloss, word) in detail.glossary" :key="word" class="gl-item">
-            <text class="gl-word">{{ word }}</text>
-            <text class="gloss">{{ gloss }}</text>
-          </view>
-        </view>
-      </Card>
+      <GlossaryGrid :glossary="detail.glossary" />
     </view>
   </view>
 </template>
@@ -46,9 +38,9 @@ import { useI18n } from "vue-i18n";
 import { getCollection } from "../../api/collections";
 import type { CollectionDetail } from "../../api/collections";
 import StateView from "../../components/StateView.vue";
-import Card from "../../components/Card.vue";
 import BookCover from "../../components/BookCover.vue";
 import ChapterList from "../../components/ChapterList.vue";
+import GlossaryGrid from "../../components/GlossaryGrid.vue";
 
 const { t } = useI18n();
 
@@ -145,32 +137,5 @@ onShow(() => {
   background: var(--bg);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
-}
-
-.card-label {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 16rpx;
-}
-.glossary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12rpx 16rpx;
-}
-.gl-item {
-  display: flex;
-  flex-direction: column;
-  padding: 8rpx 0;
-}
-.gl-word {
-  font-size: 24rpx;
-  font-weight: 600;
-  color: var(--ink);
-}
-.gloss {
-  font-size: 22rpx;
-  color: var(--ink-3);
 }
 </style>
