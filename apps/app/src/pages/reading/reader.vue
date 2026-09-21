@@ -83,34 +83,7 @@
       </view>
 
       <!-- 课后小测：答完所有选择题后才能「完成」 -->
-      <view v-if="choiceQuizzes.length" class="quiz">
-        <view class="quiz-title">{{ t("reading.reader.quizTitle", { n: choiceQuizzes.length }) }}</view>
-        <view v-for="item in choiceQuizzes" :key="item.i" class="quiz-item">
-          <view class="q-question">{{ item.i + 1 }}. {{ item.q.question }}</view>
-          <view
-            v-for="(opt, oi) in item.q.options"
-            :key="oi"
-            class="q-opt"
-            :class="optClass(item.q, item.i, oi)"
-            @click="chooseQuiz(item.i, oi)"
-          >
-            <text class="q-letter">{{ LETTERS[oi] }}</text>
-            <text class="q-opt-text">{{ opt.text }}</text>
-          </view>
-          <view
-            v-if="answers[item.i] >= 0"
-            class="q-explain"
-            :class="chosenIsCorrect(item.q, item.i) ? 'right' : 'wrong'"
-          >
-            <text class="q-result">{{ chosenIsCorrect(item.q, item.i) ? "✅ " + t("reading.reader.correct") : "❌ " + t("reading.reader.wrong") }}</text>
-            <view class="q-explanation" @click="toggleZh(item.i)">
-              <text class="q-explanation-text">{{ item.q.explanation_en }}</text>
-              <text class="q-explanation-hint">{{ zhShown[item.i] ? t("reading.reader.hideZh") : t("reading.reader.showZh") }}</text>
-            </view>
-            <text v-if="zhShown[item.i]" class="q-explanation-zh">{{ item.q.explanation_zh }}</text>
-          </view>
-        </view>
-      </view>
+      <QuizSection :quizzes="choiceQuizList" v-model="answers" />
 
       <!-- 章节导航（仅 collection 章节显示） -->
       <view v-if="detail?.collection && detail.chapters" class="chapter-nav">
@@ -161,6 +134,7 @@ import { getReading, recordReading } from "../../api/reading";
 import type { ActiveWord, ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
 import WordPopup from "../../components/WordPopup.vue";
+import QuizSection from "../../components/QuizSection.vue";
 
 const { t, locale } = useI18n();
 
@@ -168,12 +142,6 @@ const { t, locale } = useI18n();
 function topicTags(d: ReadingDetail): string[] {
   const labels = d.topic_labels || [];
   return (d.topics || []).map((k, i) => labels[i] || k);
-}
-
-// 课后小测解答：默认只出英文，点击英文解答后额外展示中文（与 UI 语言无关）
-const zhShown = ref<Record<number, boolean>>({});
-function toggleZh(qi: number) {
-  zhShown.value[qi] = !zhShown.value[qi];
 }
 
 const id = ref("");
@@ -202,37 +170,17 @@ const instance = getCurrentInstance();
 const startTs = Date.now();
 const clickedLemmas = new Set<string>();
 
-// 课后小测：answers[i] = 所选项下标（-1 未作答），与 detail.quizzes 下标对齐
+// 课后小测：answers[i] = 所选项下标（-1 未作答），由 QuizSection 通过 v-model 回写，
+// 下标与 choiceQuizList 对齐
 const answers = ref<number[]>([]);
-const LETTERS = ["A", "B", "C", "D"];
 
 // 只渲染选择题；`type` 字段为判断题等未来题型预留（暂不渲染）
-const choiceQuizzes = computed(() =>
-  (detail.value?.quizzes || [])
-    .map((q, i) => ({ q, i }))
-    .filter((x): x is { q: ChoiceQuiz; i: number } => x.q.type === "choice"),
+const choiceQuizList = computed(() =>
+  (detail.value?.quizzes || []).filter((q): q is ChoiceQuiz => q.type === "choice"),
 );
-const remaining = computed(() => choiceQuizzes.value.filter((x) => answers.value[x.i] < 0).length);
+const remaining = computed(() => answers.value.filter((a) => a < 0).length);
 // 没有题目时视为已满足完成条件（remaining 本来就是 0）
 const allAnswered = computed(() => remaining.value === 0);
-
-function chooseQuiz(qi: number, oi: number) {
-  if (answers.value[qi] >= 0) return; // 已作答，锁定不再改
-  answers.value[qi] = oi;
-}
-
-function chosenIsCorrect(q: ChoiceQuiz, qi: number): boolean {
-  const oi = answers.value[qi];
-  return oi >= 0 && !!q.options[oi]?.correct;
-}
-
-function optClass(q: ChoiceQuiz, qi: number, oi: number): string {
-  const chosen = answers.value[qi];
-  if (chosen < 0) return "";
-  if (q.options[oi]?.correct) return "opt-correct";
-  if (oi === chosen) return "opt-wrong";
-  return "opt-dim";
-}
 
 // 章节导航（仅 collection 章节）
 const prevChapter = computed(() => {
@@ -279,7 +227,6 @@ async function fetchDetail() {
   error.value = "";
   try {
     detail.value = await getReading(id.value, level.value);
-    answers.value = (detail.value.quizzes || []).map(() => -1);
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -697,118 +644,5 @@ function finish() {
 .finish-btn.disabled {
   background: #c3cbe0;
   color: #fff;
-}
-.quiz {
-  margin-top: 32rpx;
-  border-top: 2rpx solid #eef0f6;
-  padding-top: 24rpx;
-}
-.quiz-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 16rpx;
-}
-.quiz-item {
-  padding: 20rpx 16rpx;
-  border-radius: 12rpx;
-  background: #fafbfe;
-  margin-bottom: 16rpx;
-}
-.q-question {
-  font-size: 30rpx;
-  color: var(--ink-2);
-  font-weight: 600;
-  line-height: 1.5;
-  margin-bottom: 16rpx;
-}
-.q-opt {
-  display: flex;
-  align-items: flex-start;
-  gap: 12rpx;
-  padding: 14rpx 16rpx;
-  border-radius: 10rpx;
-  background: #fff;
-  border: 2rpx solid #eef0f6;
-  margin-bottom: 12rpx;
-}
-.q-letter {
-  flex-shrink: 0;
-  width: 40rpx;
-  height: 40rpx;
-  line-height: 40rpx;
-  text-align: center;
-  font-size: 26rpx;
-  font-weight: 700;
-  color: var(--brand);
-  background: var(--soft);
-  border-radius: 8rpx;
-}
-.q-opt-text {
-  flex: 1;
-  font-size: 28rpx;
-  color: var(--ink-2);
-  line-height: 1.5;
-}
-.q-opt.opt-correct {
-  border-color: var(--success);
-  background: #f0faf3;
-}
-.q-opt.opt-correct .q-letter {
-  background: var(--success);
-  color: #fff;
-}
-.q-opt.opt-wrong {
-  border-color: var(--danger);
-  background: var(--danger-bg);
-}
-.q-opt.opt-wrong .q-letter {
-  background: var(--danger);
-  color: #fff;
-}
-.q-opt.opt-dim {
-  opacity: 0.55;
-}
-.q-explain {
-  margin-top: 8rpx;
-  padding: 16rpx;
-  border-radius: 10rpx;
-  font-size: 26rpx;
-  line-height: 1.6;
-}
-.q-explain.right {
-  background: #f0faf3;
-  color: #1a7a3d;
-}
-.q-explain.wrong {
-  background: var(--danger-bg);
-  color: #c0392b;
-}
-.q-result {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 4rpx;
-}
-.q-explanation {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 12rpx;
-}
-.q-explanation-text {
-  font-size: 26rpx;
-  line-height: 1.6;
-}
-.q-explanation-hint {
-  flex-shrink: 0;
-  font-size: 22rpx;
-  color: var(--brand);
-  border-bottom: 2rpx dashed var(--brand);
-}
-.q-explanation-zh {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: var(--ink-3);
 }
 </style>
