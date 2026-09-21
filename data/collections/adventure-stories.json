@@ -1,0 +1,638 @@
+{
+  "id": "adventure-stories",
+  "title": "Adventure Stories",
+  "title_zh": "冒险与文学故事集",
+  "author": "",
+  "source": "",
+  "topics": [
+    "adventure"
+  ],
+  "total_chapters": 5,
+  "cover_url": "",
+  "intro_zh": "5 篇冒险与文学主题短文，包括科幻、探案与武侠故事。",
+  "intro_en": "5 short adventure and literature readings: science fiction, detective stories and wuxia tales.",
+  "created_at": 1790002068.781,
+  "glossary": {},
+  "polysemy": {},
+  "chapters": [
+    {
+      "id": "r007",
+      "title": "The Secret of the Old Map",
+      "glosses": {
+        "attic": "阁楼",
+        "flashlight": "手电筒",
+        "lantern": "提灯",
+        "compass": "指南针",
+        "rust": "生锈的"
+      },
+      "headwords": {
+        "rust": {
+          "word": "rusty",
+          "phonetic": "ˈrʌsti"
+        }
+      },
+      "target_level": 4600,
+      "body": "One rainy afternoon, Sam found a folded paper inside an old book in the attic. When he opened it, he saw a hand-drawn map with a red X near a small lake. The map looked very old, and its edges were torn. Sam showed it to his sister Emma. They decided to follow the map the next day. Early in the morning, they put sandwiches, a flashlight, and an old lantern into a bag, and Emma packed a compass to find their way back. They walked into the forest behind their house. The path was narrow and quiet. They crossed a small stream, climbed over some fallen trees, and counted their steps carefully. At last they reached the lake. Near the X they found a rusty metal box half-buried in the ground. Their hands shook as they opened it. Inside was not gold, but a bundle of letters and a black-and-white photo. The letters told the story of their grandfather's first adventure. To Sam and Emma, that treasure was worth more than any gold.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "Where did Sam find the map?",
+          "options": [
+            {
+              "text": "In a book in the attic",
+              "correct": true
+            },
+            {
+              "text": "Under a rock by the lake",
+              "correct": false
+            },
+            {
+              "text": "In his school bag",
+              "correct": false
+            },
+            {
+              "text": "On the beach",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "Sam 在阁楼一本旧书里发现了折好的地图。",
+          "explanation_en": "Sam found the folded map inside an old book in the attic."
+        },
+        {
+          "type": "choice",
+          "question": "What did Emma pack to find their way back?",
+          "options": [
+            {
+              "text": "A flashlight",
+              "correct": false
+            },
+            {
+              "text": "A compass",
+              "correct": true
+            },
+            {
+              "text": "A map",
+              "correct": false
+            },
+            {
+              "text": "A phone",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "Emma 带上指南针（compass）以防迷路。",
+          "explanation_en": "Emma packed a compass so they could find their way back."
+        },
+        {
+          "type": "choice",
+          "question": "What was inside the rusty box?",
+          "options": [
+            {
+              "text": "Gold and money",
+              "correct": false
+            },
+            {
+              "text": "Letters and a photo",
+              "correct": true
+            },
+            {
+              "text": "A treasure map",
+              "correct": false
+            },
+            {
+              "text": "Nothing",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "盒子里不是金子，而是一捆信和一张黑白照片，讲述了爷爷的第一次冒险。",
+          "explanation_en": "Inside the box were not gold but letters and a photo telling the story of their grandfather's first adventure."
+        }
+      ],
+      "topics": [
+        "adventure"
+      ],
+      "title_zh": "旧地图的秘密",
+      "index": 1
+    },
+    {
+      "id": "r008",
+      "title": "Robot in the Attic",
+      "glosses": {
+        "muffle": "低沉的",
+        "attic": "阁楼",
+        "robot": "机器人",
+        "antenna": "天线",
+        "twitch": "抽动",
+        "spark": "电火花"
+      },
+      "target_level": 5000,
+      "body": "Late one night, Ben heard a strange, muffled sound coming from the attic. He climbed the stairs and pushed the door open slowly. In the corner, under a dusty sheet, something was glowing with a faint blue light. Ben pulled the sheet away and found a small robot about the size of a cat. Its antenna twitched and its eyes blinked as it turned to look at him. A small spark jumped from a loose wire near its chest. The robot spoke in a soft voice. It said that it had run out of power and landed here by accident. Ben brought it food and helped it charge from the lamp in his room. The little robot could not remember its home, so Ben promised to help it search. Every night they worked together, scanning the sky for a signal. The robot taught Ben about the stars, and Ben taught the robot about jokes and sandwiches. One evening, a bright light appeared above the roof. The robot's family had found it at last. Ben felt proud and a little sad as he waved goodbye to his strange new friend.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "What did Ben find under the dusty sheet?",
+          "options": [
+            {
+              "text": "A small robot",
+              "correct": true
+            },
+            {
+              "text": "A cat",
+              "correct": false
+            },
+            {
+              "text": "A box of food",
+              "correct": false
+            },
+            {
+              "text": "A lamp",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "掀开布满灰尘的布，Ben 发现一只小猫大小的机器人。",
+          "explanation_en": "Under the dusty sheet Ben found a small robot the size of a cat."
+        },
+        {
+          "type": "choice",
+          "question": "Why did the robot land here?",
+          "options": [
+            {
+              "text": "It was looking for food",
+              "correct": false
+            },
+            {
+              "text": "It had run out of power and landed by accident",
+              "correct": true
+            },
+            {
+              "text": "It wanted to play with Ben",
+              "correct": false
+            },
+            {
+              "text": "It was hiding from its family",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "机器人说自己没电了，意外降落在这里。",
+          "explanation_en": "The robot said it had run out of power and landed here by accident."
+        },
+        {
+          "type": "choice",
+          "question": "How did Ben feel at the end?",
+          "options": [
+            {
+              "text": "Only happy",
+              "correct": false
+            },
+            {
+              "text": "Angry",
+              "correct": false
+            },
+            {
+              "text": "Proud and a little sad",
+              "correct": true
+            },
+            {
+              "text": "Scared",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "机器人被家人找到后，Ben 既为它高兴又有点舍不得，感到骄傲又有一丝难过。",
+          "explanation_en": "When the robot's family found it, Ben felt proud and a little sad to say goodbye."
+        }
+      ],
+      "topics": [
+        "adventure"
+      ],
+      "title_zh": "阁楼里的机器人",
+      "index": 2
+    },
+    {
+      "id": "r034",
+      "title": "Chinese Wuxia Fiction: From Ancient Legends to Modern Digital Empires",
+      "subtitle": "中国武侠小说：从古老传说到现代数字江湖",
+      "topics": [
+        "adventure"
+      ],
+      "target_level": 12000,
+      "glosses": {
+        "underground": "地下",
+        "honor code": "荣誉准则",
+        "stretch back": "破例",
+        "swordmasters": "剑士",
+        "grandmaster": "大师",
+        "storytelling": "说故事",
+        "pop culture": "流行文化",
+        "video game": "电视游戏",
+        "open world": "开放世界",
+        "worldwide": "全世界的"
+      },
+      "full_glosses": {},
+      "headwords": {},
+      "terms": {
+        "martial arts": "武术",
+        "known as": "被称为",
+        "thousands of years": "千年万载",
+        "common people": "平民",
+        "complex character": "复合性状",
+        "books into": "签到",
+        "millions of": "成千上万的..."
+      },
+      "skip": [],
+      "body": "Wuxia (武侠), literally meaning \"martial heroes,\" is a uniquely Chinese genre of fiction that blends martial arts, heroic ethics, and historical adventure. It paints a world known as the Jianghu (江湖)—an underground community of martial artists operating outside official laws, governed by a strict honor code of justice, chivalry, and brotherhood. The roots of Wuxia stretch back thousands of years. Early sprouts appeared in ancient ghost and heroism collections like Soushen Ji In Search of the Sacred ) during the Jin Dynasty, and reached maturity in Tang Dynasty tales Tang Chuanqi ), which featured skilled assassins and righteous swordmasters like Nian'er Niang and Kunlun Nu. Later in the Ming Dynasty, the classic epic Water Margin Shui Hu Zhuan ) laid the ultimate foundation for group heroism, brotherhood, and outlaw justice. In the 19th century, classical Wuxia fiction flourished during the late Qing Dynasty. Masterpieces like The Seven Heroes and Five Gallants Qi Xia Wu Yi ) introduced iconic figures like Judge Bao and his heroic guard Zhan Zhao. These stories established classic tropes: chivalrous heroes enforcing justice, solving mysteries, and serving the common people. The mid-20th century saw the emergence of \"New School\" Wuxia, dominated by several legendary modern authors Jin Yong (Louis Cha, 金庸): The undisputed grandmaster of Wuxia. His masterpieces—such as The Legend of the Condor Heroes The Return of the Condor Heroes, and Demi-Gods and Semi-Devils —interwove deep historical realism, Chinese philosophy, and complex character psychology. Gu Long (古龙): Known for his poetic, fast-paced, and mystery-style storytelling in classics like Lu Xiaofeng and The Legendary Siblings Liang Feiyu / Liang Yusheng (梁羽生): Often called the pioneer of modern Wuxia, famed for The Bride with White Hair Huang Yi (黄易): Famous for blending Wuxia with time travel and historical fantasy in A Step into the Past Today, Wuxia holds immense modern influence. It has evolved far beyond books into a pillar of global Chinese pop culture. Dozens of film and TV adaptations are produced every decade, while video game franchises —from classic retro RPGs like Heroes of Jin Yong (金庸群侠传) to modern open-world hits like Where Winds Meet (燕云十六声)—allow millions of players worldwide to step directly into the magical world of the Jianghu",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "Which Ming Dynasty classic novel laid a vital foundation for group heroism and outlaw justice in Wuxia fiction",
+          "options": [
+            {
+              "text": "Dream of the Red Chamber",
+              "correct": false
+            },
+            {
+              "text": "Water Margin",
+              "correct": true
+            },
+            {
+              "text": "Journey to the West",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中指出明代四大名著之一的《水浒传》为武侠小说中的群雄侠义与江湖秩序奠定了深厚基础",
+          "explanation_en": "Water Margin"
+        },
+        {
+          "type": "choice",
+          "question": "Who is widely considered the undisputed grandmaster of modern Wuxia fiction, authoring classics like The Legend of the Condor Heroes",
+          "options": [
+            {
+              "text": "Gu Long",
+              "correct": false
+            },
+            {
+              "text": "Jin Yong",
+              "correct": true
+            },
+            {
+              "text": "Huang Yi",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "金庸被公认为现代武侠小说的集大成者与宗师",
+          "explanation_en": "Jin Yong"
+        },
+        {
+          "type": "choice",
+          "question": "Is the following statement true? (True or False) The roots of Chinese Wuxia fiction can be traced back to early ancient texts like Soushen Ji and Tang Dynasty tales (Tang Chuanqi",
+          "options": [
+            {
+              "text": "True",
+              "correct": true
+            },
+            {
+              "text": "False",
+              "correct": false
+            },
+            {
+              "text": "Partly true",
+              "correct": false
+            },
+            {
+              "text": "Cannot tell",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中明确指出中国武侠小说的萌芽可以追溯到晋代的《搜神记》与唐代的唐传奇",
+          "explanation_en": "(True or False) The roots of Chinese Wuxia fiction can be traced back to early ancient texts like Soushen Ji and Tang Dynasty tales (Tang Chuanqi"
+        }
+      ],
+      "title_zh": "中国武侠小说：从古代传说到现代数字帝国",
+      "index": 3
+    },
+    {
+      "id": "r038",
+      "title": "Jules Verne: The Father of Modern Science Fiction and Extraordinary Voyages",
+      "subtitle": "儒勒·凡尔纳：现代科幻小说之父与奇妙旅行",
+      "topics": [
+        "adventure"
+      ],
+      "target_level": 15000,
+      "glosses": {
+        "breathtaking": "惊人的",
+        "port city": "港口城市",
+        "travel from": "从…启程去旅行",
+        "embark on": "从事",
+        "underwater": "在水中的",
+        "descend into": "向下行",
+        "underground": "地下",
+        "steamship": "汽船",
+        "railway": "铁路",
+        "land on": "猛烈抨击",
+        "long before": "在...以前很久",
+        "space travel": "宇宙航行",
+        "splashdown": "在海中溅落",
+        "video conferencing": "视频会议",
+        "skywriting": "空中写字",
+        "rocket scientists": "火箭专家"
+      },
+      "full_glosses": {},
+      "headwords": {},
+      "terms": {
+        "young age": "髫年",
+        "passion for": "热爱",
+        "took off": "脱",
+        "scientific research": "科学研究",
+        "filled with": "充塞",
+        "accompanied by": "附有",
+        "hot air balloon": "热气球",
+        "lunar modules": "登月舱",
+        "scuba diving": "戴水肺潜水",
+        "directed energy": "单向能量",
+        "real world": "真实世界",
+        "von braun": "冯布朗",
+        "one of": "其中之一",
+        "human history": "人类历史"
+      },
+      "skip": [
+        "le",
+        "au",
+        "en",
+        "vingts"
+      ],
+      "body": "Jules Verne (1828–1905) was a legendary French novelist, poet, and playwright.\n\nWidely celebrated alongside H. G. Wells as the \"Father of Science Fiction,\" Verne captured the imagination of millions during the 19th-century Industrial Revolution. \nHis vast collection of adventure novels, published under the series title Extraordinary Voyages, combined rigorous scientific curiosity with breathtaking geographical exploration. \n\nBorn in the port city of Nantes, Verne was fascinated by ships and ocean travel from a young age.\nAlthough his father sent him to Paris to study law, Verne pursued his passion for literature instead.\nHis career took off when he partnered with publisher Pierre-Jules Hetzel, who helped refine Verne's rich scientific research into compelling, educational adventures for general readers. \n\n1. Major Masterpieces and Core Themes\nVerne authored over 60 novels. Among his most celebrated works are: \nTwenty Thousand Leagues Under the Seas \nProfessor Aronnax and his companions are captured by the mysterious Captain Nemo aboard his advanced submarine, the Nautilus. Together, they embark on a thrilling underwater journey across the globe's oceans.\n\nJourney to the Center of the Earth\nGerman professor Otto Lidenbrock, his nephew Axel, and their guide Hans descend into an Icelandic volcano, discovering a subterranean world filled with prehistoric creatures and underground oceans.\n\nAround the World in Eighty Days \nThe precise English gentleman Phileas Fogg wagers £20,000 that he can circumnavigate the globe in just 80 days using new steamships and railways, accompanied by his loyal French servant Passepartout. \n\nFrom the Earth to the Moon\nMembers of a post-Civil War weapons club design a giant space cannon (Columbiad ) to launch a hollow projectile carrying three men to orbit the Moon.\n\nThe Mysterious Island\nFive American Civil War refugees escape in a hot-air balloon and land on an uncharted Pacific island, using engineering and science to build a thriving community while secretly aided by Captain Nemo.\n\n2. Scientific Vision and Lasting Legacy\nVerne was remarkable for his uncanny scientific foresight. Long before they became everyday realities, his novels accurately envisioned: Electric submarines, space travel, lunar modules, and splashdown landings in the ocean, scuba diving equipment and directed-energy weapons, video conferencing, news broadcasts, and skywriting.\n\nVerne's works inspired generations of real-world scientists, inventors, and explorers—including submarine pioneer Simon Lake, polar explorer Richard Byrd, and rocket scientists Wernher von Braun and Konstantin Tsiolkovsky. \nToday, he remains one of the most translated authors in human history.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "Which iconic submarine was commanded by Captain Nemo in Twenty Thousand Leagues Under the Seas",
+          "options": [
+            {
+              "text": "The Columbiad",
+              "correct": false
+            },
+            {
+              "text": "The Nautilus",
+              "correct": true
+            },
+            {
+              "text": "The Passepartout",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "尼摩队长指挥的先进潜艇名为“鹦鹉螺号” Nautilus",
+          "explanation_en": "The Nautilus"
+        },
+        {
+          "type": "choice",
+          "question": "How did Professor Lidenbrock and his team enter the subterranean world in Journey to the Center of the Earth",
+          "options": [
+            {
+              "text": "By digging a deep trench in Paris",
+              "correct": false
+            },
+            {
+              "text": "By descending into an Icelandic volcano",
+              "correct": true
+            },
+            {
+              "text": "By diving with a submarine into the Atlantic Ocean",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中指出黎登布洛克教授一行人是通过冰岛的一座火山进入地心世界的",
+          "explanation_en": "By descending into an Icelandic volcano"
+        },
+        {
+          "type": "choice",
+          "question": "Is the following statement true? (True or False) Jules Verne's novels accurately predicted several modern technological achievements, including electric submarines and lunar spaceflight.",
+          "options": [
+            {
+              "text": "True",
+              "correct": true
+            },
+            {
+              "text": "False",
+              "correct": false
+            },
+            {
+              "text": "Partly true",
+              "correct": false
+            },
+            {
+              "text": "Cannot tell",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中指出凡尔纳具备惊人的科学预见力，成功预言了电力潜艇、登月飞行及海底潜水等近现代科技成果",
+          "explanation_en": "(True or False) Jules Verne's novels accurately predicted several modern technological achievements, including electric submarines and lunar spaceflight."
+        }
+      ],
+      "title_zh": "凡尔纳：科幻之父的奇幻远航",
+      "index": 4
+    },
+    {
+      "id": "r039",
+      "title": "The Canon of Sherlock Holmes",
+      "title_zh": "福尔摩斯探案全集",
+      "subtitle": "",
+      "topics": [
+        "adventure"
+      ],
+      "target_level": 5500,
+      "glosses": {
+        "canon": "正典",
+        "renown": "闻名",
+        "author": "作家",
+        "physician": "医生",
+        "icon": "标志",
+        "consult": "咨询",
+        "loyal": "忠诚的",
+        "companion": "伙伴",
+        "structure": "结构",
+        "novel": "长篇小说",
+        "publish": "出版",
+        "span": "跨越",
+        "scarlet": "血字",
+        "roommate": "室友",
+        "complex": "复杂的",
+        "revenge": "复仇",
+        "treasure": "宝藏",
+        "hound": "猎犬",
+        "gothic": "哥特式",
+        "masterpiece": "杰作",
+        "curse": "诅咒",
+        "spectre": "幽灵",
+        "fog": "雾",
+        "moor": "荒原",
+        "veil": "面纱",
+        "sinister": "邪恶的",
+        "arch": "头号",
+        "nemesis": "宿敌",
+        "professor": "教授",
+        "scandal": "丑闻",
+        "speckle": "斑点",
+        "memoir": "回忆录",
+        "conclude": "以…结尾",
+        "revive": "复活",
+        "wartime": "战时的",
+        "spy": "间谍",
+        "climax": "高潮",
+        "chemistry": "化学",
+        "disguise": "伪装",
+        "wound": "受伤",
+        "flatmate": "合租室友",
+        "chronicle": "记录者",
+        "vast": "庞大的",
+        "underground": "地下的",
+        "talent": "才华",
+        "outsmart": "智胜",
+        "forever": "永远",
+        "rank": "高级",
+        "dedicate": "尽职的",
+        "frequent": "经常",
+        "impact": "影响",
+        "literary": "文学的",
+        "legacy": "遗产",
+        "pioneer": "先驱",
+        "deduct": "演绎",
+        "method": "方法",
+        "inspire": "启发",
+        "precise": "精确的",
+        "forensic": "法医的",
+        "fiction": "小说",
+        "vivid": "生动地",
+        "portray": "描绘",
+        "choke": "弥漫",
+        "mortal": "凡人",
+        "symbol": "象征",
+        "intellect": "智慧",
+        "worldwide": "全世界"
+      },
+      "full_glosses": {},
+      "headwords": {},
+      "terms": {
+        "detective stories": "侦探小说",
+        "written by": "由…所著",
+        "gold standard": "黄金标准",
+        "detective fiction": "侦探小说",
+        "consists of": "包括",
+        "first time": "第一次",
+        "originating in": "源于",
+        "centered around": "围绕",
+        "colonial history": "殖民史",
+        "future wife": "未来的妻子",
+        "tied to": "与…有关",
+        "secret society": "秘密社团",
+        "public outcry": "公众抗议",
+        "eve of": "…前夕",
+        "later years": "晚年",
+        "deductive reasoning": "演绎推理",
+        "forensic science": "法医学",
+        "army surgeon": "军医",
+        "serves as": "担任",
+        "criminal network": "犯罪网络",
+        "opera singer": "歌剧演员",
+        "elder brother": "哥哥",
+        "powers of observation": "观察力",
+        "logical deduction": "逻辑推理",
+        "criminal investigation": "刑事调查",
+        "hansom cabs": "双轮马车",
+        "clay pipes": "陶制烟斗",
+        "social atmosphere": "社会氛围",
+        "deerstalker hat": "猎鹿帽",
+        "magnifying glass": "放大镜"
+      },
+      "skip": [],
+      "body": "The Canon of Sherlock Holmes is a world-renowned collection of detective stories written by the British author and physician Sir Arthur Conan Doyle. Featuring the iconic \"consulting detective\" Sherlock Holmes and his loyal companion Dr. John Watson, these works established the gold standard for classic detective fiction. 1. Structure of the Canon The official Sherlock Holmes canon written by Arthur Conan Doyle consists of 4 novels and 56 short stories (published across 5 collections), spanning from 1887 to 1927. The 4 Novels A Study in Scarlet (1887) Holmes and Watson meet for the first time at St. Bartholomew's Hospital in London and become roommates at 221B Baker Street. The case involves a complex tale of revenge originating in the American West. The Sign of the Four (1890) A mystery centered around the Agra treasure and British colonial history, during which Dr. Watson meets his future wife, Mary Morstan. The Hound of the Baskervilles (1902) The most famous gothic masterpiece in the canon, investigating a deadly family curse involving a giant spectral hound on the Dartmoor fog-bound moors. The Valley of Fear (1915) Unveils the sinister shadow of Holmes's arch-nemesis, Professor Moriarty, featuring a locked-room murder in England tied to a secret society in America. The 5 Short Story Collections The Adventures of Sherlock Holmes (1892) (12 stories): Features classic tales like \"A Scandal in Bohemia\" (introducing Irene Adler), \"The Red-Headed League\", and \"The Speckled Band\" The Memoirs of Sherlock Holmes (1894) (12 stories): Concludes with \"The Final Problem\", where Holmes seemingly dies at Reichenbach Falls battling Professor Moriarty. The Return of Sherlock Holmes (1905) (13 stories): Following public outcry, Doyle revived the detective in \"The Adventure of the Empty House\", explaining how Holmes survived. His Last Bow (1917) (7/8 stories): Includes wartime spy cases, climaxing in the title story set on the eve of World War I. The Case-Book of Sherlock Holmes (1927) (12 stories): The final collection of stories published during Doyle's later years. 2. Core Characters Sherlock Holmes: The world's only \"consulting detective,\" renowned for his mastery of deductive reasoning, forensic science, chemistry, and disguise. Dr. John H. Watson: An army surgeon wounded in Afghanistan who serves as Holmes's flatmate, assistant, and chronicler. Professor James Moriarty: The \"Napoleon of Crime,\" a brilliant mathematics professor who operates a vast underground criminal network. Irene Adler: A talented opera singer who outsmarts Holmes in \"A Scandal in Bohemia\", forever remembered by Holmes as \"The Woman.\" Mycroft Holmes: Sherlock's elder brother, who possesses even greater powers of observation and holds a high-ranking position in the British government. Inspector Lestrade: A dedicated Scotland Yard detective who frequently consults Holmes on difficult cases. 3. Impact and Literary Legacy Pioneer of Deductive Method: Inspired by his medical professor Dr. Joseph Bell, Conan Doyle introduced precise observation and logical deduction to criminal investigation, shaping modern forensic fiction. Victorian Atmosphere: The stories vivid portray late-Victorian and Edwardian London—complete with fog-choked streets, hansom cabs, clay pipes, and rich social atmosphere. Cultural Icons: The deerstalker hat, pipe, magnifying glass, and the address 221B Baker Street remain immortal symbols of mystery and intellect worldwide.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "In which novel do Sherlock Holmes and Dr. John Watson first meet and move into 221B Baker Street together",
+          "options": [
+            {
+              "text": "The Sign of the Four",
+              "correct": false
+            },
+            {
+              "text": "A Study in Scarlet",
+              "correct": true
+            },
+            {
+              "text": "The Hound of the Baskervilles",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "A Study in Scarlet is the first novel where Watson and Holmes are introduced by a mutual friend at St. Bartholomew's Hospital."
+        },
+        {
+          "type": "choice",
+          "question": "Who is known as Holmes's arch-nemesis and the \"Napoleon of Crime\"",
+          "options": [
+            {
+              "text": "Inspector Lestrade",
+              "correct": false
+            },
+            {
+              "text": "Mycroft Holmes",
+              "correct": false
+            },
+            {
+              "text": "Professor James Moriarty",
+              "correct": true
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "Professor James Moriarty is the mastermind behind the criminal empire and Holmes's ultimate rival."
+        },
+        {
+          "type": "choice",
+          "question": "Is the following statement true? The official Sherlock Holmes canon written by Arthur Conan Doyle consists of 4 full-length novels and 56 short stories.",
+          "options": [
+            {
+              "text": "True",
+              "correct": true
+            },
+            {
+              "text": "False",
+              "correct": false
+            },
+            {
+              "text": "Partly true",
+              "correct": false
+            },
+            {
+              "text": "Cannot tell",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "The complete canon comprises 4 novels and 56 short stories collected across 5 volumes."
+        }
+      ],
+      "index": 5
+    }
+  ]
+}

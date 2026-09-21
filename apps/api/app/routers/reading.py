@@ -97,7 +97,10 @@ def get_reading(
         ann = reading.annotate(
             chapter["body"], level,
             merged_glosses,
-            {}, {},  # full_glosses / headwords（章节里没存）
+            # 由孤儿短文迁入的章节保留了 full_glosses / headwords，须透传才不丢
+            # 派生词覆盖；古腾堡章节无此字段（{}），行为不变
+            chapter.get("full_glosses") or {},
+            chapter.get("headwords") or {},
             chapter.get("terms") or {}, chapter.get("skip") or [],
             only_glosses=True,
         )
