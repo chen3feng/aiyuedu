@@ -5,6 +5,7 @@ import pytest
 
 from app.config import settings
 from app.services import gutenberg, gutenberg_import
+from app.services import collection_jobs
 from app.services import collections as collections_service
 
 
@@ -51,7 +52,7 @@ def test_import_creates_collection_and_triggers_analysis(isolated_collections, m
     monkeypatch.setattr(gutenberg, "fetch_book", lambda bid: _fake_book())
     monkeypatch.setattr(gutenberg, "split_chapters", lambda text: _fake_chapters())
     started: list[str] = []
-    monkeypatch.setattr(collections_service, "analyze_collection", lambda cid: started.append(cid))
+    monkeypatch.setattr(collection_jobs, "analyze_collection", lambda cid: started.append(cid))
 
     coll = gutenberg_import.import_from_gutenberg(1234)
 
@@ -72,7 +73,7 @@ def test_import_creates_collection_and_triggers_analysis(isolated_collections, m
 def test_import_duplicate_slug_gets_bookid_suffix(isolated_collections, monkeypatch) -> None:
     monkeypatch.setattr(gutenberg, "fetch_book", lambda bid: _fake_book())
     monkeypatch.setattr(gutenberg, "split_chapters", lambda text: _fake_chapters())
-    monkeypatch.setattr(collections_service, "analyze_collection", lambda cid: None)
+    monkeypatch.setattr(collection_jobs, "analyze_collection", lambda cid: None)
 
     first = gutenberg_import.import_from_gutenberg(1234)
     second = gutenberg_import.import_from_gutenberg(1234)

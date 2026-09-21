@@ -28,10 +28,11 @@ def import_from_gutenberg(book_id: int) -> dict:
 
     返回完整 collection dict。失败抛 RuntimeError。
     """
-    # 延迟导入：collections.analyze_collection 在该文件后部定义，
+    # analyze_collection 是全本批量任务，已拆到 collection_jobs
     # 且两模块存在双向引用，模块加载期不能互相 import
     from . import gutenberg
-    from .collections import _persist, analyze_collection, get_collection
+    from .collections import _persist, get_collection
+    from .collection_jobs import analyze_collection
 
     data = gutenberg.fetch_book(book_id)
     chapters = gutenberg.split_chapters(data["text"])
