@@ -42,7 +42,7 @@ function goSettings() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
 }
@@ -55,16 +55,16 @@ function goSettings() {
 .app-name {
   font-size: 64rpx;
   font-weight: 800;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .slogan {
   margin-top: 16rpx;
   font-size: 28rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 .start-btn {
   width: 100%;
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
   border-radius: 16rpx;
   font-size: 34rpx;
@@ -75,7 +75,7 @@ function goSettings() {
   width: 100%;
   margin-top: 24rpx;
   background: #fff;
-  color: #4f7cff;
+  color: var(--brand);
   border-radius: 16rpx;
   font-size: 34rpx;
   font-weight: 600;
@@ -83,6 +83,6 @@ function goSettings() {
 .settings-link {
   margin-top: 36rpx;
   font-size: 26rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
 }
 </style>

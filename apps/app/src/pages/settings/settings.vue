@@ -124,7 +124,7 @@ function saveVocab() {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
 }
@@ -136,7 +136,7 @@ function saveVocab() {
 }
 .section-title {
   font-size: 26rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   margin-bottom: 16rpx;
 }
 .option {
@@ -151,30 +151,30 @@ function saveVocab() {
 }
 .label {
   font-size: 30rpx;
-  color: #33405f;
+  color: var(--ink-2);
 }
 .option.active .label {
-  color: #4f7cff;
+  color: var(--brand);
   font-weight: 700;
 }
 .check {
   font-size: 34rpx;
-  color: #4f7cff;
+  color: var(--brand);
   font-weight: 700;
 }
 .vocab-input {
   width: 220rpx;
   text-align: right;
   font-size: 30rpx;
-  color: #33405f;
-  background: #f4f6fb;
+  color: var(--ink-2);
+  background: var(--bg);
   border-radius: 12rpx;
   padding: 8rpx 16rpx;
 }
 .hint {
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   line-height: 1.5;
   padding: 0 20rpx 12rpx;
 }

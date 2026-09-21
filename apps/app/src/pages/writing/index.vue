@@ -122,7 +122,7 @@ onShow(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6fb;
+  background: var(--bg);
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
 }
@@ -135,10 +135,10 @@ onShow(() => {
 .title {
   font-size: 38rpx;
   font-weight: 700;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .btn-primary {
-  background: #4f7cff;
+  background: var(--brand);
   color: #fff;
   font-size: 26rpx;
   padding: 12rpx 28rpx;
@@ -148,16 +148,16 @@ onShow(() => {
 .loading,
 .error {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 28rpx;
   padding: 80rpx 0;
 }
 .error {
-  color: #fa5151;
+  color: var(--danger);
 }
 .empty {
   text-align: center;
-  color: #8a94ad;
+  color: var(--ink-4);
   padding: 120rpx 40rpx;
   display: flex;
   flex-direction: column;
@@ -169,7 +169,7 @@ onShow(() => {
   font-size: 80rpx;
 }
 .empty-hint {
-  color: #8a94ad;
+  color: var(--ink-4);
   font-size: 24rpx;
 }
 .cards {
@@ -192,7 +192,7 @@ onShow(() => {
 .title-text {
   font-size: 30rpx;
   font-weight: 600;
-  color: #1f2d50;
+  color: var(--ink);
 }
 .status {
   font-size: 22rpx;
@@ -201,26 +201,26 @@ onShow(() => {
   flex-shrink: 0;
 }
 .status.ok {
-  color: #07c160;
+  color: var(--success);
   background: #e7faf0;
 }
 .status.err {
-  color: #fa5151;
-  background: #fdecec;
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 .card-body {
   margin-bottom: 16rpx;
 }
 .snippet {
   font-size: 26rpx;
-  color: #6a7591;
+  color: var(--ink-3);
   line-height: 1.5;
 }
 .meta {
   display: flex;
   gap: 12rpx;
   font-size: 24rpx;
-  color: #8a94ad;
+  color: var(--ink-4);
   margin-bottom: 16rpx;
 }
 .actions {
@@ -230,8 +230,8 @@ onShow(() => {
   padding-top: 16rpx;
 }
 .btn-link {
-  background: #eef2fb;
-  color: #4f7cff;
+  background: var(--soft);
+  color: var(--brand);
   font-size: 24rpx;
   padding: 8rpx 24rpx;
   border-radius: 8rpx;
@@ -239,8 +239,8 @@ onShow(() => {
   flex: 1;
 }
 .btn-danger {
-  background: #fdecec;
-  color: #fa5151;
+  background: var(--danger-bg);
+  color: var(--danger);
   font-size: 24rpx;
   padding: 8rpx 24rpx;
   border-radius: 8rpx;
