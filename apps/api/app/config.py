@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
+    # 后台管理（admin app，8001）口令：用户名固定 admin。
+    # 部署/局域网使用务必通过环境变量 ADMIN_PASSWORD 覆盖默认值。
+    admin_password: str = "changeme"
 
 
 settings = Settings()
