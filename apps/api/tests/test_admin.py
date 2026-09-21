@@ -13,7 +13,7 @@ import json
 
 import pytest
 
-from app.services import admin, reading, topics
+from app.services import admin, ai, reading, topics
 from tests.test_ai import _Resp
 
 
@@ -112,10 +112,10 @@ def test_analyze_dedupes_repeated_multiword(monkeypatch):
 # ---------- AI 语境义 ----------
 
 def test_parse_json_strips_fences_and_noise():
-    assert admin._parse_json('```json\n{"a": "b"}\n```') == {"a": "b"}
-    assert admin._parse_json('前缀 {"a": "b"} 后缀') == {"a": "b"}
-    assert admin._parse_json("不是 json") == {}
-    assert admin._parse_json("") == {}
+    assert ai.parse_json_object('```json\n{"a": "b"}\n```') == {"a": "b"}
+    assert ai.parse_json_object('前缀 {"a": "b"} 后缀') == {"a": "b"}
+    assert (ai.parse_json_object("不是 json") or {}) == {}
+    assert (ai.parse_json_object("") or {}) == {}
 
 
 def test_generate_article_happy_path(monkeypatch):

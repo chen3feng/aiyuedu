@@ -21,7 +21,7 @@ from pathlib import Path
 
 from ..config import settings
 from . import ecdict, mwe
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 # 领域标签（[医][计] 等）对少儿不友好，full_gloss 里剥掉
 _BRACKET = re.compile(r"\[[^\]]*\]")
@@ -203,8 +203,8 @@ def _load_readings() -> list:
     path = Path(settings.readings_path)
     mtime = path.stat().st_mtime
     if _readings_cache["data"] is None or _readings_cache["mtime"] != mtime:
-        with open(path, encoding="utf-8") as f:
-            _readings_cache["data"] = json.load(f)
+        data = load_json_or(path, [])
+        _readings_cache["data"] = data if isinstance(data, list) else []
         _readings_cache["mtime"] = mtime
     return _readings_cache["data"]
 

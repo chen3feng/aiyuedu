@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -41,3 +42,16 @@ def atomic_write_json(path: str | Path, data: Any, *, indent: int = 2) -> None:
         except OSError:
             pass
         raise
+
+
+def load_json_or(path: str | Path, default: Any | Callable[[], Any]) -> Any:
+    """读 JSON；文件不存在 / 损坏 / OSError 时返回默认值。
+
+    ``default`` 可以是值，也可以是零参工厂（避免共享同一个可变默认）。
+    替代各模块里重复了 8 次的 ``try: json.loads(read_text) except: return {}``。
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return default() if callable(default) else default

@@ -3,13 +3,11 @@
 后台管理系统增删主题、前端阅读端按主题过滤/展示中文名，都读这里。
 小文件、每次读盘（无缓存），跨进程（主 API 与 admin app）改动即时可见。
 """
-import json
 import re
 import threading
-from pathlib import Path
 
 from ..config import settings
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 _KEY_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
@@ -18,14 +16,10 @@ _lock = threading.Lock()
 
 def _read() -> list[dict]:
     """读 topics.json → [{key, label_zh}]；缺失/损坏返回空。"""
-    path = Path(settings.topics_path)
-    if not path.exists():
+    data = load_json_or(settings.topics_path, [])
+    if not isinstance(data, list):
         return []
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return [t for t in data if isinstance(t, dict) and t.get("key")]
-    except (json.JSONDecodeError, OSError):
-        return []
+    return [t for t in data if isinstance(t, dict) and t.get("key")]
 
 
 def _write(topics: list[dict]) -> None:

@@ -6,13 +6,13 @@
 `chat()` 通过默认提供者发起一次 OpenAI 兼容的 chat completion 请求。
 """
 import json
+import re
 import threading
-from pathlib import Path
 
 import httpx
 
 from ..config import settings
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 _lock = threading.Lock()
 
@@ -26,12 +26,8 @@ def _read() -> dict:
     """读 ai.json → {providers: [{name, base_url, api_key, model}], default}。
 
     缺失/损坏返回空配置。"""
-    path = Path(settings.ai_config_path)
-    if not path.exists():
-        return _empty()
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
+    data = load_json_or(settings.ai_config_path, None)
+    if not isinstance(data, dict):
         return _empty()
     providers = [
         p for p in (data.get("providers") or [])
@@ -251,3 +247,32 @@ def chat(
     if not content:
         raise RuntimeError("AI 返回空内容")
     return content
+
+
+# ---------- AI 响应解析 ----------
+
+def parse_json_object(text: str) -> dict | None:
+    """从 AI 回复文本中提取 JSON 对象；无法解析返回 None。
+
+    兼容：
+    - `````json ... ````` markdown 围栏（带不带语言名都剥）；
+    - JSON 前后有解释性文字（取首个 ``{`` 到末个 ``}``）。
+
+    admin / writing / collections 三处此前各有一份拷贝，统一到这里。
+    """
+    if not text:
+        return None
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[A-Za-z0-9_-]*[ \t]*\r?\n?", "", text)
+        text = text.rstrip()
+        if text.endswith("```"):
+            text = text[: -3].rstrip()
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end <= start:
+        return None
+    try:
+        data = json.loads(text[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    return data if isinstance(data, dict) else None

@@ -11,7 +11,6 @@ API 不暴露 chapter 子概念，统一以 reading 视图呈现
 """
 from __future__ import annotations
 
-import json
 import re
 import threading
 import time
@@ -19,7 +18,7 @@ import uuid
 from pathlib import Path
 
 from . import ai
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 from ..config import settings
 
 _lock = threading.Lock()
@@ -42,11 +41,8 @@ def list_collections() -> list[dict]:
     """
     idx_path = Path(settings.collections_index)
     if idx_path.exists():
-        try:
-            raw = json.loads(idx_path.read_text(encoding="utf-8")) or []
-        except (json.JSONDecodeError, OSError):
-            raw = None
-        if raw is not None:
+        raw = load_json_or(idx_path, None)
+        if isinstance(raw, list):
             d = Path(settings.collections_dir)
             live = [e for e in raw if (d / f"{e.get('id', '')}.json").exists()]
             if len(live) != len(raw):
@@ -66,9 +62,8 @@ def _scan_list() -> list[dict]:
     for p in sorted(d.glob("*.json")):
         if p.name == "_index.json":
             continue
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        data = load_json_or(p, None)
+        if not isinstance(data, dict):
             continue
         items.append({
             "id": data.get("id", p.stem),
@@ -89,10 +84,8 @@ def get_collection(id: str) -> dict | None:
     p = _collection_path(id)
     if not p.exists():
         return None
-    try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return None
+    data = load_json_or(p, None)
+    return data if isinstance(data, dict) else None
 
 
 def get_chapter(collection_id: str, chapter_index: int) -> tuple[dict, dict] | None:
@@ -114,9 +107,8 @@ def get_chapter_for_reading(reading_id: str) -> tuple[dict, dict] | None:
     for p in sorted(d.glob("*.json")):
         if p.name == "_index.json":
             continue
-        try:
-            coll = json.loads(p.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        coll = load_json_or(p, None)
+        if not isinstance(coll, dict):
             continue
         for ch in coll.get("chapters") or []:
             if ch.get("id") == reading_id:
@@ -394,19 +386,8 @@ def _ai_json_map(prompt: str, *, temperature: float = 0.2) -> dict:
     raw = content[:200]
     if content:
         snippet = content[:120].replace("\n", " ")
-        try:
-            parsed = json.loads(content)
-        except (json.JSONDecodeError, TypeError):
-            # 容错：尝试剥离 markdown 围栏
-            stripped = content.strip()
-            if stripped.startswith("```"):
-                stripped = _re_html.sub(r"^```\w*\n?", "", stripped)
-                stripped = stripped.rstrip("`").rstrip()
-            try:
-                parsed = json.loads(stripped)
-            except (json.JSONDecodeError, TypeError):
-                parsed = None
-        if isinstance(parsed, dict) and parsed:
+        parsed = ai.parse_json_object(content)
+        if parsed:
             ai_map = parsed
             ai_used = True
         else:

@@ -9,16 +9,14 @@ AI 失败按 ai_glosses 的 {ai_used, reason, raw} 模式优雅降级。
 from __future__ import annotations
 
 import itertools
-import json
 import re
 import threading
 import time
 import uuid
-from pathlib import Path
 
 from ..config import settings
 from . import ai, prompts
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 _lock = threading.Lock()
 
@@ -41,13 +39,8 @@ def count_words(body: str) -> int:
 # ---------- JSON 读写 ----------
 
 def _read() -> dict:
-    path = Path(settings.writings_path)
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {}
+    data = load_json_or(settings.writings_path, {})
+    return data if isinstance(data, dict) else {}
 
 
 def _write(data: dict) -> None:
@@ -125,24 +118,8 @@ def _build_prompt(prompt_meta: dict | None, target_words: int | None, original: 
 
 
 def _parse_report(text: str) -> dict | None:
-    """解析 AI 返回的批改 JSON。失败返回 None。"""
-    if not text:
-        return None
-    text = text.strip()
-    if text.startswith("```"):
-        parts = text.split("```")
-        if len(parts) >= 3:
-            text = parts[1]
-        text = text.removeprefix("json").lstrip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end <= start:
-        return None
-    try:
-        data = json.loads(text[start : end + 1])
-    except json.JSONDecodeError:
-        return None
-    return data if isinstance(data, dict) else None
+    """解析 AI 返回的批改 JSON；委托 ai.parse_json_object。"""
+    return ai.parse_json_object(text)
 
 
 def submit_essay(

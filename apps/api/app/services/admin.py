@@ -3,8 +3,6 @@
 只做「编排 + 校验」，底层落库与词频/注释逻辑复用 services/reading.py 与 topics.py，
 AI 调用复用 services/ai.py。
 """
-import json
-
 from ..services import ai, ecdict, mwe, reading, topics
 
 
@@ -189,28 +187,6 @@ def list_articles() -> list[dict]:
     return items
 
 
-def _parse_json(text: str) -> dict:
-    """从 AI 回复文本中提取 JSON 对象；失败返回空 dict。"""
-    if not text:
-        return {}
-    text = text.strip()
-    # 剥掉 ```json ... ``` 围栏
-    if text.startswith("```"):
-        parts = text.split("```")
-        if len(parts) >= 3:
-            text = parts[1]
-        text = text.removeprefix("json").lstrip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end <= start:
-        return {}
-    try:
-        data = json.loads(text[start : end + 1])
-    except json.JSONDecodeError:
-        return {}
-    return data if isinstance(data, dict) else {}
-
-
 def generate_article(
     outline: str,
     extra_requirements: str = "",
@@ -283,7 +259,7 @@ def generate_article(
     if not content:
         result["reason"] = "AI 返回空内容"
         return result
-    parsed = _parse_json(content)
+    parsed = ai.parse_json_object(content)
     if not parsed:
         snippet = content[:120].replace("\n", " ")
         result["reason"] = f"AI 响应无法解析为 JSON（开头: {snippet!r}）"
@@ -360,7 +336,7 @@ def ai_glosses(
         raw = content[:200]  # 截断，避免大响应塞回前端
         if content:
             raw_snippet = content[:120].replace("\n", " ")
-            ai_map = _parse_json(content)
+            ai_map = ai.parse_json_object(content) or {}
             if ai_map:
                 ai_used = True
             else:
