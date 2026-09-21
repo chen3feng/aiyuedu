@@ -297,12 +297,43 @@ def _strip_table_of_contents(text: str) -> str:
     return "\n".join(lines[cut_at:])
 
 
+# 「CHAPTER I.」/「Chapter 1」式的裸编号标题（后面可能另起一行跟副标题）
+_NUMBERED_ONLY_RE = re.compile(
+    r"^(?:chapter|chap\.?|cap\.?)\s+(?:[ivxlcdm]+|\d{1,3})[.\]]?$", re.IGNORECASE
+)
+
+
+def _looks_like_subtitle(line: str) -> bool:
+    """启发式判断一行是否为章节副标题（而非正文首句）。
+
+    规则：≤10 词；首词大写；所有 ≥5 字母的词都首字母大写（书名式大小写，
+    允许 the/from/a/and/in 这类短虚词小写）；大写词占比 ≥ 一半；不含逗号/分号。
+    如 "Down the Rabbit-Hole"、"Advice from a Caterpillar"、"Who Stole the Tarts?"。
+    """
+    s = line.strip()
+    words = re.findall(r"[A-Za-z’'-]+", s)
+    if not 1 <= len(words) <= 10:
+        return False
+    if not words[0][0].isupper():
+        return False
+    if any(c in s for c in (",", ";", "—", "--")):
+        return False
+    if s.endswith("."):  # 副标题不以句号结尾（正文首句才是；问号允许：Who Stole the Tarts?）
+        return False
+    caps = sum(1 for w in words if w[0].isupper())
+    long_lower = any(len(w) >= 5 and not w[0].isupper() for w in words)
+    return not long_lower and caps / len(words) >= 0.5
+
+
 def _hard_split(text: str) -> list[Chapter]:
     """按章节标题行硬切。
 
     形式1：标题独占一行（"CHAPTER I." / "Sara" / "第1章"）
-    形式2：编号 + 章节名两行（"1" / "Sara"）—— 把两行合并成章节标题 "1 Sara"
-           允许中间夹空行。
+    形式2：编号 + 章节名两行——把两行合并成章节标题：
+           - 裸数字编号（"1" / "Sara"）→ "1 Sara"，允许中间夹空行
+           - 编号式标题（"CHAPTER I." / "Down the Rabbit-Hole"）→
+             "CHAPTER I. Down the Rabbit-Hole"；副标题须通过 _looks_like_subtitle，
+             且与下方正文之间有空行相隔（防止误吞正文首句）
     """
     lines = text.split("\n")
     chapters: list[list[str]] = []
@@ -311,12 +342,32 @@ def _hard_split(text: str) -> list[Chapter]:
         line = lines[i]
         if _is_chapter_heading(line):
             title = line.strip()
-            # 形式2：当前行是裸数字，找下一行非空内容作为章节名
+            # 形式2a：当前行是裸数字，找下一行非空内容作为章节名
             if re.match(r"^\s*\d{1,3}\s*$", title):
                 j = i + 1
                 while j < len(lines) and not lines[j].strip():
                     j += 1
                 if j < len(lines) and not _is_chapter_heading(lines[j]):
+                    nxt = lines[j].strip()
+                    title = f"{title} {nxt}"
+                    i = j + 1
+                    chapters.append([title])
+                    continue
+            # 形式2b：「CHAPTER I.」式裸编号标题，下一行（允许隔空行）是副标题
+            elif _NUMBERED_ONLY_RE.match(title):
+                j = i + 1
+                while j < len(lines) and not lines[j].strip():
+                    j += 1
+                # 副标题之后须至少有一个空行与正文相隔
+                k = j + 1
+                while k < len(lines) and not lines[k].strip():
+                    k += 1
+                if (
+                    j < len(lines)
+                    and not _is_chapter_heading(lines[j])
+                    and _looks_like_subtitle(lines[j])
+                    and k > j + 1  # 中间确实夹了空行
+                ):
                     nxt = lines[j].strip()
                     title = f"{title} {nxt}"
                     i = j + 1

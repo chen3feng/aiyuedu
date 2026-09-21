@@ -99,6 +99,65 @@ def test_split_chapters_chapter_arabic_style():
     assert "Body two." in chapters[0].body
 
 
+def test_split_chapters_chapter_roman_with_subtitle():
+    """「CHAPTER I.」+ 次行副标题（书名式大小写 + 空行与正文相隔）→ 合并为标题。"""
+    long_body = "word " * 900
+    text = (
+        "CHAPTER I.\n"
+        "Down the Rabbit-Hole\n"
+        "\n"
+        "Alice was beginning to get very tired.\n"
+        f"{long_body}\n"
+        "\n"
+        "CHAPTER II.\n"
+        "The Pool of Tears\n"
+        "\n"
+        f"{long_body}\n"
+    )
+    chapters = gutenberg.split_chapters(text)
+    assert len(chapters) == 2
+    assert chapters[0].title == "CHAPTER I. Down the Rabbit-Hole"
+    assert "Down the Rabbit-Hole" not in chapters[0].body
+    assert "Alice was beginning" in chapters[0].body
+    assert chapters[1].title == "CHAPTER II. The Pool of Tears"
+
+
+def test_split_chapters_subtitle_with_question_mark():
+    """副标题以问号结尾（Who Stole the Tarts?）仍要合并。"""
+    long_body = "word " * 900
+    text = f"CHAPTER XI.\nWho Stole the Tarts?\n\n{long_body}\n"
+    chapters = gutenberg.split_chapters(text)
+    assert chapters[0].title == "CHAPTER XI. Who Stole the Tarts?"
+
+
+def test_split_chapters_heading_body_not_treated_as_subtitle():
+    """P&P 样式：「CHAPTER I.」直接跟正文首句（长句/句号结尾/无空行相隔）→ 不合并。"""
+    long_body = "word " * 900
+    text = (
+        "CHAPTER I.\n"
+        "It is a truth universally acknowledged, that a single man in possession "
+        "of a good fortune must be in want of a wife.\n"
+        f"{long_body}\n"
+        "\n"
+        "CHAPTER II.\n"
+        "Mr. Bennet was among the earliest.\n"
+        f"{long_body}\n"
+    )
+    chapters = gutenberg.split_chapters(text)
+    assert len(chapters) == 2
+    assert chapters[0].title == "CHAPTER I."
+    assert "It is a truth" in chapters[0].body
+
+
+def test_split_chapters_short_first_sentence_not_subtitle():
+    """正文首句很短（Body one.）且带句号：即使后面有空行也不升格为副标题。"""
+    long_body = "word " * 900
+    text = f"Chapter 1\nBody one.\n\n{long_body}\n"
+    chapters = gutenberg.split_chapters(text)
+    assert chapters[0].title == "Chapter 1"
+    assert "Body one." in chapters[0].body
+
+
 def test_split_chapters_numbered_with_separate_title():
     """Gutenberg 常见格式：编号 + 标题分两行（'1' / 'Sara'）"""
     # 每章 900 词（避免被短章合并吞掉）
