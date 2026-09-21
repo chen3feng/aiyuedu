@@ -38,7 +38,7 @@ jobs:
             local pr="$1" sha
             sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid' 2>/dev/null) || { echo ""; return; }
             gh api "repos/$GH_REPO/commits/$sha/check-runs" --jq '
-              .check_runs[] | {name: .name, bucket: (if .conclusion == null then "pending" else .conclusion end)}
+              [.check_runs[] | {name: .name, bucket: (if .conclusion == null then "pending" else .conclusion end)}]
             ' 2>/dev/null
           }
 
@@ -66,7 +66,10 @@ jobs:
               else
                 echo "$json" | jq -r '.[] | "  \(.name): \(.bucket)"'
                 # 排除本 worker 自身（合并前永远 pending，等它等于死锁）
+                # 一个检查都没注册时（CI 尚未启动）同样按 pending，严禁空列表当全绿
+                total=$(echo "$json" | jq '[.[] | select(.name != "auto-merge")] | length')
                 pending=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket == "pending")] | length')
+                [ "$total" -eq 0 ] && pending=1
                 failed=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket | test("fail|cancelled|timed_out|action_required"))] | length')
               fi
               if [ "$failed" -gt 0 ]; then
