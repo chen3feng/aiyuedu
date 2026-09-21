@@ -2,13 +2,13 @@
   <!-- 章节导航：上一章 / 位置 / 下一章（仅 collection 章节显示） -->
   <view v-if="detail?.collection && detail.chapters" class="chapter-nav">
     <button class="nav-btn" :disabled="!prev" @click="goPrev">
-      ← {{ prev ? t("reading.reader.prevChapter", { title: prev.title || "" }) : t("reading.reader.firstChapter") }}
+      ← {{ prev ? t("reading.reader.prevChapter", { title: prev.title_zh || prev.title || "" }) : t("reading.reader.firstChapter") }}
     </button>
     <text class="chapter-pos">
       {{ t("reading.reader.chapterPos", { n: detail.chapter_index ?? 1, total: detail.collection.total_chapters }) }}
     </text>
     <button class="nav-btn" :disabled="!next" @click="goNext">
-      {{ next ? t("reading.reader.nextChapter", { title: next.title || "" }) : t("reading.reader.lastChapter") }} →
+      {{ next ? t("reading.reader.nextChapter", { title: next.title_zh || next.title || "" }) : t("reading.reader.lastChapter") }} →
     </button>
   </view>
 </template>

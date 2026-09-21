@@ -97,6 +97,9 @@ export default {
       chapterPos: "Ch. {n} / {total}",
       collections: "Books",
     },
+    detail: {
+      startFirst: "Start from Chapter 1",
+    },
   },
 
   settings: {

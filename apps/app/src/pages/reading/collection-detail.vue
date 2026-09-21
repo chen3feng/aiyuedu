@@ -22,6 +22,8 @@
         </view>
       </view>
 
+      <button class="start-btn" @click="startFirst">{{ t("reading.detail.startFirst") }}</button>
+
       <!-- 章节列表 -->
       <ChapterList :chapters="detail.chapters" @open="openChapter" />
 
@@ -64,6 +66,11 @@ async function fetchDetail(id: string) {
 
 function openChapter(id: string) {
   uni.navigateTo({ url: `/pages/reading/reader?id=${id}` });
+}
+
+function startFirst() {
+  const first = detail.value?.chapters[0];
+  if (first) openChapter(first.id);
 }
 
 onLoad((query) => {
@@ -137,5 +144,18 @@ onShow(() => {
   background: var(--bg);
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
+}
+
+/* 「从第一章读起」主行动按钮 */
+.start-btn {
+  width: 100%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 22rpx 0;
+  border-radius: 999rpx;
+  border: none;
+  margin-bottom: 20rpx;
 }
 </style>

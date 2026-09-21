@@ -5,7 +5,7 @@
       {{ detail.collection.title_zh || detail.collection.title }}
     </text>
     <text class="crumb-sep">›</text>
-    <text class="crumb-current">{{ detail.chapter_title || detail.title }}</text>
+    <text class="crumb-current">{{ detail.title_zh || detail.chapter_title || detail.title }}</text>
   </view>
 </template>
 

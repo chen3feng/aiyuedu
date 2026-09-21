@@ -97,6 +97,9 @@ export default {
       chapterPos: "第 {n} / {total} 章",
       collections: "书籍",
     },
+    detail: {
+      startFirst: "从第一章读起",
+    },
   },
 
   settings: {
