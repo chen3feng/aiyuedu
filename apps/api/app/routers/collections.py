@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from ..services import collections
+from ..services import chapter_ai, collections
 
 router = APIRouter(prefix="/collections", tags=["collections"])
 
@@ -130,7 +130,7 @@ def calibrate_chapter(collection_id: str, chapter_index: int, payload: Calibrate
         raise HTTPException(status_code=404, detail="作品集或章节不存在")
     _coll, ch = match
     p = payload or CalibrateIn()
-    return collections.ai_calibrate_vocab(
+    return chapter_ai.ai_calibrate_vocab(
         p.body if p.body is not None else (ch.get("body") or ""),
         p.target_level if p.target_level is not None else (ch.get("target_level") or 3000),
         p.glosses if p.glosses is not None else (ch.get("glosses") or {}),
@@ -147,7 +147,7 @@ def analyze_chapter(collection_id: str, chapter_index: int,
     返回 {"chapter", "items_count", "ai_used", "reason", "raw"}；不存在返回 404。
     """
     force = bool(payload and payload.force)
-    result = collections.analyze_chapter(collection_id, chapter_index, force=force)
+    result = chapter_ai.analyze_chapter(collection_id, chapter_index, force=force)
     if result is None:
         raise HTTPException(status_code=404, detail="作品集或章节不存在")
     return result
