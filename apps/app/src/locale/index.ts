@@ -11,12 +11,12 @@ export type LangSetting = "auto" | Lang;
 const STORAGE_KEY = "ui_lang";
 
 // 系统语言 -> 支持的语言（非中文一律回退英文）
-export function systemLang(): Lang {
+function systemLang(): Lang {
   const lang = (uni.getSystemInfoSync().language || "zh-CN").toLowerCase();
   return lang.startsWith("zh") ? "zh-CN" : "en";
 }
 
-export function resolveLang(setting: LangSetting): Lang {
+function resolveLang(setting: LangSetting): Lang {
   return setting === "auto" ? systemLang() : setting;
 }
 

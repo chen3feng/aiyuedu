@@ -8,12 +8,12 @@ const VOICE_BY_LANG: Record<string, string> = {
   "zh-CN": "zh-CN-XiaoxiaoNeural",
 };
 
-export const DEFAULT_VOICE = VOICE_BY_LANG["en-US"];
+const DEFAULT_VOICE = VOICE_BY_LANG["en-US"];
 
 // 稍慢语速（-10% ≈ 0.9x），贴合中小学生听力
-export const DEFAULT_RATE = "-10%";
+const DEFAULT_RATE = "-10%";
 
-export function voiceForLang(lang: string): string {
+function voiceForLang(lang: string): string {
   return VOICE_BY_LANG[lang] || DEFAULT_VOICE;
 }
 

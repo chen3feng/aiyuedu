@@ -378,7 +378,7 @@ def test_update_and_delete_article(isolated_data):
     assert updated is not None
     assert updated["title"] == "Changed"
     assert admin.delete_article(article["id"]) is True
-    assert admin.get_article(article["id"]) is None
+    assert reading.get_reading(article["id"]) is None
     assert admin.delete_article(article["id"]) is False
 
 

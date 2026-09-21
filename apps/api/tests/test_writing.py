@@ -29,18 +29,7 @@ def isolated_writings(tmp_path, monkeypatch):
     return path
 
 
-# ---------- 句子 / 词数 ----------
-
-def test_split_sentences_basic():
-    s = writing.split_sentences("The fox jumped. It ran fast! Did it? 9.58 seconds.")
-    assert s == ["The fox jumped.", "It ran fast!", "Did it?", "9.58 seconds."]
-
-
-def test_split_sentences_empty():
-    assert writing.split_sentences("") == []
-    assert writing.split_sentences("    ") == []
-    assert writing.split_sentences("\n\n\n") == []
-
+# ---------- 词数 ----------
 
 def test_count_words_simple():
     assert writing.count_words("I walk in the fields.") == 5

@@ -27,16 +27,10 @@ _seq = itertools.count()
 
 
 # 与 services/reading.py 同样的句子拆分 / 词 token 正则
-_SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _TOKEN_RE = re.compile(
     r"([0-9]+(?:\.[0-9]+)?(?:st|nd|rd|th)?|[A-Za-z]+(?:'[A-Za-z]+)*)"
     r"|([^A-Za-z0-9]+)"
 )
-
-
-def split_sentences(body: str) -> list[str]:
-    """按句末标点（.!? + 空白）拆句；保留原标点；过滤空白句。"""
-    return [s.strip() for s in _SENT_SPLIT.split(body.strip()) if s.strip()]
 
 
 def count_words(body: str) -> int:

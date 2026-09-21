@@ -60,7 +60,7 @@ def _validate(name: str, base_url: str, model: str) -> tuple[str, str, str]:
     return name, base_url, model
 
 
-def mask_api_key(key: str) -> str:
+def _mask_api_key(key: str) -> str:
     """把 key 变成只露后 4 位的展示串：``sk-...ab3f`` → ``****ab3f``。
 
     ≤4 位的短 key 全掩。后台接口只能拿到这个，明文 key 不出后端进程。
@@ -82,7 +82,7 @@ def list_providers() -> list[dict]:
     for p in _read()["providers"]:
         item = dict(p)
         item["has_key"] = bool(p.get("api_key"))
-        item["api_key"] = mask_api_key(p.get("api_key", ""))
+        item["api_key"] = _mask_api_key(p.get("api_key", ""))
         result.append(item)
     return result
 
