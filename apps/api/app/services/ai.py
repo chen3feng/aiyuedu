@@ -60,9 +60,31 @@ def _validate(name: str, base_url: str, model: str) -> tuple[str, str, str]:
     return name, base_url, model
 
 
+def mask_api_key(key: str) -> str:
+    """把 key 变成只露后 4 位的展示串：``sk-...ab3f`` → ``****ab3f``。
+
+    ≤4 位的短 key 全掩。后台接口只能拿到这个，明文 key 不出后端进程。
+    """
+    key = (key or "").strip()
+    if not key:
+        return ""
+    if len(key) <= 4:
+        return "****"
+    return "****" + key[-4:]
+
+
 def list_providers() -> list[dict]:
-    """全部提供者（含完整 api_key，供后台编辑回填）。"""
-    return _read()["providers"]
+    """全部提供者，api_key 字段为**脱敏值**（仅末 4 位），另带 has_key。
+
+    供后台列表/表单展示；需要明文 key 只能在进程内用 get_provider 取。
+    """
+    result = []
+    for p in _read()["providers"]:
+        item = dict(p)
+        item["has_key"] = bool(p.get("api_key"))
+        item["api_key"] = mask_api_key(p.get("api_key", ""))
+        result.append(item)
+    return result
 
 
 def get_provider(name: str) -> dict | None:
@@ -94,8 +116,10 @@ def update_provider(
     api_key: str | None = None,
     model: str | None = None,
 ) -> dict:
-    """更新提供者（字段为 None 时保留原值）；支持重命名（同步改 default 引用）。
+    """更新提供者；支持重命名（同步改 default 引用）。
 
+    字段为 None 时保留原值；api_key 额外约定「空串也保留原值」——
+    编辑表单留空即不修改 key，避免把脱敏占位串写回覆盖真实 key。
     不存在抛 ValueError。返回更新后的提供者。"""
     with _lock:
         cfg = _read()
@@ -123,7 +147,7 @@ def update_provider(
                 p["name"] = target
                 if base_url is not None:
                     p["base_url"] = base_url.strip()
-                if api_key is not None:
+                if api_key and api_key.strip():
                     p["api_key"] = api_key.strip()
                 if model is not None:
                     p["model"] = model.strip()

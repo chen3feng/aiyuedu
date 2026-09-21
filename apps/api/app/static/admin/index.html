@@ -139,12 +139,6 @@ function esc(s) {
     .replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function maskKey(k) {
-  if (!k) return "";
-  if (k.length <= 8) return "****";
-  return k.slice(0, 4) + "****" + k.slice(-4);
-}
-
 function toast(msg, isErr) {
   const t = $("toast");
   t.textContent = msg;
@@ -499,7 +493,9 @@ function startAddProvider() {
 function startEditProvider(name) {
   const p = state.ai.providers.find((x) => x.name === name);
   state.ai.editing = name;
-  state.ai.form = { ...p };
+  // 后端只返回脱敏 key：表单 key 留空表示「保持原 key 不变」，
+  // 绝不能把脱敏串回填进输入框，否则保存会覆盖真实 key
+  state.ai.form = { ...p, api_key: "" };
   renderAi();
 }
 function cancelAiEdit() { state.ai.editing = null; state.ai.form = null; renderAi(); }
@@ -514,7 +510,12 @@ async function saveProvider() {
     if (state.ai.editing === "new") {
       await api("/ai/providers", "POST", f);
     } else {
-      const body = { base_url: f.base_url, api_key: f.api_key, model: f.model };
+      // key 留空 → null（后端 None/空串都视为不修改）；填了才发
+      const body = {
+        base_url: f.base_url,
+        api_key: f.api_key.trim() || null,
+        model: f.model,
+      };
       if (f.name.trim() !== state.ai.editing) body.new_name = f.name.trim();
       await api("/ai/providers/" + encodeURIComponent(state.ai.editing), "PUT", body);
     }
@@ -1075,7 +1076,7 @@ async function renderAi() {
               ${p.name === state.ai.default ? '<span class="tag">默认</span>' : ""}
               <span class="muted">${esc(p.model)}</span></div>
             <div class="muted">${esc(p.base_url)} · ${
-              p.api_key ? `<code>${esc(maskKey(p.api_key))}</code>` : "无 key"}</div>
+              p.has_key ? `<code>${esc(p.api_key)}</code>` : "无 key"}</div>
           </div>
           ${p.name !== state.ai.default
             ? `<button class="small" onclick="setDefaultProvider('${esc(p.name)}')">设为默认</button>`
@@ -1123,7 +1124,12 @@ function renderAiForm() {
       <div class="field"><label>url（OpenAI 兼容端点，含 /v1）</label>
         <input type="text" value="${esc(f.base_url)}" oninput="setAiField('base_url',this.value)" placeholder="https://api.deepseek.com/v1"></div>
       <div class="field"><label>API key（可选）</label>
-        <input type="password" value="${esc(f.api_key)}" oninput="setAiField('api_key',this.value)" placeholder="sk-..."></div>
+        <input type="password" value="${esc(f.api_key)}" oninput="setAiField('api_key',this.value)"
+          placeholder="${state.ai.editing === "new"
+            ? "sk-..."
+            : (state.ai.providers.find((x) => x.name === state.ai.editing)?.has_key
+                ? "留空 = 保持原 key（当前 " + state.ai.providers.find((x) => x.name === state.ai.editing).api_key + "）"
+                : "sk-...")}"></div>
       <div class="field"><label>模型名</label>
         <input type="text" value="${esc(f.model)}" oninput="setAiField('model',this.value)" placeholder="deepseek-chat"></div>
       <div class="row" style="gap:12px">
