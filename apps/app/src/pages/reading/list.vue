@@ -12,8 +12,8 @@
       </view>
     </view>
 
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
+    <StateView v-if="loading" type="loading" :message="t('common.loading')" />
+    <StateView v-else-if="error" type="error" :message="error" />
     <view v-else class="cards">
       <view
         v-for="r in items"
@@ -56,7 +56,7 @@
           </view>
         </template>
       </view>
-      <view v-if="!items.length" class="empty">{{ t("reading.list.empty") }}</view>
+      <StateView v-if="!items.length" type="empty" :message="t('reading.list.empty')" />
     </view>
   </view>
 </template>
@@ -66,6 +66,7 @@ import { ref } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
+import StateView from "../../components/StateView.vue";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
 
@@ -169,17 +170,6 @@ function open(r: ReadingSummary) {
   background: var(--brand);
   color: #fff;
   font-weight: 600;
-}
-.loading,
-.error,
-.empty {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 28rpx;
-  padding: 80rpx 0;
-}
-.error {
-  color: var(--danger);
 }
 .cards {
   display: flex;

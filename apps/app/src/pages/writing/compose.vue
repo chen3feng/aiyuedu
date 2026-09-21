@@ -3,7 +3,7 @@
     <!-- 选题页（pick=1） -->
     <view v-if="phase === 'pick'" class="phase">
       <text class="title">{{ t("writing.pickPrompt") }}</text>
-      <view v-if="loadingPrompts" class="loading">{{ t("common.loading") }}</view>
+      <StateView v-if="loadingPrompts" type="loading" class="f26" :message="t('common.loading')" />
       <view v-else class="cards">
         <view v-for="p in prompts" :key="p.key" class="card" @click="onPick(p)">
           <text class="prompt-title">{{ promptTitle(p) }}</text>
@@ -12,7 +12,7 @@
             <text class="meta-item">{{ t("writing.target", { n: p.target_words }) }}</text>
           </view>
         </view>
-        <view v-if="!prompts.length" class="empty">{{ t("common.loading") }}</view>
+        <StateView v-if="!prompts.length" type="empty" class="pad60" :message="t('common.loading')" />
       </view>
       <view class="prompt-free" @click="onPick(null)">
         <text class="free-title">自由写作</text>
@@ -59,7 +59,7 @@
           <text>{{ elapsedLabel }}</text>
         </view>
       </view>
-      <view v-if="error" class="error">{{ error }}</view>
+      <StateView v-if="error" type="error" class="mt16" :message="error" />
     </view>
   </view>
 </template>
@@ -69,6 +69,7 @@ import { ref, computed, onBeforeUnmount } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listPrompts, submitEssay } from "../../api/writing";
+import StateView from "../../components/StateView.vue";
 import type { Prompt } from "../../api/writing";
 
 const { t, locale } = useI18n();
@@ -262,18 +263,6 @@ onBeforeUnmount(() => {
   color: var(--ink);
   margin-bottom: 24rpx;
 }
-.loading {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 26rpx;
-  padding: 80rpx 0;
-}
-.empty {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 26rpx;
-  padding: 60rpx 0;
-}
 .cards {
   display: flex;
   flex-direction: column;
@@ -404,12 +393,6 @@ onBeforeUnmount(() => {
 .btn-primary[disabled] {
   background: var(--line);
   color: #fff;
-}
-.error {
-  margin-top: 16rpx;
-  color: var(--danger);
-  font-size: 26rpx;
-  text-align: center;
 }
 .elapsed {
   display: flex;

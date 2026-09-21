@@ -1,7 +1,7 @@
 <template>
   <view class="page">
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
+    <StateView v-if="loading" type="loading" :message="t('common.loading')" />
+    <StateView v-else-if="error" type="error" :message="error" />
     <view v-else-if="essay">
       <!-- 顶部：题目标题 + 字数 -->
       <view class="header">
@@ -152,6 +152,7 @@ import { useI18n } from "vue-i18n";
 import { getEssay } from "../../api/writing";
 import type { Essay, EssaySentenceReport } from "../../api/writing";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
+import StateView from "../../components/StateView.vue";
 
 const { t, locale } = useI18n();
 
@@ -318,18 +319,6 @@ onBeforeUnmount(() => {
   background: var(--bg);
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
-}
-.error {
-  color: var(--danger);
-  text-align: center;
-  padding: 80rpx 0;
-  font-size: 28rpx;
-}
-.loading {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 28rpx;
-  padding: 80rpx 0;
 }
 .header {
   margin-bottom: 20rpx;
