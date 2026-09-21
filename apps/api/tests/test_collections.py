@@ -100,6 +100,18 @@ def test_update_collection(isolated_collections):
     assert collections.get_collection("alice")["title"] == "New Title"
 
 
+def test_create_and_update_topics(isolated_collections):
+    # topics 随 create 落盘（主题作品集靠它出现在主题 tab）
+    coll = collections.create_collection({**_sample_coll(), "topics": ["science", ""]})
+    assert coll["topics"] == ["science"]
+    updated = collections.update_collection("alice", {"topics": ["history", "sports"]})
+    assert updated["topics"] == ["history", "sports"]
+    # 缺省不带 topics 的更新不抹掉已有值
+    assert collections.update_collection("alice", {"title": "x"})["topics"] == [
+        "history", "sports",
+    ]
+
+
 def test_update_nonexistent_returns_none(isolated_collections):
     assert collections.update_collection("nope", {"title": "x"}) is None
 

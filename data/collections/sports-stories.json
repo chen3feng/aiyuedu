@@ -1,0 +1,472 @@
+{
+  "id": "sports-stories",
+  "title": "Sports Stories",
+  "title_zh": "体育故事集",
+  "author": "",
+  "source": "",
+  "topics": [
+    "sports"
+  ],
+  "total_chapters": 3,
+  "cover_url": "",
+  "intro_zh": "3 篇体育主题短文，从足球赛场到奥林匹克。",
+  "intro_en": "3 short sports readings, from the football pitch to the Olympic Games.",
+  "created_at": 1790002068.773,
+  "glossary": {},
+  "polysemy": {},
+  "chapters": [
+    {
+      "id": "r003",
+      "title": "The First Football Match",
+      "glosses": {
+        "referee": "裁判",
+        "stadium": "体育场",
+        "dribble": "带球"
+      },
+      "target_level": 4000,
+      "body": "It was Leo's first football match, and his hands were shaking. He sat on the bench with the other boys and watched the first half from the side. The score was still zero to zero, and the referee's whistle had just blown for the start. The stadium was full of cheering fans. In the second half, the coach called his name. Leo ran onto the field, and his heart beat very fast. The grass was wet, and the ball moved quickly. A player passed the ball to him. Leo dribbled the ball past one defender and began to run. Another defender came close, but Leo kicked the ball to the side and went past him. He looked up and saw the goal. He shot, and the ball flew into the corner of the net. The crowd cheered, and his friends ran to him with big smiles. They won the match by one goal. On the way home, Leo could not stop smiling. He had been afraid, but he tried his best, and that was enough.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "What did Leo do at the start of the match?",
+          "options": [
+            {
+              "text": "He played in the first half",
+              "correct": false
+            },
+            {
+              "text": "He sat on the bench and watched",
+              "correct": true
+            },
+            {
+              "text": "He scored the first goal",
+              "correct": false
+            },
+            {
+              "text": "He was the coach",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "开场时 Leo 坐在替补席上看着上半场比赛。",
+          "explanation_en": "At the start Leo sat on the bench and watched the first half."
+        },
+        {
+          "type": "choice",
+          "question": "How did Leo score the goal?",
+          "options": [
+            {
+              "text": "He headed the ball into the net",
+              "correct": false
+            },
+            {
+              "text": "He passed the ball to a teammate",
+              "correct": false
+            },
+            {
+              "text": "He dribbled past defenders and shot into the corner",
+              "correct": true
+            },
+            {
+              "text": "The referee gave him a penalty",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "Leo 带球过掉防守队员，一脚把球射进球门角落。",
+          "explanation_en": "Leo dribbled past the defenders and shot the ball into the corner of the goal."
+        },
+        {
+          "type": "choice",
+          "question": "What does the story mainly teach us?",
+          "options": [
+            {
+              "text": "Winning is the only thing that matters",
+              "correct": false
+            },
+            {
+              "text": "Being afraid is wrong",
+              "correct": false
+            },
+            {
+              "text": "Trying your best is what matters",
+              "correct": true
+            },
+            {
+              "text": "Watching from the bench is safest",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "故事强调 Leo 虽然害怕，但尽了全力，这就足够了。",
+          "explanation_en": "The story shows that although Leo was afraid, he tried his best — and that was enough."
+        }
+      ],
+      "topics": [
+        "sports"
+      ],
+      "title_zh": "利奥的第一场足球赛",
+      "index": 1
+    },
+    {
+      "id": "r004",
+      "title": "The Fastest Man on Earth",
+      "glosses": {
+        "cricket": "板球",
+        "sprint": "短跑运动员",
+        "soar": "飞驰"
+      },
+      "full_glosses": {
+        "sprint": "n. 短跑运动员；v. 短距离冲刺，疾跑"
+      },
+      "headwords": {
+        "sprint": {
+          "word": "sprinter",
+          "phonetic": "ˈsprɪntə"
+        }
+      },
+      "target_level": 4800,
+      "body": "Usain Bolt was born in a small town in Jamaica. As a child, he loved to run and play cricket. When he grew older, his speed became famous. As a young sprinter, he learned to start fast and hold his speed to the line. His long legs seemed to soar over the track as he ran. He trained hard every day and learned to use his long legs and tall body. In 2009, he ran one hundred meters in only 9.58 seconds, faster than any human before him. At the Olympic Games, he won gold medals again and again. People called him the fastest man on Earth. But Bolt was not only fast. He also loved to make people laugh and dance before a race. His joyful style made millions of fans around the world. He showed that hard work and a happy heart can go together. After he stopped racing, he still encouraged young athletes to dream big. His story teaches us that a strong body and a warm smile can both lead to great things.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "What sport did Usain Bolt love as a child?",
+          "options": [
+            {
+              "text": "Football",
+              "correct": false
+            },
+            {
+              "text": "Cricket",
+              "correct": true
+            },
+            {
+              "text": "Tennis",
+              "correct": false
+            },
+            {
+              "text": "Swimming",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中说 Bolt 小时候喜欢跑步和打板球（cricket）。",
+          "explanation_en": "The text says Bolt loved running and playing cricket as a child."
+        },
+        {
+          "type": "choice",
+          "question": "How fast did Bolt run 100 meters in 2009?",
+          "options": [
+            {
+              "text": "9.58 seconds",
+              "correct": true
+            },
+            {
+              "text": "10.58 seconds",
+              "correct": false
+            },
+            {
+              "text": "8.58 seconds",
+              "correct": false
+            },
+            {
+              "text": "9.85 seconds",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "2009 年 Bolt 用 9.58 秒跑完 100 米。",
+          "explanation_en": "In 2009 Bolt ran 100 meters in 9.58 seconds."
+        },
+        {
+          "type": "choice",
+          "question": "Besides being fast, what did Bolt love to do?",
+          "options": [
+            {
+              "text": "Play cricket in the Olympics",
+              "correct": false
+            },
+            {
+              "text": "Make people laugh and dance",
+              "correct": true
+            },
+            {
+              "text": "Teach young runners math",
+              "correct": false
+            },
+            {
+              "text": "Build bicycles",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "文中提到 Bolt 喜欢在赛前逗人笑、跳舞，给人带来快乐。",
+          "explanation_en": "The text says Bolt liked to make people laugh and dance before races, bringing joy to everyone."
+        }
+      ],
+      "topics": [
+        "sports"
+      ],
+      "title_zh": "地球上跑得最快的人",
+      "index": 2
+    },
+    {
+      "id": "r053",
+      "title": "The Olympic Games: From Sacred Antiquity to Global Celebration",
+      "title_zh": "奥运会的：起源与全球盛典",
+      "subtitle": "",
+      "topics": [
+        "sports"
+      ],
+      "target_level": 9500,
+      "glosses": {
+        "premier": "首要的",
+        "celebrate": "颂扬",
+        "athlete": "运动员",
+        "international": "国际的",
+        "solidarity": "团结",
+        "span": "跨越",
+        "millennium": "千年",
+        "evolve": "演变",
+        "multi": "多项",
+        "source": "来源",
+        "via": "经由",
+        "cauldron": "主火炬",
+        "ancient": "古代的",
+        "god": "神",
+        "sacred": "神圣的",
+        "truce": "停战",
+        "prior": "在…之前",
+        "herald": "传令官",
+        "holy": "神圣的",
+        "warfare": "战争",
+        "cease": "停止",
+        "spectator": "观众",
+        "conflict": "冲突",
+        "restrict": "限制",
+        "freeborn": "生而自由的",
+        "compete": "参赛",
+        "nude": "裸体",
+        "stadion": "短跑赛",
+        "sprint": "短跑",
+        "combat": "格斗",
+        "boxed": "拳击",
+        "wrestle": "摔跤",
+        "pankration": "古希腊搏击",
+        "reward": "奖励",
+        "victor": "胜利者",
+        "monetary": "金钱的",
+        "prize": "奖金",
+        "award": "授予",
+        "wreath": "花环",
+        "lifelong": "终身的",
+        "civic": "公民的",
+        "decline": "衰落",
+        "emperor": "皇帝",
+        "ban": "禁止",
+        "pagan": "异教的",
+        "cult": "崇拜",
+        "festival": "节日",
+        "revive": "复兴",
+        "spearhead": "发起",
+        "promote": "促进",
+        "motto": "格言",
+        "update": "更新",
+        "reflect": "体现",
+        "global": "全球的",
+        "unity": "团结",
+        "interlock": "环环相扣",
+        "inhabit": "居住于",
+        "continent": "大洲",
+        "ceremony": "仪式",
+        "showcase": "展示",
+        "symbol": "象征",
+        "ritual": "仪式",
+        "edition": "届",
+        "structure": "结构",
+        "protocol": "礼仪",
+        "parade": "入场式",
+        "entry": "入场",
+        "delegate": "代表团",
+        "stadium": "体育场",
+        "strict": "严格的",
+        "charter": "宪章",
+        "recognition": "认可",
+        "status": "地位",
+        "birthplace": "发源地",
+        "refuge": "难民",
+        "displace": "流离失所",
+        "worldwide": "全世界的",
+        "alphabet": "字母",
+        "host": "主办",
+        "script": "文字",
+        "katakana": "片假名",
+        "penultimate": "倒数第二",
+        "subsequent": "随后的",
+        "vast": "广泛的",
+        "array": "一系列",
+        "core": "核心",
+        "discreet": "酌情增设",
+        "category": "类别",
+        "characteristic": "特点",
+        "profile": "概况",
+        "foundation": "基础",
+        "cornerstone": "基石",
+        "raw": "原始的",
+        "endure": "耐力",
+        "relay": "接力",
+        "freestyle": "自由泳",
+        "gymnastics": "体操",
+        "aesthetic": "美感的",
+        "rhythm": "韵律",
+        "precise": "精准的",
+        "flexible": "柔韧的",
+        "execute": "完成",
+        "basketball": "篮球",
+        "soccer": "足球",
+        "volleyball": "排球",
+        "audience": "观众",
+        "judo": "柔道",
+        "skate": "滑冰",
+        "hockey": "冰球",
+        "navigate": "行进",
+        "technical": "技术的",
+        "tactic": "战术",
+        "dominance": "优势",
+        "medal": "奖牌",
+        "consistent": "持续的",
+        "dominate": "称霸",
+        "powerhouse": "强国",
+        "achieve": "取得",
+        "tier": "梯队",
+        "standing": "排名",
+        "tennis": "乒乓球",
+        "badminton": "羽毛球",
+        "domestic": "国内的",
+        "dominant": "占优势的",
+        "independent": "独立的",
+        "iterate": "版本",
+        "cycle": "自行车",
+        "equestrian": "马术",
+        "indisputable": "无可争议的",
+        "superpower": "超级强国",
+        "biathlon": "冬季两项",
+        "fundamental": "根本上",
+        "quest": "追求",
+        "triumph": "胜利",
+        "friction": "摩擦",
+        "geopolitics": "地缘政治",
+        "platform": "平台",
+        "persevere": "坚韧",
+        "belief": "信念"
+      },
+      "full_glosses": {},
+      "headwords": {},
+      "terms": {
+        "cultural exchange": "文化交流",
+        "religious festival": "宗教节庆",
+        "ancient greece": "古希腊",
+        "originated in": "起源于",
+        "safe passage": "安全通行",
+        "regardless of": "不论",
+        "chariot racing": "战车赛",
+        "wild olive": "野生橄榄",
+        "physical education": "体育",
+        "moral character": "品德",
+        "international peace": "国际和平",
+        "white background": "白色背景",
+        "across the world": "世界各地",
+        "historical tradition": "历史传统",
+        "immediately after": "紧随其后",
+        "according to": "按照",
+        "primary language": "主要语言",
+        "just before": "紧接之前",
+        "divided into": "分为",
+        "physical strength": "力量",
+        "professional athletes": "职业运动员",
+        "martial arts": "武术",
+        "derived from": "源自",
+        "modern era": "现代",
+        "due to": "由于",
+        "gold medals": "金牌",
+        "just as": "正如",
+        "divided by": "被…分裂",
+        "economic disparities": "经济差距",
+        "ideological differences": "意识形态分歧"
+      },
+      "skip": [
+        "de"
+      ],
+      "body": "The Olympic Games stand as humanity’s premier celebration of athletic excellence, cultural exchange, and international solidarity. Spanning nearly three millennia, the Games have evolved from a localized religious festival in ancient Greece into the largest multi-sport event on Earth. Source: Chris Smith/Popperfoto / Popperfoto via Getty Images The Olympic rings and cauldron. Source: Chris Smith/Popperfoto / Popperfoto via Getty Images 1. Ancient Olympic Games (776 BCE – 393 CE) The Ancient Olympic Games originated in Olympia, Greece, held every four years in honor of Zeus, the king of the Greek gods. The Sacred Truce (Ekecheiria Prior to the Games, heralds traveled across the Greek world to announce a holy truce. All warfare ceased, allowing athletes and spectators safe passage to Olympia regardless of political conflicts. Athletes and Events: Competition was restricted to freeborn Greek male citizens who competed in the nude. Key events included the stadion (a 200-meter sprint), combat sports (boxing, wrestling, pankration ), and horse-drawn chariot racing. Reward: Victors received no monetary prizes; they were awarded a wreath of wild olive leaves (kotinos ) and granted lifelong glory and civic honors in their home city-states. Decline: In CE, Roman Emperor Theodosius I banned all pagan cults and festivals, bringing an end to the ancient Games after more than 1,000 years. 2. Revival: The Modern Olympic Games In the late 19th century, French educator Pierre de Coubertin spearheaded a movement to revive the Games, believing sports could promote physical education, moral character, and international peace. Milestones of the Modern Olympics The Olympic Motto: Originally \"Citius, Altius, Fortius\" (Faster, Higher, Stronger), updated by the IOC in 2021 to \"Citius, Altius, Fortius – Communiter\" Faster, Higher, Stronger – Together ) to reflect global unity. The Olympic Rings: Five interlocking rings—colored blue, yellow, black, green, and red on a white background—represent the union of the five inhabited continents and the meeting of athletes from across the world. 3. Opening and Closing Ceremonies The Olympic ceremonies serve as cultural showcases and symbolic rituals that bind each edition of the Games to historical tradition. Structure of Ceremonial Protocols The Parade of Nations: Entry Protocol The order in which delegation teams enter the stadium during the Opening Ceremony follows strict protocol set by the International Olympic Charter: Greece (First): In recognition of its status as the birthplace of the ancient Games, the Greek delegation always marches into the stadium first. Refugee Olympic Team (Second): Positioned immediately after Greece to represent displaced athletes worldwide. Alphabetical Order (Middle): Remaining nations enter according to the host country’s primary language or script (e.g., Japanese Katakana in Tokyo 2020, French in Paris 2024). Future Host Nations (Penultimate): The nations hosting the subsequent Olympic Games march just before the current host. Host Nation (Last): The host country's delegation enters last to close the parade. 4. Key Olympic Sports The Summer and Winter Olympics feature a vast array of disciplines, divided into core sports and discretionary events added by host cities. Category Major Olympic Sports Key Characteristics & High-Profile Events Foundation Sports Athletics (Track & Field), Swimming The cornerstone events of the Summer Games; feature raw human speed, endurance, and power (e.g., 100m sprint, 4x100m relay, 1500m freestyle). Gymnastics & Aesthetics Artistic Gymnastics, Rhythmic Gymnastics, Diving High-precision disciplines combining physical strength, flexibility, balance, and artistic execution. Team Sports Basketball, Football (Soccer), Volleyball High-audience global team competitions bringing professional athletes together on the Olympic stage. Combat Sports Judo, Wrestling, Boxing, Taekwondo One-on-one martial arts disciplines derived from combat systems and weight-class competitions. Winter Disciplines Alpine Skiing, Figure Skating, Ice Hockey, Curling Ice and snow events requiring high-speed navigation, technical precision, and team tactics. 5. Major Olympic Powers Over more than a century of modern competition, several nations have established long-standing athletic dominance across various disciplines. United States: Holds the highest total medal count in Summer Olympics history, consistently dominating Swimming, Athletics, and Basketball. China: A powerhouse in the modern era, achieving top-tier standings with traditional dominance in Table Tennis, Badminton, Diving, Weightlifting, Gymnastics, and Shooting. Russia / Domestic Teams: Historically dominant in Gymnastics, Figure Skating, Wrestling, and Weightlifting across both USSR and independent team iterations. Great Britain & European Powers: Great Britain (strong in Cycling, Rowing, Equestrian), Germany (Equestrian, Canoeing, Winter sports), and France (Fencing, Judo, Team sports) remain steady top-tier competitors. Norway: The indisputable winter sports superpower, holding the all-time record for total medals in the Winter Olympic Games due to dominance in Cross-Country Skiing and Biathlon. 6. Beyond Competition: The Olympic Spirit The Olympics are fundamentally more than a quest for gold medals and national standings. As Pierre de Coubertin famously noted: \"The most important thing in the Olympic Games is not to win but to take part, just as the most important thing in life is not the triumph but the struggle.\" In a world often divided by political friction, economic disparities, and geopolitical conflict, the Olympic Games offer a rare platform where nations set aside ideological differences to compete under shared rules. The Olympic flame symbolizes hope, human perseverance, and the belief that humanity can gather peacefully under one roof—faster, higher, stronger, together.",
+      "quizzes": [
+        {
+          "type": "choice",
+          "question": "Which country's delegation always marches first in the Opening Ceremony parade of nations",
+          "options": [
+            {
+              "text": "The host country",
+              "correct": false
+            },
+            {
+              "text": "The nation that hosted the previous Olympic Games",
+              "correct": false
+            },
+            {
+              "text": "Greece",
+              "correct": true
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "Greece always enters first to honor its historical legacy as the origin of the ancient Olympics."
+        },
+        {
+          "type": "choice",
+          "question": "What does the updated Olympic motto \"Citius, Altius, Fortius – Communiter\" mean",
+          "options": [
+            {
+              "text": "Faster, Higher, Stronger – Together",
+              "correct": true
+            },
+            {
+              "text": "Swifter, Braver, Stronger – Forever",
+              "correct": false
+            },
+            {
+              "text": "Peace, Unity, Friendship – Always",
+              "correct": false
+            },
+            {
+              "text": "None of the above",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "\"Communiter\" was added to the Latin motto in 2021, translating to \"Together\"."
+        },
+        {
+          "type": "choice",
+          "question": "Is the following statement true? In the ancient Olympic Games, victorious athletes were rewarded with large monetary payouts directly from the priests of Zeus.",
+          "options": [
+            {
+              "text": "True",
+              "correct": false
+            },
+            {
+              "text": "False",
+              "correct": true
+            },
+            {
+              "text": "Partly true",
+              "correct": false
+            },
+            {
+              "text": "Cannot tell",
+              "correct": false
+            }
+          ],
+          "explanation_zh": "",
+          "explanation_en": "Ancient victors were awarded a sacred olive wreath (kotinos ); financial rewards or civic privileges came later from their home city-states, not the Olympic sanctuary."
+        }
+      ],
+      "index": 3
+    }
+  ]
+}

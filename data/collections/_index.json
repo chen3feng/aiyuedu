@@ -1,5 +1,16 @@
 [
   {
+    "id": "adventure-stories",
+    "title": "Adventure Stories",
+    "title_zh": "冒险与文学故事集",
+    "author": "",
+    "cover_url": "",
+    "total_chapters": 5,
+    "source": "",
+    "glossary_size": 0,
+    "created_at": 1790002068.781
+  },
+  {
     "id": "alice-s-adventures-in-wonderland",
     "title": "Alice's Adventures in Wonderland",
     "title_zh": "",
@@ -9,6 +20,17 @@
     "source": "gutenberg://11",
     "glossary_size": 456,
     "created_at": 1789980441.285
+  },
+  {
+    "id": "history-stories",
+    "title": "History Stories",
+    "title_zh": "历史故事集",
+    "author": "",
+    "cover_url": "",
+    "total_chapters": 19,
+    "source": "",
+    "glossary_size": 0,
+    "created_at": 1790002068.765
   },
   {
     "id": "little-princess-being-the-whole",
@@ -31,5 +53,27 @@
     "source": "gutenberg://1342",
     "glossary_size": 1349,
     "created_at": 1789885455.91
+  },
+  {
+    "id": "science-stories",
+    "title": "Science Stories",
+    "title_zh": "科学故事集",
+    "author": "",
+    "cover_url": "",
+    "total_chapters": 30,
+    "source": "",
+    "glossary_size": 0,
+    "created_at": 1790002068.755
+  },
+  {
+    "id": "sports-stories",
+    "title": "Sports Stories",
+    "title_zh": "体育故事集",
+    "author": "",
+    "cover_url": "",
+    "total_chapters": 3,
+    "source": "",
+    "glossary_size": 0,
+    "created_at": 1790002068.773
   }
 ]

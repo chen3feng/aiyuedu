@@ -158,6 +158,7 @@ def create_collection(data: dict) -> dict:
         "title_zh": (data.get("title_zh") or "").strip(),
         "author": (data.get("author") or "").strip(),
         "source": (data.get("source") or "").strip(),
+        "topics": [t for t in (data.get("topics") or []) if str(t).strip()],
         "total_chapters": len(data.get("chapters") or []),
         "cover_url": (data.get("cover_url") or "").strip(),
         "intro_zh": (data.get("intro_zh") or "").strip(),
@@ -185,6 +186,8 @@ def update_collection(id: str, data: dict) -> dict | None:
         for k in ("title", "title_zh", "author", "source", "cover_url", "intro_zh", "intro_en"):
             if k in data:
                 cur[k] = (data.get(k) or "").strip()
+        if "topics" in data and data["topics"] is not None:
+            cur["topics"] = [str(t).strip() for t in data["topics"] if str(t).strip()]
         for k in ("glossary", "polysemy"):
             if k in data and data[k] is not None:
                 cur[k] = dict(data[k])

@@ -16,6 +16,7 @@ class CollectionIn(BaseModel):
     cover_url: str = ""
     intro_zh: str = ""
     intro_en: str = ""
+    topics: list[str] = []
     glossary: dict[str, str] = {}
     polysemy: dict = {}
     chapters: list[dict] = []
