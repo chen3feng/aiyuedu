@@ -11,7 +11,7 @@ import json
 from functools import lru_cache
 
 from ..config import settings
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 # 可分离短语中「动词」与「小品词」之间允许隔的最大单词数（take the clock apart）
 SEPARABLE_MAX_GAP = 4
@@ -42,10 +42,8 @@ def build_trie(items: list) -> tuple:
 @lru_cache(maxsize=1)
 def _load() -> tuple:
     """返回 (trie, separable)。trie 用于连续短语；separable: verb -> [(particle, entry)]。"""
-    try:
-        with open(settings.mwe_path, encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, json.JSONDecodeError):
+    data = load_json_or(settings.mwe_path, {"items": []})
+    if not isinstance(data, dict):
         data = {"items": []}
     return build_trie(data.get("items") or [])
 

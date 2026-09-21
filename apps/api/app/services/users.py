@@ -6,13 +6,11 @@
 
 低并发家庭场景：读直接读盘，写加锁做读-改-写，避免并发覆盖。
 """
-import json
 import threading
 import time
-from pathlib import Path
 
 from ..config import settings
-from .storage import atomic_write_json
+from .storage import atomic_write_json, load_json_or
 
 _lock = threading.Lock()
 
@@ -28,13 +26,8 @@ def default_profile() -> dict:
 
 def _read() -> dict:
     """读 users.json → {user_id: profile}；缺失或损坏返回空。"""
-    path = Path(settings.users_path)
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {}
+    data = load_json_or(settings.users_path, {})
+    return data if isinstance(data, dict) else {}
 
 
 def _write(users: dict) -> None:
