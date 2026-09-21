@@ -5,13 +5,13 @@
       <button class="btn-primary" @click="goPickPrompt">+ {{ t("writing.start") }}</button>
     </view>
 
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
-    <view v-else-if="!items.length" class="empty">
+    <StateView v-if="loading" type="loading" :message="t('common.loading')" />
+    <StateView v-else-if="error" type="error" :message="error" />
+    <StateView v-else-if="!items.length" type="empty" class="empty-lg">
       <view class="empty-icon">📝</view>
       <text>{{ t("writing.empty") }}</text>
       <text class="empty-hint">{{ t("writing.emptyHint") }}</text>
-    </view>
+    </StateView>
     <view v-else class="cards">
       <view v-for="e in items" :key="e.id" class="card" @click="openReport(e.id)">
         <view class="card-top">
@@ -44,6 +44,7 @@ import { useI18n } from "vue-i18n";
 import { listEssays, deleteEssay } from "../../api/writing";
 import type { Essay, Prompt } from "../../api/writing";
 import { getUserId } from "../../utils/user";
+import StateView from "../../components/StateView.vue";
 
 const { t, locale } = useI18n();
 
@@ -144,26 +145,6 @@ onShow(() => {
   padding: 12rpx 28rpx;
   border-radius: 999rpx;
   border: none;
-}
-.loading,
-.error {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 28rpx;
-  padding: 80rpx 0;
-}
-.error {
-  color: var(--danger);
-}
-.empty {
-  text-align: center;
-  color: var(--ink-4);
-  padding: 120rpx 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16rpx;
-  font-size: 28rpx;
 }
 .empty-icon {
   font-size: 80rpx;

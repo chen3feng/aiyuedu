@@ -33,8 +33,8 @@
       </view>
     </view>
 
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
+    <StateView v-if="loading" type="loading" :message="t('common.loading')" />
+    <StateView v-else-if="error" type="error" :message="error" />
 
     <!-- 正文 -->
     <view v-else-if="detail" class="body">
@@ -115,6 +115,7 @@ import WordPopup from "../../components/WordPopup.vue";
 import QuizSection from "../../components/QuizSection.vue";
 import ChapterBreadcrumb from "../../components/ChapterBreadcrumb.vue";
 import ChapterNav from "../../components/ChapterNav.vue";
+import StateView from "../../components/StateView.vue";
 
 const { t, locale } = useI18n();
 
@@ -418,16 +419,6 @@ function finish() {
 .speak-all.playing {
   color: var(--danger);
   background: var(--danger-bg);
-}
-.loading,
-.error {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 28rpx;
-  padding: 80rpx 0;
-}
-.error {
-  color: var(--danger);
 }
 .body {
   background: #fff;

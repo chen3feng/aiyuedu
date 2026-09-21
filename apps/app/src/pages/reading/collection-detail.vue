@@ -1,7 +1,7 @@
 <template>
   <view class="page">
-    <view v-if="loading" class="loading">{{ t("common.loading") }}</view>
-    <view v-else-if="error" class="error">{{ error }}</view>
+    <StateView v-if="loading" type="loading" :message="t('common.loading')" />
+    <StateView v-else-if="error" type="error" :message="error" />
     <view v-else-if="detail">
       <!-- 书籍信息卡 -->
       <view class="header">
@@ -41,7 +41,7 @@
           </view>
           <text class="ch-arrow">›</text>
         </view>
-        <view v-if="!detail.chapters.length" class="empty">暂无章节</view>
+        <StateView v-if="!detail.chapters.length" type="empty" class="compact" message="暂无章节" />
       </view>
 
       <!-- 全书统一词汇表 -->
@@ -64,6 +64,7 @@ import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { getCollection } from "../../api/collections";
 import type { CollectionDetail } from "../../api/collections";
+import StateView from "../../components/StateView.vue";
 
 const { t } = useI18n();
 
@@ -106,24 +107,6 @@ onShow(() => {
   background: var(--bg);
   padding: 24rpx 32rpx 60rpx;
   box-sizing: border-box;
-}
-.loading {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 28rpx;
-  padding: 80rpx 0;
-}
-.error {
-  color: var(--danger);
-  text-align: center;
-  padding: 80rpx 0;
-  font-size: 28rpx;
-}
-.empty {
-  text-align: center;
-  color: var(--ink-4);
-  font-size: 26rpx;
-  padding: 40rpx 0;
 }
 
 .header {

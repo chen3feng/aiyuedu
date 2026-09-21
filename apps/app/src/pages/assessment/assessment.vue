@@ -25,7 +25,7 @@
         </view>
         <view class="hint">{{ t("assessment.honestHint") }}</view>
         <button class="btn primary" :loading="loading" @click="start">{{ t("assessment.start") }}</button>
-        <view v-if="error" class="error">{{ error }}</view>
+        <StateView v-if="error" type="error" class="mt24" :message="error" />
       </view>
     </view>
 
@@ -98,6 +98,7 @@ import { useI18n } from "vue-i18n";
 import { startTest, answer, finishTest } from "../../api/vocab";
 import type { Question, Feedback, Progress, Result } from "../../api/vocab";
 import { saveProfile } from "../../api/users";
+import StateView from "../../components/StateView.vue";
 
 const { t } = useI18n();
 
@@ -328,12 +329,6 @@ function again() {
 .btn.primary {
   background: var(--brand);
   color: #fff;
-}
-.error {
-  margin-top: 24rpx;
-  color: var(--danger);
-  font-size: 26rpx;
-  text-align: center;
 }
 
 /* 实时得分条 */
