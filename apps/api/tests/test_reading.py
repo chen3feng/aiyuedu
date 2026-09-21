@@ -567,13 +567,16 @@ def test_annotate_term_ruby_every_occurrence():
     assert html.count("<ruby>conservation of momentum<rt>动量守恒</rt></ruby>") == 2
 
 
-def test_annotate_term_not_in_vocab_and_not_new():
+def test_annotate_term_in_vocab_with_phrase_flag_but_not_new():
     ann = reading.annotate(
         "The greenhouse effect warms Earth.", 25000, terms={"greenhouse effect": "温室效应"}
     )
-    # 术语不计生词、不进生词表
+    # 术语不计生词数……
     assert ann["new_word_count"] == 0
-    assert not any("greenhouse" in v["lemma"] for v in ann["vocabulary"])
+    # ……但首次出现进入生词表（带 phrase 标志，与单词混排展示）
+    v = next(v for v in ann["vocabulary"] if v["lemma"] == "greenhouse effect")
+    assert v["phrase"] is True
+    assert v["gloss"] == "温室效应"
 
 
 def test_annotate_term_marks_known_and_term_flag():

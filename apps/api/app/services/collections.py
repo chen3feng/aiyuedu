@@ -377,6 +377,8 @@ def _extract_chapter_vocab(body: str, level: int) -> list[dict]:
     items: list[dict] = []
     seen: set[str] = set()
     for v in r["vocabulary"]:
+        if v.get("phrase"):
+            continue  # 短语走 terms，不进单词清单（glosses 不收带空格的键）
         lemma = v["lemma"]
         if lemma in seen or not lemma:
             continue
@@ -389,34 +391,17 @@ def _extract_chapter_vocab(body: str, level: int) -> list[dict]:
     return items
 
 
-def _ai_gloss_vocab(items: list[dict]) -> dict:
-    """调用默认 AI 为生词列表生成语境义。
+def _ai_json_map(prompt: str, *, temperature: float = 0.2) -> dict:
+    """调 AI 并把响应解析为 {键: 值} JSON 对象；失败不抛异常。
 
-    输入: [{"lemma", "context", "dict_gloss"}, ...]
-    返回: {"glosses": {lemma: gloss}, "ai_used", "reason", "raw"}
+    返回 {"map": dict, "ai_used": bool, "reason": str | None, "raw": str}。
     """
-    if not items:
-        return {"glosses": {}, "ai_used": False, "reason": "无生词", "raw": ""}
-
-    lines = [
-        f"- {it['lemma']}（参考义：{it['dict_gloss'] or '无'}）\n  首次出现句：{it['context']}"
-        for it in items
-    ]
-    prompt = (
-        "你是英语分级阅读的编辑，为初中英语学习者做生词的中文释义。\n"
-        "下面是某书某一章里的生词清单（附词典义 + 首次出现的句子），"
-        "请结合上下文语境，为每个词给出 1~6 个字的中文释义，"
-        "只取该句里最贴切的含义（多义词务必按句意取舍，不要列出全部义项）。\n\n"
-        "【生词清单】\n" + "\n".join(lines) + "\n\n"
-        "只输出一个 JSON 对象，键为词条文本，值为中文释义。"
-        "不要输出 JSON 以外的任何内容（不要 markdown 围栏）。"
-    )
     ai_map: dict = {}
     ai_used = False
     reason: str | None = None
     raw = ""
     try:
-        content = ai.chat([{"role": "user", "content": prompt}], temperature=0.2)
+        content = ai.chat([{"role": "user", "content": prompt}], temperature=temperature)
     except RuntimeError as e:
         content = ""
         reason = f"AI 调用失败：{e}"
@@ -442,16 +427,81 @@ def _ai_gloss_vocab(items: list[dict]) -> dict:
             reason = f"AI 响应无法解析为 JSON（开头: {snippet!r}）"
     elif reason is None:
         reason = "AI 返回空内容"
+    return {"map": ai_map, "ai_used": ai_used, "reason": reason, "raw": raw}
 
+
+def _ai_gloss_vocab(items: list[dict]) -> dict:
+    """调用默认 AI 为生词列表生成语境义。
+
+    输入: [{"lemma", "context", "dict_gloss"}, ...]
+    返回: {"glosses": {lemma: gloss}, "ai_used", "reason", "raw"}
+    """
+    if not items:
+        return {"glosses": {}, "ai_used": False, "reason": "无生词", "raw": ""}
+
+    lines = [
+        f"- {it['lemma']}（参考义：{it['dict_gloss'] or '无'}）\n  首次出现句：{it['context']}"
+        for it in items
+    ]
+    prompt = (
+        "你是英语分级阅读的编辑，为初中英语学习者做生词的中文释义。\n"
+        "下面是某书某一章里的生词清单（附词典义 + 首次出现的句子），"
+        "请结合上下文语境，为每个词给出 1~6 个字的中文释义，"
+        "只取该句里最贴切的含义（多义词务必按句意取舍，不要列出全部义项）。\n\n"
+        "【生词清单】\n" + "\n".join(lines) + "\n\n"
+        "只输出一个 JSON 对象，键为词条文本，值为中文释义。"
+        "不要输出 JSON 以外的任何内容（不要 markdown 围栏）。"
+    )
+    res = _ai_json_map(prompt)
     glosses: dict[str, str] = {}
     for it in items:
         lemma = it["lemma"]
-        ai_g = str(ai_map.get(lemma) or "").strip()
+        ai_g = str(res["map"].get(lemma) or "").strip()
         if ai_g:
             glosses[lemma] = ai_g
         elif it["dict_gloss"]:
             glosses[lemma] = it["dict_gloss"]  # AI 没给则词典义兜底
-    return {"glosses": glosses, "ai_used": ai_used, "reason": reason, "raw": raw}
+    return {"glosses": glosses, "ai_used": res["ai_used"], "reason": res["reason"], "raw": res["raw"]}
+
+
+# 正文短于这么多词就不挑短语（太短的章节没有值得提取的搭配，省一次 AI 调用）
+_TERMS_MIN_WORDS = 200
+
+
+def _ai_gloss_terms(body: str, level: int, limit: int = 12) -> dict:
+    """AI 挑选本章最值得注释的短语/习语/搭配并给中文释义（写入 chapter.terms）。
+
+    返回 {"terms": {text: gloss}, "ai_used", "reason", "raw"}；失败不抛异常、terms 为空。
+    正文太短（< _TERMS_MIN_WORDS 词）时直接跳过：ai_used=False、reason=None（不算失败）。
+    """
+    from . import reading
+
+    word_count = reading.stats(body, level)["word_count"]
+    if word_count < _TERMS_MIN_WORDS:
+        return {"terms": {}, "ai_used": False, "reason": None, "raw": ""}
+    prompt = (
+        "你是英语分级阅读的编辑，为初中英语学习者挑选短语。\n"
+        f"下面是一章英文正文（学习者词汇量约 {level} 词）。请挑出其中对学习者"
+        "最有学习价值的多词表达——习语、固定搭配、动词短语"
+        "（如 in want of、made up his mind、take possession of），"
+        "并给每个短语 1~8 字的中文释义（按本章语境取义）。\n"
+        "要求：\n"
+        "- 只挑 2~5 词的多词表达；短语原文照抄正文拼写（保留空格）\n"
+        "- 不挑人名/地名等专有名词组合；不挑字面直译就能懂的搭配\n"
+        f"- 最多 {limit} 个，按学习价值从高到低；没有值得挑的就输出空对象 {{}}\n\n"
+        "【正文】\n" + body + "\n\n"
+        "只输出一个 JSON 对象，键为短语原文，值为中文释义。"
+        "不要输出 JSON 以外的任何内容（不要 markdown 围栏）。"
+    )
+    res = _ai_json_map(prompt)
+    terms: dict[str, str] = {}
+    for k, v in res["map"].items():
+        text = str(k).strip().lower()
+        gloss = str(v).strip()
+        # 只收多词短语（防 AI 把单词混进 terms），键统一小写便于行内匹配
+        if text and " " in text and gloss:
+            terms[text] = gloss
+    return {"terms": terms, "ai_used": res["ai_used"], "reason": res["reason"], "raw": res["raw"]}
 
 
 def analyze_chapter(
@@ -460,11 +510,13 @@ def analyze_chapter(
     *,
     force: bool = False,
 ) -> dict | None:
-    """对单章跑 AI 释义：提取生词 → 调 AI → 写回 chapter.glosses + ai_status。
+    """对单章跑 AI 释义：提取生词 + 挑短语 → 调 AI → 写回 glosses / terms + ai_status。
 
-    返回 {"collection", "chapter", "items_count", "ai_used", "reason", "raw"}；
-    collection / 章节不存在返回 None。
-    force=True 时即使 ai_status=done 也重跑（用于「重跑 AI 释义」按钮）。
+    返回 {"collection", "chapter", "items_count", "ai_used", "reason", "raw",
+    "terms_count", "terms_ai_used", "terms_reason"}；collection / 章节不存在返回 None。
+    force=True 时即使 ai_status=done 也重跑（用于「重跑 AI 释义」按钮），glosses / terms
+    整体替换；非 force 合并保留已有词条（含手工加的）。短语提取失败不改变 ai_status
+    （单词释义已可用），只在 ai_reason 里留备注。
 
     并发安全：标记 analyzing 与写回结果两段都持 _lock 做「读最新 → 改 → 落盘」。
     若只锁写不锁读，多章并发时后落盘的线程会拿旧快照把别人刚写的状态
@@ -494,6 +546,7 @@ def analyze_chapter(
 
     items = _extract_chapter_vocab(body, level)
     result = _ai_gloss_vocab(items)
+    terms_result = _ai_gloss_terms(body, level)
 
     # 第二段：写回结果（重新读最新快照再合并，同样原子）
     with _lock:
@@ -506,10 +559,14 @@ def analyze_chapter(
 
         if force:
             ch["glosses"] = dict(result["glosses"])
+            ch["terms"] = dict(terms_result["terms"])
         else:
             merged = dict(ch.get("glosses") or {})
             merged.update(result["glosses"])
             ch["glosses"] = merged
+            merged_terms = dict(ch.get("terms") or {})
+            merged_terms.update(terms_result["terms"])
+            ch["terms"] = merged_terms
         if result["ai_used"] or not items:
             # AI 成功，或本章没有生词（不算失败，避免「无生词」标红）
             ch["ai_status"] = "done"
@@ -517,6 +574,10 @@ def analyze_chapter(
         else:
             ch["ai_status"] = "error"
             ch["ai_reason"] = result["reason"] or "未知错误"
+        if not terms_result["ai_used"] and terms_result["reason"]:
+            # 短语提取失败不阻塞章节（单词释义已可用），但留一条可见备注
+            note = f"短语提取未更新：{terms_result['reason']}"
+            ch["ai_reason"] = f"{ch['ai_reason']}；{note}" if ch["ai_reason"] else note
         _persist_locked(cur)
         return {
             "collection": cur,
@@ -525,6 +586,9 @@ def analyze_chapter(
             "ai_used": result["ai_used"],
             "reason": result["reason"],
             "raw": result["raw"],
+            "terms_count": len(terms_result["terms"]),
+            "terms_ai_used": terms_result["ai_used"],
+            "terms_reason": terms_result["reason"],
         }
 
 
@@ -628,6 +692,67 @@ def analyze_collection(collection_id: str) -> dict | None:
         t.start()
         threads.append(t)
     return {"scheduled": scheduled, "collection": coll, "threads": threads}
+
+
+def backfill_terms(collection_id: str, *, only_empty: bool = True) -> dict | None:
+    """为已完成章节并发补短语：只写 chapter.terms，不动 glosses / ai_status。
+
+    用于导入时短语功能尚未上线、全本 done 后需要回填的场景（force 重跑会
+    覆盖手工 gloss 释义，故另走此路径）。only_empty=True 时只补 terms 为空的章节。
+    返回 {"scheduled", "threads"}；collection 不存在返回 None。
+    """
+
+    def _find(coll: dict, idx: int) -> dict | None:
+        return next(
+            (c for c in coll.get("chapters") or [] if c.get("index") == idx),
+            None,
+        )
+
+    with _lock:
+        coll = get_collection(collection_id)
+        if coll is None:
+            return None
+        scheduled = [
+            c["index"]
+            for c in coll.get("chapters") or []
+            if c.get("ai_status") == "done"
+            and (not only_empty or not (c.get("terms") or {}))
+        ]
+    if not scheduled:
+        return {"scheduled": [], "threads": []}
+
+    def _run(idx: int) -> None:
+        # 读 body（持锁快照）→ AI 不持锁 → 合并写回（原子）
+        with _lock:
+            cur = get_collection(collection_id)
+            if cur is None:
+                return
+            ch = _find(cur, idx)
+            if ch is None:
+                return
+            body = ch.get("body") or ""
+            level = ch.get("target_level") or 3000
+        r = _ai_gloss_terms(body, level)
+        if not r["terms"]:
+            return
+        with _lock:
+            cur = get_collection(collection_id)
+            if cur is None:
+                return
+            ch = _find(cur, idx)
+            if ch is None:
+                return
+            merged = dict(ch.get("terms") or {})
+            merged.update(r["terms"])
+            ch["terms"] = merged
+            _persist_locked(cur)
+
+    threads = []
+    for idx in scheduled:
+        t = threading.Thread(target=_run, args=(idx,), daemon=True)
+        t.start()
+        threads.append(t)
+    return {"scheduled": scheduled, "threads": threads}
 
 
 def reconcile_collection(collection_id: str) -> dict | None:

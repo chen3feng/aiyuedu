@@ -539,3 +539,125 @@ def test_ai_calibrate_ai_missing_keeps_current(isolated_collections, monkeypatch
     )
     assert r["glosses"]["attic"] == "阁楼"        # AI 给了 → 覆盖
     assert r["glosses"]["quaint"] == "古怪的"     # AI 漏了 → 保持
+
+
+# ---------- AI 短语提取 ----------
+
+def test_ai_gloss_terms_skips_short_body():
+    """正文 < 200 词：不调 AI，直接跳过（reason=None，不算失败）。"""
+    r = collections._ai_gloss_terms("A very short chapter.", 3000)
+    assert r == {"terms": {}, "ai_used": False, "reason": None, "raw": ""}
+
+
+def test_ai_gloss_terms_parses_and_filters(isolated_collections, monkeypatch):
+    """AI 返回短语 JSON：键小写化、单词键过滤（terms 只收多词表达）。"""
+    monkeypatch.setattr(
+        collections.ai, "chat",
+        lambda *a, **k: json.dumps(
+            {"In Want Of": "需要", "took possession of": "占有", "room": "房间"},
+            ensure_ascii=False,
+        ),
+    )
+    r = collections._ai_gloss_terms("word " * 250, 3000)
+    assert r["ai_used"] is True
+    assert r["terms"] == {"in want of": "需要", "took possession of": "占有"}
+    assert "room" not in r["terms"]
+
+
+def test_ai_gloss_terms_failure_returns_empty(isolated_collections, monkeypatch):
+    monkeypatch.setattr(
+        collections.ai, "chat",
+        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("模型挂了")),
+    )
+    r = collections._ai_gloss_terms("word " * 250, 3000)
+    assert r["terms"] == {}
+    assert r["ai_used"] is False
+    assert "模型挂了" in r["reason"]
+
+
+def _terms_fake_chat():
+    """两次 AI 调用（单词 + 短语）按提示词内容分别应答。"""
+    def fake(messages, **_kw):
+        if "挑选短语" in messages[0]["content"]:
+            return json.dumps(
+                {"in want of": "需要", "took possession of": "占有"}, ensure_ascii=False
+            )
+        return json.dumps({"fortune": "财产"}, ensure_ascii=False)
+    return fake
+
+
+def test_analyze_chapter_writes_terms(isolated_collections, monkeypatch):
+    coll = collections.create_collection(_sample_coll("at1", n=1))
+    body = (
+        "She was in want of help and took possession of the room. "
+        "The quick brown fox jumps over the lazy dog every day. " * 40
+    )
+    coll["chapters"][0]["body"] = body
+    collections._persist(coll)
+    monkeypatch.setattr(collections.ai, "chat", _terms_fake_chat())
+
+    r = collections.analyze_chapter("at1", 1)
+    assert r["terms_count"] == 2
+    ch = r["chapter"]
+    assert ch["terms"]["in want of"] == "需要"
+    assert ch["terms"]["took possession of"] == "占有"
+    assert ch["ai_status"] == "done"
+    # 本章单词全在 3000 词内 → items 空，reason 落「无生词」（done 不标红，既有行为）
+    assert ch["ai_reason"] == "无生词"
+
+
+def test_analyze_chapter_terms_merge_then_force_replace(isolated_collections, monkeypatch):
+    """非 force：手工/旧短语保留合并；force：terms 整体替换。"""
+    coll = collections.create_collection(_sample_coll("at2", n=1))
+    body = (
+        "She was in want of help and took possession of the room. "
+        "The quick brown fox jumps over the lazy dog every day. " * 40
+    )
+    coll["chapters"][0]["body"] = body
+    coll["chapters"][0]["terms"] = {"old phrase": "旧义"}
+    collections._persist(coll)
+    monkeypatch.setattr(collections.ai, "chat", _terms_fake_chat())
+
+    r = collections.analyze_chapter("at2", 1)
+    terms = r["chapter"]["terms"]
+    assert terms["old phrase"] == "旧义"          # 手工加的保留
+    assert terms["in want of"] == "需要"
+
+    r = collections.analyze_chapter("at2", 1, force=True)
+    terms = r["chapter"]["terms"]
+    assert "old phrase" not in terms              # force 整体替换
+    assert terms["in want of"] == "需要"
+    assert terms["took possession of"] == "占有"
+
+
+def test_backfill_terms_only_done_and_terms_empty(isolated_collections, monkeypatch):
+    """回填只挑 done 且 terms 空的章节，且不动 glosses / ai_status。"""
+    coll = collections.create_collection(_sample_coll("bt", n=3))
+    long_body = (
+        "She was in want of help and took possession of the room. "
+        "The quick brown fox jumps over the lazy dog every day. " * 40
+    )
+    for i, ch in enumerate(coll["chapters"]):
+        ch["body"] = long_body
+        ch["ai_status"] = "done"
+    coll["chapters"][1]["terms"] = {"kept phrase": "保留"}   # 非空 → 跳过
+    coll["chapters"][2]["ai_status"] = "pending"             # 非 done → 跳过
+    collections._persist(coll)
+    monkeypatch.setattr(collections.ai, "chat", _terms_fake_chat())
+
+    r = collections.backfill_terms("bt")
+    assert r["scheduled"] == [1]
+    for t in r["threads"]:
+        t.join()
+
+    cur = collections.get_collection("bt")
+    ch1, ch2, ch3 = cur["chapters"]
+    assert ch1["terms"].get("in want of") == "需要"
+    assert ch1["glosses"] == {"c1word": "词 1"}       # glosses 原封不动
+    assert ch1["ai_status"] == "done"
+    assert ch2["terms"] == {"kept phrase": "保留"}     # 没被动
+    assert ch3["terms"] == {}
+
+
+def test_backfill_terms_missing_returns_none(isolated_collections):
+    assert collections.backfill_terms("nope") is None

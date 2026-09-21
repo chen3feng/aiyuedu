@@ -627,6 +627,7 @@ async function renderCollectionDetail() {
       <div class="row" style="margin-bottom:14px">
         <button class="primary" onclick="saveCollectionMeta('${esc(c.id)}')">保存标题/简介</button>
         <button onclick="analyzeAllChapters('${esc(c.id)}')">全本 AI 释义</button>
+        <button onclick="backfillTerms('${esc(c.id)}')">全本补短语</button>
         <button onclick="reconcileCollection('${esc(c.id)}')">对齐词汇表</button>
       </div>
       <div class="muted" style="margin-bottom:10px">章节列表（点击「重跑 AI」= force 模式；导入后已自动跑一遍）</div>
@@ -831,6 +832,15 @@ async function analyzeAllChapters(collId) {
   try {
     const r = await api(`/collections/${collId}/analyze-all`, "POST");
     toast(`已调度 ${r.scheduled.length} 章`);
+    await openCollectionDetail(collId);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function backfillTerms(collId) {
+  if (!confirm("为已完成且没有短语的章节并发回填短语（只写短语，不动单词释义）。继续？")) return;
+  try {
+    const r = await api(`/collections/${collId}/backfill-terms`, "POST");
+    toast(`已调度 ${r.scheduled.length} 章回填短语`);
     await openCollectionDetail(collId);
   } catch (e) { toast(e.message, true); }
 }

@@ -166,6 +166,19 @@ def analyze_all(collection_id: str,
     return {"scheduled": result["scheduled"]}
 
 
+@router.post("/{collection_id}/backfill-terms")
+def backfill_terms(collection_id: str,
+                   _user_id: str | None = Header(None, alias="X-User-Id")):
+    """为已完成章节并发回填短语（只写 terms，不动 glosses / ai_status）。
+
+    返回 {"scheduled": [chapter_indices]}；不存在返回 404。
+    """
+    result = collections.backfill_terms(collection_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="作品集不存在")
+    return {"scheduled": result["scheduled"]}
+
+
 @router.post("/{collection_id}/reconcile")
 def reconcile(collection_id: str,
               _user_id: str | None = Header(None, alias="X-User-Id")):

@@ -466,7 +466,8 @@ def annotate(
       propeller->propel；缺省用词族头的 full_gloss）。
     - `headwords`：词族头 -> 展示词形覆盖 `{word, phonetic}`（派生词是独立词条、词族头
       并非其原型时用，如 propeller->propel 应展示「propeller」；缺省展示词族头）。
-    - `terms`：术语文本 -> 语境义（文章级多词注释；每次出现都注 ruby，不计生词、不进生词表）。
+    - `terms`：术语文本 -> 语境义（文章级多词注释；每次出现都注 ruby、不计生词数，
+      首次出现进生词表，条目带 `phrase: True` 标志）。
     - `skip`：后台手工删掉的生词（词族头列表），按已知处理（不注音、不进生词表、不计生词）。
     """
     glosses = glosses or {}
@@ -517,7 +518,8 @@ def annotate(
                 html_parts.append(_html.escape(u["w"], quote=False))
                 continue
             if kind == "term":
-                # 术语：行内注释（每次出现都注），不计生词数、不进生词表
+                # 术语：行内注释（每次出现都注），不计生词数；首次出现录入生词表
+                # （带 phrase 标志，与单词混排展示），下游建 glosses 时按标志剔除。
                 word_count += 1
                 tw = {"w": u["w"], "known": True, "term": True, "gloss": u["gloss"]}
                 if in_em:
@@ -527,6 +529,15 @@ def annotate(
                     f"<ruby>{_html.escape(u['w'], quote=False)}"
                     f"<rt>{_html.escape(u['gloss'], quote=False)}</rt></ruby>"
                 )
+                if u["lemma"] not in vocab:
+                    vocab[u["lemma"]] = {
+                        "word": u["w"],
+                        "lemma": u["lemma"],
+                        "phonetic": "",
+                        "gloss": u["gloss"],
+                        "full_gloss": "",
+                        "phrase": True,
+                    }
                 continue
             # 单词
             words.append(u)
