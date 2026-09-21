@@ -70,18 +70,14 @@ import Card from "../../components/Card.vue";
 import BookCover from "../../components/BookCover.vue";
 import type { ReadingSummary } from "../../api/reading";
 import { getProfile } from "../../api/users";
-import { topicTags } from "../../utils/topics";
+import { topicTags, TOPICS } from "../../utils/topics";
 
 const { t } = useI18n();
 
 // 顶部 tab：全部 + 4 个主题（书籍作为「全部」里的整体入口出现，不单独建 tab）
-const tabs = [
-  { key: "", labelKey: "reading.list.all" },
-  { key: "science", labelKey: "topic.science" },
-  { key: "sports", labelKey: "topic.sports" },
-  { key: "history", labelKey: "topic.history" },
-  { key: "adventure", labelKey: "topic.adventure" },
-];
+const tabs = [{ key: "", labelKey: "reading.list.all" }, ...TOPICS.map(
+  (tp) => ({ key: tp.key, labelKey: tp.labelKey }),
+)];
 
 // 读者词汇量：优先用评测结果（若已存），否则默认初一估算 3600
 const level = ref<number>(Number(uni.getStorageSync("vocab_size")) || 3600);

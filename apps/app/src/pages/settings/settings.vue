@@ -1,32 +1,19 @@
 <template>
   <view class="page">
-    <Card class="lg p40" >
-      <view class="section-title">{{ t("settings.language") }}</view>
-      <view
-        v-for="opt in options"
-        :key="opt.value"
-        class="option"
-        :class="{ active: langSetting === opt.value }"
-        @click="choose(opt.value)"
-      >
-        <text class="label">{{ t(opt.key) }}</text>
-        <text v-if="langSetting === opt.value" class="check">✓</text>
-      </view>
-    </Card>
+    <CheckList
+      :title="t('settings.language')"
+      :options="langOptions"
+      :selected="[langSetting]"
+      @select="(v) => choose(v as LangSetting)"
+    />
 
-    <Card class="lg p40" >
-      <view class="section-title">{{ t("settings.topicPref") }}</view>
-      <view
-        v-for="tp in TOPICS"
-        :key="tp.key"
-        class="option"
-        :class="{ active: prefs.includes(tp.key) }"
-        @click="toggleTopic(tp.key)"
-      >
-        <text class="label">{{ t(tp.labelKey) }}</text>
-        <text v-if="prefs.includes(tp.key)" class="check">✓</text>
-      </view>
-    </Card>
+    <CheckList
+      multiple
+      :title="t('settings.topicPref')"
+      :options="topicOptions"
+      :selected="prefs"
+      @toggle="toggleTopic"
+    />
 
     <Card class="lg p40" >
       <view class="section-title">{{ t("settings.vocab") }}</view>
@@ -53,21 +40,18 @@ import { onShow } from "@dcloudio/uni-app";
 import { langSetting, setLanguage, type LangSetting } from "../../locale";
 import { getProfile, saveProfile } from "../../api/users";
 import Card from "../../components/Card.vue";
+import CheckList from "../../components/CheckList.vue";
+import { TOPICS } from "../../utils/topics";
 
 const { t } = useI18n();
 
-const options: { value: LangSetting; key: string }[] = [
-  { value: "auto", key: "settings.followSystem" },
-  { value: "zh-CN", key: "settings.chinese" },
-  { value: "en", key: "settings.english" },
+const langOptions: { value: LangSetting; labelKey: string }[] = [
+  { value: "auto", labelKey: "settings.followSystem" },
+  { value: "zh-CN", labelKey: "settings.chinese" },
+  { value: "en", labelKey: "settings.english" },
 ];
 
-const TOPICS = [
-  { key: "science", labelKey: "topic.science" },
-  { key: "sports", labelKey: "topic.sports" },
-  { key: "history", labelKey: "topic.history" },
-  { key: "adventure", labelKey: "topic.adventure" },
-];
+const topicOptions = TOPICS.map((tp) => ({ value: tp.key, labelKey: tp.labelKey }));
 
 const prefs = ref<string[]>([]);
 const vocab = ref<number | null>(null);
@@ -128,34 +112,6 @@ function saveVocab() {
   background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
-}
-.section-title {
-  font-size: 26rpx;
-  color: var(--ink-4);
-  margin-bottom: 16rpx;
-}
-.option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 28rpx 20rpx;
-  border-bottom: 2rpx solid #f0f2f8;
-}
-.option:last-child {
-  border-bottom: none;
-}
-.label {
-  font-size: 30rpx;
-  color: var(--ink-2);
-}
-.option.active .label {
-  color: var(--brand);
-  font-weight: 700;
-}
-.check {
-  font-size: 34rpx;
-  color: var(--brand);
-  font-weight: 700;
 }
 .vocab-input {
   width: 220rpx;
