@@ -30,9 +30,20 @@ jobs:
           LABEL: auto-merge
         run: |
           set -u
+
+          # 用 REST 取 commit 的 check-runs（GITHUB_TOKEN 对 GraphQL checks 权限受限）：
+          # 返回 [{name, bucket}]；conclusion 为 null = pending
+          get_checks() {
+            local pr="$1" sha
+            sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid' 2>/dev/null) || { echo ""; return; }
+            gh api "repos/$GH_REPO/commits/$sha/check-runs" --jq '
+              .check_runs[] | {name: .name, bucket: (if .conclusion == null then "pending" else .conclusion end)}
+            ' 2>/dev/null
+          }
+
           # 标签事件只处理刚被打标的 PR；check 事件扫描全部带标签 PR
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            [ "${{ github.event.label.name }}" = "$LABEL" ] || { echo "不是 $LABEL 标签，退出"; exit 0; }
+            [ "${{ github.event.label.name }}" = "$LABEL" ] || { echo "不是 $LABEL 标签，推出"; exit 0; }
             PRS="${{ github.event.pull_request.number }}"
           else
             PRS=$(gh pr list --state open --label "$LABEL" --json number --jq '.[].number' | tr '\n' ' ')
@@ -43,13 +54,17 @@ jobs:
           for pr in $PRS; do
             echo "=== PR #$pr ==="
             while :; do
-              # 全量取检查 JSON（含名称）；取不到（尚未注册/瞬时错误）按 pending 处理，严禁当成功
-              if ! json=$(gh pr checks "$pr" --json name,bucket 2>/dev/null) || [ -z "$json" ]; then
-                echo "检查尚未注册，按 pending 处理"
+              json=$(get_checks "$pr") || true
+              if [ -z "$json" ]; then
+                # 诊断：把底层错误打出来（不再吞 stderr）
+                echo "取不到检查，原始错误:"
+                gh pr view "$pr" --json headRefOid 2>&1 | sed 's/^/  /' | head -3
+                sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid' 2>/dev/null) || sha=""
+                if [ -n "$sha" ]; then gh api "repos/$GH_REPO/commits/$sha/check-runs" 2>&1 | sed 's/^/  /' | head -3; fi
                 pending=1; failed=0
               else
                 echo "$json" | jq -r '.[] | "  \(.name): \(.bucket)"'
-                # 只统计 CI 检查，排除本 worker 自身（合并前永远 pending，等它等于死锁）
+                # 排除本 worker 自身（合并前永远 pending，等它等于死锁）
                 pending=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket == "pending")] | length')
                 failed=$(echo "$json" | jq '[.[] | select(.name != "auto-merge") | select(.bucket | test("fail|cancelled|timed_out|action_required"))] | length')
               fi
@@ -63,7 +78,6 @@ jobs:
                   break
                 else
                   echo "!!! MERGE FAILED: $merge_out"
-                  echo "!!! 合并被拒绝，停止轮询（标签保留）"
                   break
                 fi
               fi
