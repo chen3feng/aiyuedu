@@ -4,3 +4,11 @@ export function topicTags(r: { topics?: string[]; topic_labels?: string[] }): st
   const labels = r.topic_labels || [];
   return (r.topics || []).map((k, i) => labels[i] || k);
 }
+
+// 四个固定主题：list 页 tab 与 settings 主题偏好共用（labelKey 走 i18n）
+export const TOPICS = [
+  { key: "science", labelKey: "topic.science" },
+  { key: "sports", labelKey: "topic.sports" },
+  { key: "history", labelKey: "topic.history" },
+  { key: "adventure", labelKey: "topic.adventure" },
+] as const;
