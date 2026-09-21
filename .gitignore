@@ -35,3 +35,6 @@ data/writings/
 
 # 临时/逆向分析产物（含 APK、反编译文件）
 tmp/
+
+# Claude Code 本地工作目录（agent/设置，不进仓库）
+.claude/

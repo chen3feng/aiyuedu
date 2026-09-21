@@ -97,35 +97,6 @@ function browserSpeak(text: string, lang: string, onEnd?: () => void): boolean {
   return false;
 }
 
-function browserSpeakLong(text: string, lang: string, onEnd?: () => void): boolean {
-  // #ifdef H5
-  if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    const chunks = text
-      .split(/(?<=[.!?])\s+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const sentences = chunks.length ? chunks : [text];
-    let remaining = sentences.length;
-    sentences.forEach((chunk) => {
-      const u = new SpeechSynthesisUtterance(chunk);
-      u.lang = lang;
-      u.rate = 0.9;
-      const done = () => {
-        remaining -= 1;
-        if (remaining <= 0 && onEnd) onEnd();
-      };
-      u.onend = done;
-      u.onerror = done;
-      synth.speak(u);
-    });
-    return true;
-  }
-  // #endif
-  return false;
-}
-
 // 浏览器逐句朗读（回退档 / 免费试用档）：按句入队，onstart 时回调当前句下标
 function browserSpeakLines(
   sentences: string[],
@@ -186,12 +157,6 @@ export function speak(text: string, lang = "en-US"): boolean {
   if (!text) return false;
   acquireWake();
   return playUrl(ttsUrl(text, lang), () => browserSpeak(text, lang, finish()), finish());
-}
-
-export function speakLong(text: string, lang = "en-US", onEnd?: () => void): boolean {
-  if (!text) return false;
-  acquireWake();
-  return playUrl(ttsUrl(text, lang), () => browserSpeakLong(text, lang, finish(onEnd)), finish(onEnd));
 }
 
 // 逐句朗读：后端 edge-tts 每句一个音频、顺序播放，onLine 回调当前句下标（供高亮 + 滚屏）。

@@ -134,10 +134,6 @@ def delete_article(reading_id: str) -> bool:
     return reading.delete_reading(reading_id)
 
 
-def get_article(reading_id: str) -> dict | None:
-    return reading.get_reading(reading_id)
-
-
 def get_article_edit(reading_id: str) -> dict | None:
     """取文章供后台编辑：附带按已存 glosses 重建的生词表与统计，打开即显示可手工改。
 
