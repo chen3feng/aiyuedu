@@ -2,7 +2,8 @@ name: Auto merge
 
 # 私有仓库（无 GitHub Pro 分支保护）下的自动合并：
 # PR 打上 auto-merge 标签，或任一检查完成时，扫描带标签的 PR，
-# 所有检查通过 → 自动 squash 合入并删分支；有失败/进行中 → 不合（保持开启）。
+# 所有检查通过 → 自动 squash 合入（仓库已开「合后删分支」，服务端自动删）；
+# 有失败/进行中 → 不合（保持开启）。
 on:
   pull_request:
     types: [labeled]
@@ -40,15 +41,20 @@ jobs:
           for pr in $PRS; do
             echo "=== PR #$pr ==="
             while :; do
-              buckets=$(gh pr checks "$pr" --json bucket --jq '.[].bucket' 2>/dev/null || true)
+              # 检查尚未注册时 gh pr checks 会报错 / 返回空——按 pending 处理，严禁当成功
+              if ! raw=$(gh pr checks "$pr" --json bucket --jq '.[].bucket' 2>/dev/null) || [ -z "$raw" ]; then
+                buckets="pending"
+              else
+                buckets="$raw"
+              fi
               echo "检查状态: $(echo "$buckets" | tr '\n' ' ')"
               if echo "$buckets" | grep -qE 'fail|cancelled|timed_out|action_required'; then
                 echo "PR #$pr 有检查失败，不合并（标签保留，修复后自动重试）"
                 break
               fi
               if ! echo "$buckets" | grep -q pending; then
-                gh pr merge "$pr" --squash --delete-branch
-                echo "PR #$pr 已自动合入"
+                gh pr merge "$pr" --squash
+                echo "PR #$pr 已自动合入（分支由仓库设置自动删除）"
                 break
               fi
               if [ "$SECONDS" -ge "$deadline" ]; then
