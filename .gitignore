@@ -24,6 +24,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# 本地启停脚本的 pid / 日志（scripts/dev.sh）
+.run/
+
 # data：原始 63MB 数据不入库，仅保留处理后的词表
 data/wordlists/raw/
 # 运行时日志（测评会话记录，体积大且持续增长）
