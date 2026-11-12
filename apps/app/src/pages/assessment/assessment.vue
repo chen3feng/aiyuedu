@@ -71,6 +71,10 @@
         <view v-if="delta !== null" class="delta" :class="{ up: delta >= 0, down: delta < 0 }">
           {{ t("assessment.vsLast", { delta: (delta >= 0 ? "+" : "") + delta }) }}
         </view>
+        <view v-if="result?.score_interval" class="range">
+          <text class="range-value">{{ t("assessment.scoreRange", { low: result.score_interval[0], high: result.score_interval[1] }) }}</text>
+          <text class="range-hint">{{ t("assessment.scoreRangeHint") }}</text>
+        </view>
         <view class="score-line">
           <text class="muted">{{ t("assessment.summary", { correct: result?.correct, unknown: result?.unknown, wrong: result?.wrong, total: result?.total }) }}</text>
         </view>
@@ -344,6 +348,22 @@ function again() {
 }
 .delta.down {
   color: var(--danger);
+}
+.range {
+  margin-top: 16rpx;
+  text-align: center;
+}
+.range-value {
+  display: block;
+  font-size: 26rpx;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.range-hint {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--ink-4);
 }
 
 /* 结果页 */

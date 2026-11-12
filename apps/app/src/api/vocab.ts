@@ -43,6 +43,8 @@ export interface Result {
   unknown: number;
   wrong: number;
   message: string;
+  /** 自适应算法的 95% 置信区间（经典算法不返回） */
+  score_interval?: [number, number];
 }
 
 export interface AnswerResp extends Progress {
