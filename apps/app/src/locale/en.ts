@@ -63,6 +63,9 @@ export default {
     yourVocab: "Your vocabulary",
     summary: "Right {correct} · Unknown {unknown} · Wrong {wrong} (of {total})",
     again: "Take Again",
+    lastTest: "Last test {n} · {date}",
+    vsLast: "{delta} vs last time",
+    viewHistory: "View History & Trend",
   },
 
   reading: {
@@ -176,6 +179,7 @@ export default {
     tabNotebook: "Notebook",
     vocabSize: "Vocabulary",
     vocabDetail: "{total} questions · {correct} right · {unknown} unknown",
+    trendTitle: "Vocabulary trend (last {n})",
     emptyVocab: "No test records yet — take one!",
     emptyReading: "No reading records yet",
     emptyNotebook: "Your notebook is empty",

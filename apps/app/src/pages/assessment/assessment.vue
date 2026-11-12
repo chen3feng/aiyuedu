@@ -44,6 +44,10 @@
           </view>
         </view>
         <view class="hint">{{ t("assessment.honestHint") }}</view>
+        <view v-if="history.length" class="last-test" @click="goHistory">
+          <text>{{ t("assessment.lastTest", { n: history[0].vocab_size, date: fmtDate(history[0].ts) }) }}</text>
+          <text class="last-test-arrow">›</text>
+        </view>
         <button class="btn primary" :loading="loading" @click="start">{{ t("assessment.start") }}</button>
         <StateView v-if="error" type="error" class="mt24" :message="error" />
       </Card>
@@ -64,11 +68,15 @@
       <Card class="lg p48" >
         <view class="big-label">{{ t("assessment.yourVocab") }}</view>
         <view class="big-number">{{ result?.vocab_size }}</view>
+        <view v-if="delta !== null" class="delta" :class="{ up: delta >= 0, down: delta < 0 }">
+          {{ t("assessment.vsLast", { delta: (delta >= 0 ? "+" : "") + delta }) }}
+        </view>
         <view class="score-line">
           <text class="muted">{{ t("assessment.summary", { correct: result?.correct, unknown: result?.unknown, wrong: result?.wrong, total: result?.total }) }}</text>
         </view>
         <view class="message">{{ result?.message }}</view>
         <button class="btn primary" @click="again">{{ t("assessment.again") }}</button>
+        <button class="btn ghost" @click="goHistory">{{ t("assessment.viewHistory") }}</button>
       </Card>
     </view>
   </view>
@@ -80,6 +88,7 @@ import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { startTest } from "../../api/vocab";
 import type { Question, Progress, Result, VocabAlgo } from "../../api/vocab";
+import { listVocabTests, type VocabTestRecord } from "../../api/history";
 import { saveProfile } from "../../api/users";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
@@ -107,14 +116,40 @@ function setAlgo(v: VocabAlgo) {
 const question = ref<Question>({ word: "", options: [] });
 const progress = ref<Progress>({ score: 0, total: 0, correct: 0, unknown: 0, wrong: 0, converged: false });
 const result = ref<Result | null>(null);
+// 历史记录（最新在前）；用于介绍页「上次测试」和结果页「比上次」
+const history = ref<VocabTestRecord[]>([]);
+const previous = ref<VocabTestRecord | null>(null);
+const delta = ref<number | null>(null);
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("nav.assessment") });
+  loadHistory();
 });
+
+async function loadHistory() {
+  try {
+    history.value = (await listVocabTests()).items;
+  } catch {
+    /* 后端不可用时不影响测试 */
+  }
+}
+
+function goHistory() {
+  uni.navigateTo({ url: "/pages/history/history" });
+}
+
+function fmtDate(ts: number) {
+  const d = new Date(ts * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 async function start() {
   error.value = "";
   loading.value = true;
+  // 本次测试开始前的最新一条，作为结果页「比上次」的基准
+  previous.value = history.value[0] || null;
+  delta.value = null;
   try {
     const resp = await startTest(algo.value);
     algo.value = resp.algo; // 以服务端实际使用的算法为准（答题页会显示）
@@ -141,8 +176,10 @@ async function start() {
 // 答题组件结束（点完成或收敛自动结束）：存词汇量、展示结果页
 function onFinished(r: Result) {
   result.value = r;
+  delta.value = previous.value ? r.vocab_size - previous.value.vocab_size : null;
   persistVocabSize(r.vocab_size);
   phase.value = "result";
+  loadHistory(); // 本次记录已由后端写入，刷新供下次「比上次」使用
 }
 
 function persistVocabSize(v: number) {
@@ -274,6 +311,39 @@ function again() {
 .btn.primary {
   background: var(--brand);
   color: #fff;
+}
+.btn.ghost {
+  margin-top: 16rpx;
+  background: #fff;
+  color: var(--brand);
+  border: 1rpx solid var(--brand);
+}
+.last-test {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--soft);
+  border-radius: 14rpx;
+  padding: 18rpx 24rpx;
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  color: var(--ink-2);
+}
+.last-test-arrow {
+  color: var(--brand);
+  font-size: 34rpx;
+}
+.delta {
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-top: 8rpx;
+}
+.delta.up {
+  color: var(--success);
+}
+.delta.down {
+  color: var(--danger);
 }
 
 /* 结果页 */

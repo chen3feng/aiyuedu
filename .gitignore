@@ -35,6 +35,9 @@ data/logs/
 data/users/
 # 运行时写作记录（学生作文 + AI 批改报告）
 data/writings/
+# 运行时生词本与词汇测试历史（按 user_id 隔离）
+data/notebooks/
+data/vocab_tests/
 
 # 临时/逆向分析产物（含 APK、反编译文件）
 tmp/
