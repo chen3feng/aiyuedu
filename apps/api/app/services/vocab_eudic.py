@@ -1,13 +1,18 @@
-"""欧路式自适应词汇量测试：Elo/IRT 单点估计。
+"""欧路式自适应词汇量测试：贝叶斯 EAP 能力估计。
 
-复现自 dict.eudic.net 的词汇量测试（分析见 ``docs/eudic-vocab-algorithm.md``）：
+复现自 dict.eudic.net 的词汇量测试（分析见 ``docs/eudic-vocab-algorithm.md``），
+但把原版的 Elo 式增量更新换成了**网格贝叶斯 EAP**：
 
-    p = sigmoid((V - (1000 * level + 100)) / 2500)
-    K = 2000 / (1 + n / 14) ** 1.5
+    p(θ) = sigmoid((θ - (1000 * level + 100)) / 2500)
+    posterior(θ) ∝ prior(θ) × Π likelihood(θ | 每题结果)
 
-    correct : V += K * (1 - p)
-    wrong   : V -= K * p
-    unknown : V -= 0.625 * K * p
+- 答对：likelihood = p(θ)
+- 答错：likelihood = 1 - p(θ)
+- 不认识：likelihood = (1 - p(θ)) ** 0.625（延续原版的软惩罚）
+
+得分取后验均值，95% 区间取后验分位数。因为后验是各题似然的乘积，
+**给定答过的题和结果，最终得分与作答顺序无关**，不再受 Elo 步长衰减和
+路径依赖影响。选词仍沿用原版的档位偏移与探顶启发式。
 
 题目为「3 个中文释义 + 以上都不对」，另有独立的「不认识」按钮（前端已有的
 第五个操作）。约 75% 的题会把正确释义放进前三个选项，25% 的题三个释义全错、
@@ -35,11 +40,7 @@ from . import vocab_tests
 LEVEL_WIDTH = 1000          # 每个词频档约 1000 词
 LEVEL_OFFSET = 100          # 档位难度偏移
 SCALE = 2500                # logistic 斜率（分）
-K0 = 2000                   # 初始步长（分）
-TAU = 14                    # 步长衰减时间常数
-GAIN_EXP = 1.5              # 步长衰减指数
-UNKNOWN_FACTOR = 0.625      # 「不认识」相对「答错」的负向权重
-MIN_DELTA = 0.01            # 置信区间相对宽度下限
+UNKNOWN_LIKELIHOOD_POWER = 0.625  # 「不认识」的软惩罚：似然取 (1-p)^0.625
 MAX_LEVEL = 24              # wordlist.csv 覆盖 0~24 档
 MAX_SCORE = 25000           # 词库上限
 CORRECT_PRESENT_RATE = 0.75 # 正确释义出现在 3 个选项中的概率
@@ -48,6 +49,15 @@ MAX_QUESTIONS = 80          # 50 题后可继续答，最多 80 题；更多样�
 PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
 MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
 PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
+
+# —— 后验网格：0~25000 分，步长 50（501 个点）——
+GRID_STEP = 50
+GRID = tuple(float(i * GRID_STEP) for i in range(MAX_SCORE // GRID_STEP + 1))
+# 弱信息先验：均值 1000、标准差 3000，截断在 [0, 25000]。
+# 均值低是为了让前几题从高频词缓慢爬升，标准差大保证数据能主导估计。
+PRIOR_MEAN = 1000.0
+PRIOR_SD = 3000.0
+PROB_FLOOR = 1e-12          # 防止 log(0)
 
 NONE_OF_ABOVE = "以上都不对"
 
@@ -152,6 +162,11 @@ def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
     }
 
 
+def _prior_log_post() -> list[float]:
+    """先验的对数密度（未归一化；每次更新后会重新归一化）。"""
+    return [-0.5 * ((g - PRIOR_MEAN) / PRIOR_SD) ** 2 for g in GRID]
+
+
 @dataclass
 class EudicSession:
     id: str
@@ -161,8 +176,8 @@ class EudicSession:
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    info: float = 0.0          # Fisher 信息量 Σ p(1-p)，用于置信区间
-    se: float = 0.0            # 当前能力估计的标准误（分）
+    log_post: list = field(default_factory=_prior_log_post)  # 归一化后的对数后验
+    se: float = 0.0            # 后验标准差（分）
     streak: int = 0
     probe_remaining: int = 0
     probe_level: int = 0
@@ -225,36 +240,64 @@ def _make_next(sess: EudicSession) -> dict:
     return q
 
 
+def _normalize_log_post(sess: EudicSession) -> None:
+    """把对数后验归一化，并整体平移使最大值为 0，避免数值下溢。"""
+    peak = max(sess.log_post)
+    weights = [math.exp(v - peak) for v in sess.log_post]
+    log_z = math.log(sum(weights))
+    sess.log_post = [v - peak - log_z for v in sess.log_post]
+
+
+def _refresh_moments(sess: EudicSession) -> None:
+    """从后验计算均值（得分）与标准差（不确定性）。"""
+    weights = [math.exp(v) for v in sess.log_post]
+    mean = sum(g * w for g, w in zip(GRID, weights))
+    var = sum(w * (g - mean) ** 2 for g, w in zip(GRID, weights))
+    sess.score = max(0.0, min(float(MAX_SCORE), mean))
+    sess.se = math.sqrt(max(var, 0.0))
+
+
 def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
-    n = sess.total + 1
+    """按题目难度把本次作答的事实乘进后验。
+
+    答对用 p(θ)，答错用 1-p(θ)，「不认识」用 (1-p(θ))^0.625（软惩罚）。
+    由于后验是各题似然的乘积，最终结果与作答顺序无关。
+    """
     difficulty = LEVEL_WIDTH * q["level"] + LEVEL_OFFSET
-    p = sigmoid((sess.score - difficulty) / SCALE)
-    # Fisher 信息量：题目的区分度越高（p 接近 0.5），对能力估计贡献越大。
-    # 这比「答错就把有效样本数减半」更符合实际信息量。
-    sess.info += p * (1.0 - p)
-    gain = K0 / (1.0 + n / TAU) ** GAIN_EXP
-    if outcome == "correct":
-        sess.score += gain * (1.0 - p)
-    elif outcome == "unknown":
-        sess.score -= UNKNOWN_FACTOR * gain * p
-    else:
-        sess.score -= gain * p
-    sess.score = max(0.0, min(float(MAX_SCORE), sess.score))
-    sess.total = n
+    power = UNKNOWN_LIKELIHOOD_POWER if outcome == "unknown" else 1.0
+    lp = sess.log_post
+    for i, theta in enumerate(GRID):
+        p = sigmoid((theta - difficulty) / SCALE)
+        if outcome == "correct":
+            lp[i] += math.log(max(p, PROB_FLOOR))
+        else:
+            lp[i] += power * math.log(max(1.0 - p, PROB_FLOOR))
+    _normalize_log_post(sess)
+    sess.total += 1
+    _refresh_moments(sess)
 
 
-def _update_uncertainty(sess: EudicSession) -> None:
-    """按 Fisher 信息量计算标准误；信息量在 _update_score 中累计。"""
-    info = max(sess.info, 1e-9)
-    sess.se = SCALE / math.sqrt(info)
-    sess.last_delta = min(1.0, max(MIN_DELTA, 1.96 * sess.se / max(sess.score, 1.0)))
+def _score_interval(sess: EudicSession) -> list:
+    """后验的 95% 等尾区间（分位数），比均值 ± 1.96se 更稳。"""
+    weights = [math.exp(v) for v in sess.log_post]
+    total = sum(weights)
+    lo_target = 0.025 * total
+    hi_target = 0.975 * total
+    lower: Optional[int] = None
+    upper: Optional[int] = None
+    acc = 0.0
+    for g, w in zip(GRID, weights):
+        acc += w
+        if lower is None and acc >= lo_target:
+            lower = int(round(g))
+        if acc >= hi_target:
+            upper = int(round(g))
+            break
+    return [0 if lower is None else lower, MAX_SCORE if upper is None else upper]
 
 
 def _progress(sess: EudicSession) -> dict:
     score = int(round(sess.score))
-    half = 1.96 * sess.se
-    lower = max(0, int(round(sess.score - half)))
-    upper = min(MAX_SCORE, int(round(sess.score + half)))
     return {
         "score": score if sess.total >= 1 else None,
         "total": sess.total,
@@ -263,7 +306,7 @@ def _progress(sess: EudicSession) -> dict:
         "wrong": sess.wrong,
         "converged": sess.total >= 50,
         "level": _base_level(sess),
-        "score_interval": [lower, upper],
+        "score_interval": _score_interval(sess),
     }
 
 
@@ -290,7 +333,7 @@ def _log_answer(sess: EudicSession, q: dict, response: str) -> None:
 
 
 def _result(sess: EudicSession) -> dict:
-    score = int(round(sess.score))
+    score = int(round(sess.score)) if sess.total else 0
     return {
         "vocab_size": int(round(sess.score / 10) * 10),
         "score": score,
@@ -349,7 +392,6 @@ def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> d
         sess.probes_used += 1
         sess.last_probe_failed = probe_failed
         sess.last_probe_end_n = sess.total
-    _update_uncertainty(sess)
     sess.history.append(int(round(sess.score)))
     _log_answer(sess, q, outcome)
 

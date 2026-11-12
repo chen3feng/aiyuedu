@@ -9,7 +9,6 @@
 
 运行：uv run --directory apps/api pytest -q
 """
-import math
 import random
 
 import pytest
@@ -74,59 +73,57 @@ def test_question_carries_real_gloss():
 
 # ---------- 分数更新 ----------
 
-def _expected(score, level, n, outcome):
-    p = eudic.sigmoid((score - (eudic.LEVEL_WIDTH * level + eudic.LEVEL_OFFSET)) / eudic.SCALE)
-    gain = eudic.K0 / (1.0 + n / eudic.TAU) ** eudic.GAIN_EXP
-    if outcome == "correct":
-        return score + gain * (1.0 - p)
-    if outcome == "unknown":
-        return score - eudic.UNKNOWN_FACTOR * gain * p
-    return score - gain * p
+def _apply(sess: eudic.EudicSession, items) -> None:
+    for level, outcome in items:
+        eudic._update_score(sess, {"level": level}, outcome)
 
 
-@pytest.mark.parametrize("outcome", ["correct", "wrong", "unknown"])
-def test_score_update_matches_formula(outcome):
-    sess = eudic.EudicSession(id="x")
-    sess.score = 3000.0
-    q = {"level": 5}
-    eudic._update_score(sess, q, outcome)
-    assert sess.total == 1
-    assert sess.score == pytest.approx(_expected(3000.0, 5, 1, outcome))
+def test_posterior_score_is_order_invariant():
+    """给定相同的题目与结果，最终得分不应受作答顺序影响。"""
+    items = [
+        (5, "correct"), (9, "wrong"), (2, "unknown"),
+        (12, "correct"), (7, "unknown"), (3, "wrong"),
+    ] * 5
+    a = eudic.EudicSession(id="a")
+    b = eudic.EudicSession(id="b")
+    _apply(a, items)
+    _apply(b, list(reversed(items)))
+    assert a.score == pytest.approx(b.score, abs=1e-6)
+    assert a.se == pytest.approx(b.se, abs=1e-6)
+    assert eudic._progress(a)["score_interval"] == eudic._progress(b)["score_interval"]
+
+
+def test_correct_raises_estimate_and_wrong_lowers_it():
+    correct = eudic.EudicSession(id="c")
+    wrong = eudic.EudicSession(id="w")
+    unknown = eudic.EudicSession(id="u")
+    _apply(correct, [(10, "correct")])
+    _apply(wrong, [(10, "wrong")])
+    _apply(unknown, [(10, "unknown")])
+    assert correct.score > wrong.score
+    # 「不认识」比答错扣得轻，但仍低于答对
+    assert unknown.score > wrong.score
+    assert correct.score > unknown.score
 
 
 def test_score_never_negative():
     sess = eudic.EudicSession(id="x")
-    sess.score = 0.0
     for _ in range(5):
         eudic._update_score(sess, {"level": 20}, "wrong")
     assert sess.score >= 0.0
 
 
-def test_interval_uses_answer_information():
+def test_interval_contains_estimate_and_narrows():
     sess = eudic.EudicSession(id="x")
-    eudic._update_score(sess, {"level": 5}, "correct")
-    eudic._update_uncertainty(sess)
-    assert sess.info > 0
-    assert sess.se == pytest.approx(eudic.SCALE / math.sqrt(sess.info))
+    _apply(sess, [(5, "correct")])
     first = eudic._progress(sess)["score_interval"]
-    assert first[0] < first[1]
+    assert first[0] <= round(sess.score) <= first[1]
 
-    # 继续在同难度题上作答，信息量增加，区间应单调变窄
-    for _ in range(10):
-        eudic._update_score(sess, {"level": 5}, "correct")
-        eudic._update_uncertainty(sess)
+    # 继续在同难度题上作答，后验信息增加，区间应单调变窄
+    _apply(sess, [(5, "correct")] * 15)
     later = eudic._progress(sess)["score_interval"]
     assert (later[1] - later[0]) < (first[1] - first[0])
-
-
-def test_interval_is_symmetric_around_score():
-    sess = eudic.EudicSession(id="x")
-    for _ in range(10):
-        eudic._update_score(sess, {"level": 5}, "correct")
-    eudic._update_uncertainty(sess)
-    lo, hi = eudic._progress(sess)["score_interval"]
-    assert lo < sess.score < hi
-    assert (sess.score - lo) == pytest.approx(hi - sess.score, abs=1)
+    assert later[0] <= round(sess.score) <= later[1]
 
 
 # ---------- 自适应选题与探顶 ----------
@@ -221,11 +218,11 @@ def test_all_correct_flow_reaches_high_score():
     assert result["ready"] is True
 
 
-def test_all_unknown_flow_stays_at_zero():
+def test_all_unknown_flow_scores_low():
     result = _run_flow(lambda q: (None, True))
     assert result["total"] == eudic.MAX_QUESTIONS
     assert result["unknown"] == eudic.MAX_QUESTIONS
-    assert result["score"] == 0
+    assert result["score"] < 1000
 
 
 def test_finish_is_idempotent():
