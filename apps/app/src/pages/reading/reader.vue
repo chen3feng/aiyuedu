@@ -58,6 +58,7 @@ import { computed, getCurrentInstance, nextTick, ref } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { getReading, recordReading } from "../../api/reading";
+import { addNotebookItem } from "../../api/notebook";
 import type { ActiveWord, ChoiceQuiz, ReadingDetail, ReadingWord, VocabItem } from "../../api/reading";
 import { speak, speakLines, stopSpeak } from "../../utils/tts";
 import WordPopup from "../../components/WordPopup.vue";
@@ -204,19 +205,30 @@ function toggleSpeakAll() {
   if (!ok) playing.value = false;
 }
 
-function addToNotebook() {
+async function addToNotebook() {
   const w = activeWord.value;
   if (!w) return;
   const word = w.lemma || w.w.toLowerCase();
-  const list = (uni.getStorageSync("notebook") || []) as Array<{
-    word: string;
-    gloss: string;
-    phonetic?: string;
-    ts: number;
-  }>;
-  if (!list.some((it) => it.word === word)) {
-    list.push({ word, gloss: w.gloss || "", phonetic: w.phonetic, ts: Date.now() });
-    uni.setStorageSync("notebook", list);
+  try {
+    // 登录后写服务端，跨设备同步
+    await addNotebookItem({
+      word,
+      gloss: w.gloss || "",
+      phonetic: w.phonetic || "",
+      reading_id: id.value,
+    });
+  } catch {
+    // 离线 / 未登录且服务不可用：回退本机存储，注册后自动同步
+    const list = (uni.getStorageSync("notebook") || []) as Array<{
+      word: string;
+      gloss: string;
+      phonetic?: string;
+      ts: number;
+    }>;
+    if (!list.some((it) => it.word === word)) {
+      list.push({ word, gloss: w.gloss || "", phonetic: w.phonetic, ts: Date.now() });
+      uni.setStorageSync("notebook", list);
+    }
   }
   uni.showToast({ title: t("reading.reader.addedNotebook"), icon: "success" });
   closePopup();

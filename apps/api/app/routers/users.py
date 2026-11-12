@@ -1,7 +1,8 @@
-"""用户档案接口：按 X-User-Id 请求头识别当前用户。"""
-from fastapi import APIRouter, Header, HTTPException
+"""用户档案接口：登录 token 优先，否则按 X-User-Id 识别匿名用户。"""
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from ..deps import current_user_id
 from ..services import topics, users
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -18,7 +19,7 @@ def _uid(user_id: str | None) -> str:
 
 
 @router.get("/me")
-def get_me(user_id: str | None = Header(None, alias="X-User-Id")):
+def get_me(user_id: str = Depends(current_user_id)):
     uid = _uid(user_id)
     prof = users.get_profile(uid)
     prof["user_id"] = uid
@@ -26,7 +27,7 @@ def get_me(user_id: str | None = Header(None, alias="X-User-Id")):
 
 
 @router.put("/me")
-def put_me(payload: ProfileIn, user_id: str | None = Header(None, alias="X-User-Id")):
+def put_me(payload: ProfileIn, user_id: str = Depends(current_user_id)):
     uid = _uid(user_id)
     patch: dict = {}
     if payload.topic_preferences is not None:

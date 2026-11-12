@@ -15,6 +15,7 @@ import csv
 import html as _html
 import json
 import re
+import threading
 import time
 from functools import lru_cache
 from pathlib import Path
@@ -609,6 +610,91 @@ def record_reading(
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+
+# ---------- 阅读进度：按 user_id 读回 / 迁移 / 删除 ----------
+
+_record_lock = threading.Lock()
+
+
+def _iter_records() -> list[dict]:
+    """读取全部阅读记录；文件缺失或坏行跳过。"""
+    path = Path(settings.reading_log_path)
+    if not path.exists():
+        return []
+    rows: list[dict] = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(rec, dict):
+                    rows.append(rec)
+    except OSError:
+        return []
+    return rows
+
+
+def list_progress(user_id: str | None) -> list[dict]:
+    """某用户每篇阅读的最新进度，按最后阅读时间倒序。"""
+    if not user_id:
+        return []
+    latest: dict[str, dict] = {}
+    for rec in _iter_records():
+        if rec.get("user_id") != user_id:
+            continue
+        rid = rec.get("reading_id")
+        if not rid:
+            continue
+        old = latest.get(rid)
+        if old is None or rec.get("ts", 0) >= old.get("ts", 0):
+            latest[rid] = rec
+    return sorted(latest.values(), key=lambda r: r.get("ts", 0), reverse=True)
+
+
+def _rewrite_records(transform) -> int:
+    """按 transform(record) -> record|None 重写 JSONL，返回改动行数。"""
+    with _record_lock:
+        rows = _iter_records()
+        changed = 0
+        out: list[dict] = []
+        for rec in rows:
+            new = transform(rec)
+            if new is None or new != rec:
+                changed += 1
+            if new is not None:
+                out.append(new)
+        if changed:
+            path = Path(settings.reading_log_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_suffix(path.suffix + ".tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                for rec in out:
+                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            tmp.replace(path)
+        return changed
+
+
+def move_user_records(src: str, dst: str) -> int:
+    """把 src 的阅读记录改挂到 dst。"""
+    def _move(rec: dict) -> dict:
+        if rec.get("user_id") == src:
+            rec = dict(rec)
+            rec["user_id"] = dst
+        return rec
+    return _rewrite_records(_move)
+
+
+def delete_user_records(user_id: str) -> int:
+    """删除某用户的全部阅读记录。"""
+    def _drop(rec: dict) -> dict | None:
+        return None if rec.get("user_id") == user_id else rec
+    return _rewrite_records(_drop)
 
 
 # ---------- 后台：自动定级 / 自动注释 / 文章 CRUD ----------

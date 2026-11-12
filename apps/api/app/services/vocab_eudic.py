@@ -29,6 +29,7 @@ from typing import Optional
 
 from ..config import settings
 from . import vocab as _classic
+from . import vocab_tests
 
 # —— 拟合得到的算法常数（见 docs/eudic-vocab-algorithm.md §4）——
 LEVEL_WIDTH = 1000          # 每个词频档约 1000 词
@@ -169,6 +170,8 @@ class EudicSession:
     recent: list = field(default_factory=list)
     history: list = field(default_factory=list)
     finished: bool = False
+    user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
+    recorded: bool = False                           # 历史只记一次
 
 
 _sessions: dict[str, EudicSession] = {}
@@ -292,9 +295,9 @@ def _result(sess: EudicSession) -> dict:
     }
 
 
-def start_test() -> tuple[str, dict, dict]:
+def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    sess = EudicSession(id=sid)
+    sess = EudicSession(id=sid, user_id=user_id)
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)
@@ -353,6 +356,7 @@ def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> d
 
     if sess.total >= MAX_QUESTIONS:
         sess.finished = True
+        _record(sess)
         return {"finished": True, "feedback": feedback, **progress, "result": _result(sess)}
 
     sess.current = _make_next(sess)
@@ -364,7 +368,26 @@ def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> d
     }
 
 
+def _record(sess: EudicSession) -> None:
+    """把完成的测评写进用户历史（幂等；匿名/未作答不记）。"""
+    if sess.recorded or not sess.user_id or sess.total == 0:
+        return
+    sess.recorded = True
+    result = _result(sess)
+    vocab_tests.add(sess.user_id, {
+        "ts": round(time.time(), 3),
+        "algo": "eudic",
+        "score": result["score"],
+        "vocab_size": result["vocab_size"],
+        "total": result["total"],
+        "correct": result["correct"],
+        "wrong": result["wrong"],
+        "unknown": result["unknown"],
+    })
+
+
 def finish_test(sess: EudicSession) -> dict:
     """用户主动结束测评，返回最终成绩（幂等，可重复调用）。"""
     sess.finished = True
+    _record(sess)
     return _result(sess)

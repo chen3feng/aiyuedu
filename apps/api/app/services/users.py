@@ -59,3 +59,22 @@ def upsert_profile(user_id: str, patch: dict) -> dict:
         users[user_id] = prof
         _write(users)
         return dict(prof)
+
+
+def move_user(src: str, dst: str) -> int:
+    """把 src 的档案整体搬到 dst；返回搬移条数（0/1）。"""
+    with _lock:
+        users = _read()
+        prof = users.pop(src, None)
+        if prof is None:
+            return 0
+        users[dst] = prof
+        _write(users)
+        return 1
+
+
+def delete_user(user_id: str) -> None:
+    with _lock:
+        users = _read()
+        if users.pop(user_id, None) is not None:
+            _write(users)

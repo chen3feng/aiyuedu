@@ -32,7 +32,11 @@
               <text v-if="r.title_zh" class="book-title-zh">{{ r.title_zh }}</text>
               <text class="book-title">{{ r.title }}</text>
               <text v-if="r.author" class="book-author">{{ r.author }}</text>
-              <text class="book-chapters">📖 {{ r.total_chapters }} {{ t("reading.list.chapters") }}</text>
+              <text v-if="latestForCollection(r.id)" class="book-progress">
+                {{ t("reading.list.lastChapter", { n: latestForCollection(r.id)!.chapter_index ?? 1 }) }}
+                · {{ pct(latestForCollection(r.id)!.completed_ratio) }}
+              </text>
+              <text v-else class="book-chapters">📖 {{ r.total_chapters }} {{ t("reading.list.chapters") }}</text>
             </view>
             <text class="book-arrow">›</text>
           </view>
@@ -52,6 +56,12 @@
           <view class="meta">
             <text class="meta-item">{{ t("reading.list.wordCount", { n: r.word_count }) }}</text>
             <text class="meta-item">{{ t("reading.list.newWordRate", { n: (r.new_word_rate * 100).toFixed(1) }) }}</text>
+            <text v-if="progressOf(r.id)" class="meta-item continue">
+              {{ t("reading.list.continue") }} · {{ pct(progressOf(r.id)!.completed_ratio) }}
+            </text>
+          </view>
+          <view v-if="progressOf(r.id)" class="progress-track">
+            <view class="progress-fill" :style="{ width: pct(progressOf(r.id)!.completed_ratio) }" />
           </view>
         </template>
       </Card>
@@ -65,6 +75,7 @@ import { ref } from "vue";
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadings } from "../../api/reading";
+import { listReadingProgress, type ReadingProgress } from "../../api/history";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
 import BookCover from "../../components/BookCover.vue";
@@ -83,6 +94,7 @@ const tabs = [{ key: "", labelKey: "reading.list.all" }, ...TOPICS.map(
 const level = ref<number>(Number(uni.getStorageSync("vocab_size")) || 3600);
 const activeTopic = ref("");
 const items = ref<ReadingSummary[]>([]);
+const progress = ref<ReadingProgress[]>([]);
 const loading = ref(false);
 const error = ref("");
 
@@ -112,13 +124,32 @@ async function fetchList() {
   loading.value = true;
   error.value = "";
   try {
-    const resp = await listReadings(level.value, activeTopic.value || undefined);
+    const [resp, prog] = await Promise.all([
+      listReadings(level.value, activeTopic.value || undefined),
+      listReadingProgress().catch(() => ({ items: [] as ReadingProgress[] })),
+    ]);
     items.value = resp.items;
+    progress.value = prog.items;
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
     loading.value = false;
   }
+}
+
+function progressOf(readingId: string): ReadingProgress | undefined {
+  return progress.value.find((p) => p.reading_id === readingId);
+}
+
+/** 作品集：取各章节里最后读的那一章。 */
+function latestForCollection(collectionId: string): ReadingProgress | undefined {
+  return progress.value
+    .filter((p) => p.collection_id === collectionId)
+    .sort((a, b) => b.ts - a.ts)[0];
+}
+
+function pct(ratio: number) {
+  return `${Math.round(Math.min(1, Math.max(0, ratio || 0)) * 100)}%`;
 }
 
 function setTopic(key: string) {
@@ -128,7 +159,15 @@ function setTopic(key: string) {
 
 function open(r: ReadingSummary) {
   if (r.is_collection) {
-    // 作品集：进入书籍详情页（列出所有章节）
+    // 有进度直接续读上次章节，否则进书籍详情
+    const latest = latestForCollection(r.id);
+    if (latest) {
+      const lv = latest.level || level.value;
+      uni.navigateTo({
+        url: `/pages/reading/reader?id=${encodeURIComponent(latest.reading_id)}&level=${lv}`,
+      });
+      return;
+    }
     uni.navigateTo({ url: `/pages/reading/collection-detail?id=${r.id}` });
   } else {
     uni.navigateTo({ url: `/pages/reading/reader?id=${r.id}&level=${level.value}` });
@@ -215,6 +254,22 @@ function open(r: ReadingSummary) {
   font-size: 24rpx;
   color: var(--ink-4);
 }
+.meta-item.continue {
+  color: var(--brand);
+  font-weight: 600;
+}
+.progress-track {
+  margin-top: 16rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: var(--soft);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: var(--brand);
+}
 
 /* 作品集（书籍）整体入口卡片 */
 .book-card {
@@ -259,6 +314,12 @@ function open(r: ReadingSummary) {
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
   align-self: flex-start;
+  margin-top: 4rpx;
+}
+.book-progress {
+  font-size: 22rpx;
+  color: var(--brand);
+  font-weight: 600;
   margin-top: 4rpx;
 }
 .book-arrow {

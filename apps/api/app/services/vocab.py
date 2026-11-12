@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..config import settings
+from . import vocab_tests
 
 # —— 分层抽样参数 ——
 # 词频分段边界（rank，半开区间 [BANDS[i], BANDS[i+1])；末段含右端点 25000）
@@ -272,6 +273,8 @@ class TestSession:
     wrong: int = 0
     finished: bool = False
     history: list = field(default_factory=list)      # 每次估值，供调试
+    user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
+    recorded: bool = False                           # 历史只记一次
 
 
 _sessions: dict[str, TestSession] = {}
@@ -307,9 +310,9 @@ def _progress(sess: TestSession, estimate: Optional[float] = None) -> dict:
     }
 
 
-def start_test() -> tuple[str, dict, dict]:
+def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    sess = TestSession(id=sid)
+    sess = TestSession(id=sid, user_id=user_id)
     _sessions[sid] = sess
     sess.current = _pick_in_band(_next_band(sess), set())
     return sid, _public(sess.current), _progress(sess)
@@ -405,13 +408,33 @@ def submit_answer(sess: TestSession, choice: Optional[int], unknown: bool) -> di
 
     if sess.total >= MAX_QUESTIONS:
         sess.finished = True
+        _record(sess)
         return {"finished": True, "feedback": feedback, **progress, "result": _result(sess)}
 
     sess.current = _pick_in_band(_next_band(sess), set(sess.recent))
     return {"finished": False, "feedback": feedback, **progress, "question": _public(sess.current)}
 
 
+def _record(sess: TestSession) -> None:
+    """把完成的测评写进用户历史（幂等；匿名/未作答不记）。"""
+    if sess.recorded or not sess.user_id or sess.total == 0:
+        return
+    sess.recorded = True
+    result = _result(sess)
+    vocab_tests.add(sess.user_id, {
+        "ts": round(time.time(), 3),
+        "algo": "classic",
+        "score": result["score"],
+        "vocab_size": result["vocab_size"],
+        "total": result["total"],
+        "correct": result["correct"],
+        "wrong": result["wrong"],
+        "unknown": result["unknown"],
+    })
+
+
 def finish_test(sess: TestSession) -> dict:
     """用户主动结束测评，返回最终成绩（幂等，可重复调用）。"""
     sess.finished = True
+    _record(sess)
     return _result(sess)

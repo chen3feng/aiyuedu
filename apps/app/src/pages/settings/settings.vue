@@ -1,5 +1,34 @@
 <template>
   <view class="page">
+    <Card class="lg p40 account-card">
+      <template v-if="authUser">
+        <view class="account-row">
+          <view class="avatar">{{ initial }}</view>
+          <view class="account-info">
+            <text class="account-name">{{ authUser.username }}</text>
+            <text class="account-sub">{{ t("settings.loggedInHint") }}</text>
+          </view>
+        </view>
+        <view class="account-actions">
+          <view class="account-btn" @click="goHistory">{{ t("settings.history") }}</view>
+          <view class="account-btn" @click="goPassword">{{ t("settings.changePassword") }}</view>
+          <view class="account-btn" @click="doLogout">{{ t("settings.logout") }}</view>
+          <view class="account-btn danger" @click="doDelete">{{ t("settings.deleteAccount") }}</view>
+        </view>
+      </template>
+      <template v-else>
+        <view class="account-info">
+          <text class="account-name">{{ t("settings.notLoggedIn") }}</text>
+          <text class="account-sub">{{ t("settings.loginHint") }}</text>
+        </view>
+        <view class="account-actions">
+          <view class="account-btn primary" @click="goLogin">{{ t("settings.login") }}</view>
+          <view class="account-btn" @click="goRegister">{{ t("settings.register") }}</view>
+          <view class="account-btn" @click="goHistory">{{ t("settings.history") }}</view>
+        </view>
+      </template>
+    </Card>
+
     <CheckList
       :title="t('settings.language')"
       :options="langOptions"
@@ -39,6 +68,8 @@ import { useI18n } from "vue-i18n";
 import { onShow } from "@dcloudio/uni-app";
 import { langSetting, setLanguage, type LangSetting } from "../../locale";
 import { getProfile, saveProfile } from "../../api/users";
+import { deleteAccount, logout } from "../../api/auth";
+import { clearAuth, getAuthUser, type AuthUser } from "../../utils/user";
 import Card from "../../components/Card.vue";
 import CheckList from "../../components/CheckList.vue";
 import { TOPICS } from "../../utils/topics";
@@ -56,11 +87,78 @@ const topicOptions = TOPICS.map((tp) => ({ value: tp.key, labelKey: tp.labelKey 
 const prefs = ref<string[]>([]);
 const vocab = ref<number | null>(null);
 const vocabInput = ref("");
+const authUser = ref<AuthUser | null>(null);
+const initial = ref("");
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("settings.title") });
+  authUser.value = getAuthUser();
+  initial.value = (authUser.value?.username || "?").slice(0, 1).toUpperCase();
   loadProfile();
 });
+
+function goLogin() {
+  uni.navigateTo({ url: "/pages/auth/login" });
+}
+
+function goRegister() {
+  uni.navigateTo({ url: "/pages/auth/register" });
+}
+
+function goPassword() {
+  uni.navigateTo({ url: "/pages/auth/password" });
+}
+
+function goHistory() {
+  uni.navigateTo({ url: "/pages/history/history" });
+}
+
+function doLogout() {
+  uni.showModal({
+    title: t("settings.logout"),
+    content: t("settings.logoutConfirm"),
+    success: async (res) => {
+      if (!res.confirm) return;
+      try {
+        await logout();
+      } catch {
+        // token 已失效也照常清理本地
+      }
+      clearAuth();
+      authUser.value = null;
+      uni.showToast({ title: t("settings.loggedOut"), icon: "success" });
+    },
+  });
+}
+
+function doDelete() {
+  uni.showModal({
+    title: t("settings.deleteAccount"),
+    content: t("settings.deleteConfirm"),
+    confirmColor: "#fa5151",
+    success: (res) => {
+      if (!res.confirm) return;
+      uni.showModal({
+        title: t("settings.deleteAccount"),
+        editable: true,
+        placeholderText: t("settings.deletePasswordHint"),
+        confirmColor: "#fa5151",
+        success: async (input) => {
+          if (!input.confirm) return;
+          try {
+            await deleteAccount(input.content || "");
+            clearAuth();
+            authUser.value = null;
+            uni.showToast({ title: t("settings.deleted"), icon: "success" });
+            setTimeout(() => uni.reLaunch({ url: "/pages/index/index" }), 500);
+          } catch (e) {
+            uni.showToast({ title: (e as Error).message, icon: "none" });
+          }
+        },
+      });
+    },
+  });
+}
 
 function choose(value: LangSetting) {
   setLanguage(value);
@@ -112,6 +210,62 @@ function saveVocab() {
   background: var(--bg);
   padding: 40rpx;
   box-sizing: border-box;
+}
+.account-card {
+  margin-bottom: 24rpx;
+}
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 38rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.account-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.account-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+.account-sub {
+  font-size: 24rpx;
+  color: var(--ink-4);
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+.account-btn {
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: var(--soft);
+  color: var(--brand);
+  font-size: 26rpx;
+}
+.account-btn.primary {
+  background: var(--brand);
+  color: #fff;
+}
+.account-btn.danger {
+  color: var(--danger);
 }
 .vocab-input {
   width: 220rpx;

@@ -214,7 +214,7 @@ def test_classic_feedback_also_has_word_gloss():
 # ---------- 路由开关 ----------
 
 def test_router_start_eudic_creates_eudic_session():
-    resp = vocab_router.start(vocab_router.StartIn(algo="eudic"))
+    resp = vocab_router.start(vocab_router.StartIn(algo="eudic"), user_id="")
     assert resp["algo"] == "eudic"
     sid = resp["session_id"]
     assert eudic.get_session(sid) is not None
@@ -224,7 +224,7 @@ def test_router_start_eudic_creates_eudic_session():
 
 
 def test_router_answer_and_finish_dispatch_by_session():
-    resp = vocab_router.start(vocab_router.StartIn(algo="eudic"))
+    resp = vocab_router.start(vocab_router.StartIn(algo="eudic"), user_id="")
     sid = resp["session_id"]
     ans = vocab_router.answer(vocab_router.AnswerIn(session_id=sid, choice=0, unknown=False))
     assert ans["feedback"]["response"] in {"correct", "wrong"}
@@ -236,7 +236,7 @@ def test_router_answer_and_finish_dispatch_by_session():
 
 def test_router_default_algo_is_classic(monkeypatch):
     monkeypatch.setattr(vocab_router.settings, "vocab_algo", "classic")
-    resp = vocab_router.start(None)
+    resp = vocab_router.start(None, user_id="")
     assert resp["algo"] == "classic"
     assert vocab.get_session(resp["session_id"]) is not None
 

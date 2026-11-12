@@ -5,7 +5,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from ..services import admin, ai, reading, topics
+from ..services import admin, ai, auth, reading, topics
 
 router = APIRouter(prefix="/api", tags=["admin"])
 
@@ -264,3 +264,20 @@ def test_ai(payload: AITestIn):
         return {"ok": True, "content": content.strip()}
     except RuntimeError as e:
         return {"ok": False, "error": str(e)}
+
+
+# ---------- 用户账号 ----------
+
+@router.get("/users")
+def list_users():
+    return {"items": auth.account_stats()}
+
+
+@router.post("/users/{user_id}/reset-password")
+def reset_password(user_id: str):
+    """管理员重置密码，返回一次性临时密码（账号所有旧会话失效）。"""
+    try:
+        username, temp = auth.admin_reset_password(user_id)
+    except auth.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=str(e))
+    return {"ok": True, "username": username, "temp_password": temp}

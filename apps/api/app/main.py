@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import reading, tts, users, vocab, writing, collections
+from .routers import auth, collections, notebook, reading, tts, users, vocab, writing
 
 app = FastAPI(title=settings.app_name)
 
@@ -14,11 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(vocab.router)
 app.include_router(reading.router)
 app.include_router(tts.router)
 app.include_router(users.router)
 app.include_router(writing.router)
+app.include_router(notebook.router)
 app.include_router(collections.router)
 
 

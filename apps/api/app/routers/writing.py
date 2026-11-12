@@ -7,11 +7,12 @@ API 契约：
 - GET    /writings/{essay_id}            取一篇
 - DELETE /writings/{essay_id}            删除
 
-X-User-Id 缺失时用 "anonymous"，与 routers/users.py 一致。
+登录 token 优先；未登录时用 X-User-Id，缺失则 "anonymous"，与 routers/users.py 一致。
 """
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from ..deps import current_user_id
 from ..services import prompts, writing
 
 router = APIRouter(prefix="/writings", tags=["writing"])
@@ -33,7 +34,7 @@ def list_prompts():
 
 
 @router.post("")
-def submit(payload: SubmitIn, user_id: str | None = Header(None, alias="X-User-Id")):
+def submit(payload: SubmitIn, user_id: str = Depends(current_user_id)):
     try:
         return writing.submit_essay(
             _uid(user_id), payload.prompt_key, payload.original, payload.target_words
@@ -43,12 +44,12 @@ def submit(payload: SubmitIn, user_id: str | None = Header(None, alias="X-User-I
 
 
 @router.get("")
-def list_my(user_id: str | None = Header(None, alias="X-User-Id")):
+def list_my(user_id: str = Depends(current_user_id)):
     return {"items": writing.list_essays(_uid(user_id))}
 
 
 @router.get("/{essay_id}")
-def get(essay_id: str, user_id: str | None = Header(None, alias="X-User-Id")):
+def get(essay_id: str, user_id: str = Depends(current_user_id)):
     essay = writing.get_essay(_uid(user_id), essay_id)
     if essay is None:
         raise HTTPException(status_code=404, detail="作文不存在")
@@ -56,7 +57,7 @@ def get(essay_id: str, user_id: str | None = Header(None, alias="X-User-Id")):
 
 
 @router.delete("/{essay_id}")
-def delete(essay_id: str, user_id: str | None = Header(None, alias="X-User-Id")):
+def delete(essay_id: str, user_id: str = Depends(current_user_id)):
     if not writing.delete_essay(_uid(user_id), essay_id):
         raise HTTPException(status_code=404, detail="作文不存在")
     return {"ok": True}
