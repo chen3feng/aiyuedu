@@ -5,6 +5,26 @@
       <Card class="lg p48" >
         <view class="title">{{ t("assessment.title") }}</view>
         <view class="subtitle">{{ t("assessment.subtitle") }}</view>
+        <view class="algo-switch">
+          <view class="algo-head">
+            <text class="algo-label">{{ t("assessment.algoLabel") }}</text>
+            <view class="algo-chips">
+              <text
+                class="algo-chip"
+                :class="{ active: algo === 'classic' }"
+                @click="setAlgo('classic')"
+              >{{ t("assessment.algoClassic") }}</text>
+              <text
+                class="algo-chip"
+                :class="{ active: algo === 'eudic' }"
+                @click="setAlgo('eudic')"
+              >{{ t("assessment.algoEudic") }}</text>
+            </view>
+          </view>
+          <text class="algo-hint">
+            {{ algo === "eudic" ? t("assessment.algoEudicHint") : t("assessment.algoClassicHint") }}
+          </text>
+        </view>
         <view class="rules">
           <view class="rule-title">{{ t("assessment.howTo") }}</view>
           <view class="rule-row">
@@ -33,6 +53,7 @@
     <AssessmentQuiz
       v-else-if="phase === 'quiz'"
       :session-id="sessionId"
+      :algo="algo"
       :initial-question="question"
       :initial-progress="progress"
       @finished="onFinished"
@@ -58,7 +79,7 @@ import { ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { startTest } from "../../api/vocab";
-import type { Question, Progress, Result } from "../../api/vocab";
+import type { Question, Progress, Result, VocabAlgo } from "../../api/vocab";
 import { saveProfile } from "../../api/users";
 import StateView from "../../components/StateView.vue";
 import Card from "../../components/Card.vue";
@@ -72,6 +93,16 @@ const phase = ref<Phase>("intro");
 const loading = ref(false);
 const error = ref("");
 const sessionId = ref("");
+// 算法开关：classic = 固定分层抽样，eudic = 自适应 Elo/IRT。记住上次选择。
+// 首次进入默认用欧路自适应，方便先测新算法；可随时切回经典。
+const ALGO_KEY = "vocab_algo";
+const algo = ref<VocabAlgo>(
+  (uni.getStorageSync(ALGO_KEY) as VocabAlgo) || "eudic",
+);
+function setAlgo(v: VocabAlgo) {
+  algo.value = v;
+  uni.setStorageSync(ALGO_KEY, v);
+}
 // 作为 AssessmentQuiz 的初始数据（start 返回），之后状态由组件自管
 const question = ref<Question>({ word: "", options: [] });
 const progress = ref<Progress>({ score: 0, total: 0, correct: 0, unknown: 0, wrong: 0, converged: false });
@@ -85,7 +116,8 @@ async function start() {
   error.value = "";
   loading.value = true;
   try {
-    const resp = await startTest();
+    const resp = await startTest(algo.value);
+    algo.value = resp.algo; // 以服务端实际使用的算法为准（答题页会显示）
     sessionId.value = resp.session_id;
     question.value = resp.question;
     progress.value = {
@@ -95,6 +127,8 @@ async function start() {
       unknown: resp.unknown,
       wrong: resp.wrong,
       converged: resp.converged ?? false,
+      score_interval: resp.score_interval,
+      level: resp.level,
     };
     phase.value = "quiz";
   } catch (e) {
@@ -190,6 +224,46 @@ function again() {
   border-radius: 12rpx;
   padding: 20rpx;
   line-height: 1.6;
+}
+.algo-switch {
+  margin-top: 32rpx;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  background: var(--soft);
+}
+.algo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.algo-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+.algo-chips {
+  display: flex;
+  gap: 12rpx;
+}
+.algo-chip {
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: var(--ink-3);
+  background: #fff;
+  border: 2rpx solid transparent;
+}
+.algo-chip.active {
+  color: var(--brand);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+.algo-hint {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: var(--ink-4);
+  line-height: 1.5;
 }
 .btn {
   margin-top: 40rpx;

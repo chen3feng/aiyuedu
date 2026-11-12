@@ -1,9 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..services import vocab
+from ..config import settings
+from ..services import vocab, vocab_eudic
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
+
+# 算法开关：classic = 固定分层抽样，eudic = 自适应 Elo/IRT。
+_ALGOS = {"classic": vocab, "eudic": vocab_eudic}
+
+
+class StartIn(BaseModel):
+    algo: str | None = None
 
 
 class AnswerIn(BaseModel):
@@ -16,12 +24,26 @@ class FinishIn(BaseModel):
     session_id: str
 
 
+def _service_and_session(sid: str):
+    """按会话 id 找到所属算法模块（两套算法各自维护会话）。"""
+    for svc in _ALGOS.values():
+        sess = svc.get_session(sid)
+        if sess is not None:
+            return svc, sess
+    return None, None
+
+
 @router.post("/test/start")
-def start():
-    sid, question, progress = vocab.start_test()
+def start(payload: StartIn | None = None):
+    algo = ((payload.algo if payload else None) or settings.vocab_algo).lower()
+    svc = _ALGOS.get(algo)
+    if svc is None:
+        raise HTTPException(status_code=400, detail=f"未知算法：{algo}")
+    sid, question, progress = svc.start_test()
     return {
         "session_id": sid,
-        "rules": vocab.RULES,
+        "algo": algo,
+        "rules": svc.RULES,
         "question": question,
         **progress,
     }
@@ -29,17 +51,17 @@ def start():
 
 @router.post("/test/answer")
 def answer(payload: AnswerIn):
-    sess = vocab.get_session(payload.session_id)
+    svc, sess = _service_and_session(payload.session_id)
     if sess is None:
         raise HTTPException(status_code=404, detail="会话不存在或已过期")
     if sess.finished:
         raise HTTPException(status_code=400, detail="该测评已完成")
-    return vocab.submit_answer(sess, payload.choice, payload.unknown)
+    return svc.submit_answer(sess, payload.choice, payload.unknown)
 
 
 @router.post("/test/finish")
 def finish(payload: FinishIn):
-    sess = vocab.get_session(payload.session_id)
+    svc, sess = _service_and_session(payload.session_id)
     if sess is None:
         raise HTTPException(status_code=404, detail="会话不存在或已过期")
-    return {"finished": True, "result": vocab.finish_test(sess)}
+    return {"finished": True, "result": svc.finish_test(sess)}

@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
+    # 词汇量测试算法开关：classic（固定分层抽样）| eudic（自适应 Elo/IRT）。
+    # 前端可在开始测试时用 algo 参数覆盖；也可用环境变量 VOCAB_ALGO 改默认值。
+    vocab_algo: str = "classic"
     # 后台管理（admin app，8001）口令：用户名固定 admin。
     # 部署/局域网使用务必通过环境变量 ADMIN_PASSWORD 覆盖默认值。
     admin_password: str = "changeme"

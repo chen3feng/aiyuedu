@@ -394,7 +394,13 @@ def submit_answer(sess: TestSession, choice: Optional[int], unknown: bool) -> di
     sess.history.append(estimate)
     _log_answer(sess, q, response, estimate)
 
-    feedback = {"response": response, "word": q["word"], "correct_gloss": q["correct_gloss"]}
+    feedback = {
+        "response": response,
+        "word": q["word"],
+        "correct_gloss": q["correct_gloss"],
+        # 经典算法的正确选项就是词义；统一字段，前端无需区分算法。
+        "word_gloss": q["correct_gloss"],
+    }
     progress = _progress(sess, estimate)
 
     if sess.total >= MAX_QUESTIONS:
