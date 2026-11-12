@@ -8,8 +8,11 @@
 #   ./scripts/dev.sh status       查看运行状态
 #   ./scripts/dev.sh logs [svc]   跟踪日志（svc = api|admin|h5，默认全部）
 #
+# API 端口默认 8000，可用 API_PORT 覆盖（如 API_PORT=8002 ./scripts/dev.sh start）；
+# 未指定时会沿用 .run/api_port 里上次使用的端口。
+#
 # 服务：
-#   api    FastAPI 学生端   http://127.0.0.1:8000
+#   api    FastAPI 学生端   http://127.0.0.1:8000   （可用 API_PORT 覆盖，如 8002）
 #   admin  FastAPI 后台     http://127.0.0.1:8001
 #   h5     uni-app H5       http://localhost:5173
 set -euo pipefail
@@ -18,9 +21,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_DIR="$ROOT/.run"
 LOG_DIR="$RUN_DIR/logs"
 
+# API 端口可用 API_PORT 覆盖（默认 8000）；H5 会通过 VITE_API_PORT 指向它。
+# 未显式指定时，优先沿用上次 start 记录的端口，避免 status/stop 误判。
+if [ -z "${API_PORT:-}" ] && [ -f "$RUN_DIR/api_port" ]; then
+  API_PORT="$(cat "$RUN_DIR/api_port" 2>/dev/null || echo 8000)"
+fi
+API_PORT="${API_PORT:-8000}"
+
 # name port probe-path
 SERVICES=(
-  "api 8000 /docs"
+  "api $API_PORT /docs"
   "admin 8001 /docs"
   "h5 5173 /"
 )
@@ -90,7 +100,7 @@ start_one() {
           >"$(log_file "$name")" 2>&1 & echo $! >"$(pid_file "$name")" )
       ;;
     h5)
-      ( cd "$ROOT/apps/app" && nohup npm run dev:h5 \
+      ( cd "$ROOT/apps/app" && VITE_API_PORT="$API_PORT" VITE_API_BASE="${VITE_API_BASE:-}" nohup npm run dev:h5 \
           >"$(log_file "$name")" 2>&1 & echo $! >"$(pid_file "$name")" )
       ;;
   esac
@@ -138,6 +148,7 @@ stop_one() {
 
 cmd_start() {
   mkdir -p "$RUN_DIR" "$LOG_DIR"
+  printf '%s\n' "$API_PORT" >"$RUN_DIR/api_port"
   local failed=0
   for svc in "${SERVICES[@]}"; do
     # shellcheck disable=SC2086

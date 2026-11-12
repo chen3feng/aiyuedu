@@ -2,15 +2,21 @@
 // 身份：X-User-Id 请求头（匿名设备 ID），见 utils/user.ts
 import { getUserId } from "../utils/user";
 
+// 后端 API 端口：默认 8000；可用 VITE_API_PORT 覆盖（例如 8000 被其它服务占用时）。
+const API_PORT = import.meta.env.VITE_API_PORT || "8000";
+// 完整 API 地址覆盖：公网隧道 / 独立 API 域名时使用（优先于 hostname:port）。
+const API_BASE_OVERRIDE = import.meta.env.VITE_API_BASE as string | undefined;
+
 // 后端 API 地址：H5 下跟随页面域名（桌面 localhost、手机局域网 IP 均自动适配），
 // 非 H5（小程序等）回退到本机地址，便于本地联调。
 function apiBase(): string {
+  if (API_BASE_OVERRIDE) return API_BASE_OVERRIDE;
   // #ifdef H5
   if (typeof window !== "undefined" && window.location?.hostname) {
-    return `http://${window.location.hostname}:8000`;
+    return `http://${window.location.hostname}:${API_PORT}`;
   }
   // #endif
-  return "http://127.0.0.1:8000";
+  return `http://127.0.0.1:${API_PORT}`;
 }
 
 export const API_BASE = apiBase();

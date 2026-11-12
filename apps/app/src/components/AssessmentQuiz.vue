@@ -2,8 +2,16 @@
   <view class="quiz">
     <view class="scorebar">
       <view class="score-main">
-        <text class="score-label">{{ t("assessment.score") }}</text>
+        <view class="score-head">
+          <text class="score-label">{{ t("assessment.score") }}</text>
+          <text class="algo-tag">
+            {{ algo === "eudic" ? t("assessment.algoEudic") : t("assessment.algoClassic") }}
+          </text>
+        </view>
         <text class="score-value">{{ progress.score }}</text>
+        <text v-if="progress.score !== null && progress.score_interval" class="score-range">
+          {{ t("assessment.interval") }} {{ progress.score_interval[0] }}–{{ progress.score_interval[1] }}
+        </text>
       </view>
       <view class="score-stats">
         <text class="stat">{{ t("assessment.questionN", { n: progress.total + 1 }) }}</text>
@@ -16,7 +24,7 @@
     <view class="word">{{ question.word }}</view>
     <view class="options">
       <view
-        v-for="(opt, i) in question.options"
+        v-for="(opt, i) in displayOptions"
         :key="i"
         class="option"
         :class="optionClass(i)"
@@ -39,10 +47,6 @@
     <view class="finish-btn" :class="{ disabled: loading }" @click="finish">
       {{ t("assessment.finish") }}
     </view>
-    <view v-if="feedback" class="feedback" :class="feedback.response">
-      <text class="fb-icon">{{ fbIcon }}</text>
-      <text class="fb-text">{{ fbText }}</text>
-    </view>
 
     <StateView v-if="error" type="error" class="mt24" :message="error" />
   </view>
@@ -57,6 +61,7 @@ import StateView from "./StateView.vue";
 
 const props = defineProps<{
   sessionId: string;
+  algo?: "classic" | "eudic";
   initialQuestion: Question;
   initialProgress: Progress;
 }>();
@@ -77,16 +82,17 @@ const correctIndex = computed(() =>
   feedback.value ? question.value.options.indexOf(feedback.value.correct_gloss) : -1,
 );
 
-const fbIcon = computed(() =>
-  feedback.value?.response === "correct" ? "✓" : feedback.value?.response === "unknown" ? "⊙" : "✗",
-);
-
-const fbText = computed(() => {
-  if (!feedback.value) return "";
-  const g = feedback.value.correct_gloss;
-  if (feedback.value.response === "correct") return t("assessment.correct") + g;
-  if (feedback.value.response === "unknown") return t("assessment.unknownMarked") + g;
-  return t("assessment.wrongAnswer") + g;
+// 答完后：若正确选项是「以上都不对」，把该选项的文字换成词的真实含义。
+// 用 word_gloss !== correct_gloss 判断，避免在前端硬编码中文文案。
+const displayOptions = computed(() => {
+  const opts = question.value.options;
+  const fb = feedback.value;
+  if (!fb || !fb.word_gloss || fb.word_gloss === fb.correct_gloss) return opts;
+  const idx = opts.indexOf(fb.correct_gloss);
+  if (idx < 0) return opts;
+  const out = [...opts];
+  out[idx] = fb.word_gloss;
+  return out;
 });
 
 function optionClass(i: number): string {
@@ -132,6 +138,8 @@ async function submit(choice: number | null, unknown: boolean) {
       unknown: resp.unknown,
       wrong: resp.wrong,
       converged: resp.converged ?? false,
+      score_interval: resp.score_interval,
+      level: resp.level,
     };
     if (resp.finished && resp.result) {
       setTimeout(() => {
@@ -170,6 +178,18 @@ async function submit(choice: number | null, unknown: boolean) {
   display: flex;
   flex-direction: column;
 }
+.score-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.algo-tag {
+  font-size: 20rpx;
+  color: var(--brand);
+  background: var(--soft);
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+}
 .score-label {
   font-size: 24rpx;
   color: var(--ink-4);
@@ -179,6 +199,11 @@ async function submit(choice: number | null, unknown: boolean) {
   font-weight: 800;
   color: var(--brand);
   line-height: 1.1;
+}
+.score-range {
+  font-size: 22rpx;
+  color: var(--ink-4);
+  margin-top: 4rpx;
 }
 .score-stats {
   display: flex;
@@ -286,21 +311,4 @@ async function submit(choice: number | null, unknown: boolean) {
 .finish-btn.disabled {
   opacity: 0.5;
 }
-.feedback {
-  margin-top: 32rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30rpx;
-  padding: 20rpx;
-  border-radius: 12rpx;
-}
-.feedback .fb-icon {
-  font-size: 36rpx;
-  margin-right: 12rpx;
-  font-weight: 700;
-}
-.feedback.correct { color: var(--success); background: #e8f8ef; }
-.feedback.unknown { color: var(--ink-3); background: var(--soft); }
-.feedback.wrong { color: var(--danger); background: var(--danger-bg); }
 </style>
