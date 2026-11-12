@@ -63,6 +63,9 @@ export default {
     yourVocab: "你的词汇量",
     summary: "对 {correct} · 不认识 {unknown} · 错 {wrong}（共 {total} 题）",
     again: "再测一次",
+    lastTest: "上次测试 {n} · {date}",
+    vsLast: "比上次 {delta}",
+    viewHistory: "查看历史变化",
   },
 
   reading: {
@@ -176,6 +179,7 @@ export default {
     tabNotebook: "生词本",
     vocabSize: "词汇量",
     vocabDetail: "共 {total} 题 · 对 {correct} · 不认识 {unknown}",
+    trendTitle: "词汇量变化（近 {n} 次）",
     emptyVocab: "还没有测试记录，去测一次吧",
     emptyReading: "还没有阅读记录",
     emptyNotebook: "生词本还是空的",

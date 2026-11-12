@@ -18,6 +18,23 @@
     <template v-else>
       <!-- 词汇测试历史 -->
       <view v-if="active === 'vocab'" class="list">
+        <Card v-if="vocabTrend.length >= 2" class="p24">
+          <view class="trend-head">
+            <text class="trend-title">{{ t("history.trendTitle", { n: vocabTrend.length }) }}</text>
+            <text class="trend-delta" :class="trendDelta >= 0 ? 'up' : 'down'">
+              {{ trendDelta >= 0 ? "+" : "" }}{{ trendDelta }}
+            </text>
+          </view>
+          <view class="trend-bars">
+            <view v-for="(p, i) in vocabTrend" :key="i" class="trend-col">
+              <text class="trend-value">{{ p.vocab_size }}</text>
+              <view class="trend-bar-wrap">
+                <view class="trend-bar" :style="{ height: barHeight(p.vocab_size) }" />
+              </view>
+              <text class="trend-date">{{ shortDate(p.ts) }}</text>
+            </view>
+          </view>
+        </Card>
         <Card v-for="(r, i) in vocabTests" :key="i" class="p24">
           <view class="row">
             <view class="row-main">
@@ -74,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { listReadingProgress, listVocabTests, type ReadingProgress, type VocabTestRecord } from "../../api/history";
@@ -98,6 +115,23 @@ const error = ref("");
 const vocabTests = ref<VocabTestRecord[]>([]);
 const progress = ref<ReadingProgress[]>([]);
 const notebook = ref<NotebookItem[]>([]);
+
+// 趋势图：取最近 12 次，按时间正序；柱高相对最高值
+const vocabTrend = computed(() => [...vocabTests.value].slice(0, 12).reverse());
+const trendMax = computed(() => Math.max(1, ...vocabTrend.value.map((r) => r.vocab_size)));
+const trendDelta = computed(() => {
+  if (vocabTrend.value.length < 2) return 0;
+  return vocabTrend.value[vocabTrend.value.length - 1].vocab_size - vocabTrend.value[0].vocab_size;
+});
+
+function barHeight(v: number) {
+  return `${Math.max(8, Math.round((v / trendMax.value) * 150))}rpx`;
+}
+
+function shortDate(ts: number) {
+  const d = new Date(ts * 1000);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
 
 onShow(() => {
   uni.setNavigationBarTitle({ title: t("history.title") });
@@ -236,6 +270,61 @@ function algoLabel(algo: string) {
   margin-top: 12rpx;
   font-size: 24rpx;
   color: var(--ink-3);
+}
+.trend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16rpx;
+}
+.trend-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+.trend-delta {
+  font-size: 26rpx;
+  font-weight: 700;
+}
+.trend-delta.up {
+  color: var(--success);
+}
+.trend-delta.down {
+  color: var(--danger);
+}
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10rpx;
+  padding-top: 8rpx;
+  overflow-x: auto;
+}
+.trend-col {
+  flex: 1;
+  min-width: 44rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6rpx;
+}
+.trend-value {
+  font-size: 20rpx;
+  color: var(--ink-4);
+}
+.trend-bar-wrap {
+  height: 150rpx;
+  display: flex;
+  align-items: flex-end;
+}
+.trend-bar {
+  width: 28rpx;
+  border-radius: 6rpx 6rpx 0 0;
+  background: var(--brand);
+}
+.trend-date {
+  font-size: 20rpx;
+  color: var(--ink-4);
 }
 .progress-row {
   display: flex;
