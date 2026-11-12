@@ -226,6 +226,31 @@ def delete_essay(user_id: str, essay_id: str) -> bool:
         return True
 
 
+def count(user_id: str | None) -> int:
+    if not user_id:
+        return 0
+    return len(_read().get(user_id) or {})
+
+
+def move_user(src: str, dst: str) -> int:
+    """把 src 的全部作文搬到 dst；返回搬移篇数。"""
+    with _lock:
+        data = _read()
+        essays = data.pop(src, None)
+        if not essays:
+            return 0
+        data.setdefault(dst, {}).update(essays)
+        _write(data)
+        return len(essays)
+
+
+def delete_user(user_id: str) -> None:
+    with _lock:
+        data = _read()
+        if data.pop(user_id, None) is not None:
+            _write(data)
+
+
 def _current_model_name() -> str:
     """当前默认 AI 提供者的 model 名；供 essay.ai_used 展示。仅失败时无意义。"""
     try:

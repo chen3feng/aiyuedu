@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from ..deps import current_user_id
 from ..services import collections, reading, topics, users
 
 router = APIRouter(prefix="/readings", tags=["reading"])
@@ -73,18 +74,54 @@ def _all_reading_views(topic: str | None = None):
 def list_readings(
     level: int | None = Query(None, ge=0),
     topic: str | None = None,
-    user_id: str | None = Header(None, alias="X-User-Id")):
+    user_id: str = Depends(current_user_id)):
     # 未显式指定 level 时，用该用户的评测词汇量，否则回退默认
     level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
     # 列表页不重算统计（懒加载）；调用方按需 GET /readings/{id}
     return {"items": _all_reading_views(topic)}
 
 
+@router.get("/progress")
+def list_progress(user_id: str = Depends(current_user_id)):
+    """当前用户每篇阅读的最新进度（含标题与所属作品集），按时间倒序。"""
+    items = []
+    for rec in reading.list_progress(user_id):
+        rid = rec.get("reading_id", "")
+        coll_match = collections.get_chapter_for_reading(rid)
+        if coll_match is not None:
+            coll, chapter = coll_match
+            title = chapter.get("title") or chapter.get("title_zh") or rid
+            title_zh = chapter.get("title_zh") or ""
+            collection_id = coll["id"]
+            collection_title = coll.get("title_zh") or coll.get("title") or ""
+            chapter_index = chapter.get("index")
+        else:
+            r = reading.get_reading(rid) or {}
+            title = r.get("title") or rid
+            title_zh = r.get("title_zh") or ""
+            collection_id = None
+            collection_title = None
+            chapter_index = None
+        items.append({
+            "reading_id": rid,
+            "title": title,
+            "title_zh": title_zh,
+            "collection_id": collection_id,
+            "collection_title": collection_title,
+            "chapter_index": chapter_index,
+            "level": rec.get("level"),
+            "completed_ratio": rec.get("completed_ratio", 0),
+            "seconds": rec.get("seconds", 0),
+            "ts": rec.get("ts", 0),
+        })
+    return {"items": items}
+
+
 @router.get("/{reading_id}")
 def get_reading(
     reading_id: str,
     level: int | None = Query(None, ge=0),
-    user_id: str | None = Header(None, alias="X-User-Id")):
+    user_id: str = Depends(current_user_id)):
     level = level if level is not None else (users.get_vocab_size(user_id) or reading.DEFAULT_LEVEL)
     # 先查 collection 章节
     coll_match = collections.get_chapter_for_reading(reading_id)
@@ -172,7 +209,7 @@ def get_reading(
 def record(
     reading_id: str,
     payload: RecordIn,
-    user_id: str | None = Header(None, alias="X-User-Id")):
+    user_id: str = Depends(current_user_id)):
     # 章节或孤儿都能 record
     coll_match = collections.get_chapter_for_reading(reading_id)
     if coll_match is None and reading.get_reading(reading_id) is None:

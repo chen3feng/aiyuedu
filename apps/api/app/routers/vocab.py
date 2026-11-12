@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from ..config import settings
-from ..services import vocab, vocab_eudic
+from ..deps import current_user_id
+from ..services import vocab, vocab_eudic, vocab_tests
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
 
@@ -34,12 +35,12 @@ def _service_and_session(sid: str):
 
 
 @router.post("/test/start")
-def start(payload: StartIn | None = None):
+def start(payload: StartIn | None = None, user_id: str = Depends(current_user_id)):
     algo = ((payload.algo if payload else None) or settings.vocab_algo).lower()
     svc = _ALGOS.get(algo)
     if svc is None:
         raise HTTPException(status_code=400, detail=f"未知算法：{algo}")
-    sid, question, progress = svc.start_test()
+    sid, question, progress = svc.start_test(user_id)
     return {
         "session_id": sid,
         "algo": algo,
@@ -65,3 +66,8 @@ def finish(payload: FinishIn):
     if sess is None:
         raise HTTPException(status_code=404, detail="会话不存在或已过期")
     return {"finished": True, "result": svc.finish_test(sess)}
+
+
+@router.get("/tests")
+def list_tests(user_id: str = Depends(current_user_id)):
+    return {"items": vocab_tests.list_tests(user_id)}

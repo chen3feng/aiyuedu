@@ -79,6 +79,16 @@
     font-size: 12px; background: #d1fae5; color: #065f46; }
   .status-error { display: inline-block; padding: 2px 8px; border-radius: 6px;
     font-size: 12px; background: #fee2e2; color: #991b1b; }
+  .user-head, .user-item { display: grid; gap: 10px; align-items: center;
+    grid-template-columns: 1.4fr 1.1fr 1.1fr .7fr .7fr .7fr auto; }
+  .user-head { font-size: 12px; color: var(--muted); padding-bottom: 8px;
+    border-bottom: 1px solid var(--line); }
+  .user-item { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .user-item:last-child { border-bottom: none; }
+  @media (max-width: 720px) {
+    .user-head { display: none; }
+    .user-item { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -89,6 +99,7 @@
     <div class="tab" id="tab-collections" onclick="switchTab('collections')">作品集</div>
     <div class="tab" id="tab-topics" onclick="switchTab('topics')">主题管理</div>
     <div class="tab" id="tab-ai" onclick="switchTab('ai')">AI 提供者</div>
+    <div class="tab" id="tab-users" onclick="switchTab('users')">用户</div>
   </nav>
 </header>
 <main id="main"></main>
@@ -105,6 +116,21 @@
         <input type="number" id="gen-level" placeholder="留空按 2000~4000 自动"></div>
       <div id="gen-result"></div>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pwd-overlay" onclick="if(event.target===this)closePwd()">
+  <div class="modal">
+    <h2>临时密码</h2>
+    <div class="modal-body">
+      <p>账号 <strong id="pwd-user"></strong> 的新临时密码：</p>
+      <div class="row">
+        <input type="text" id="pwd-value" readonly>
+        <button class="primary" onclick="copyPwd()">复制</button>
+      </div>
+      <p class="muted">请让用户登录后立即修改密码；该账号其它设备上的登录已失效。</p>
+    </div>
+    <div class="actions"><button onclick="closePwd()">关闭</button></div>
   </div>
 </div>
 
@@ -132,6 +158,7 @@ const state = {
   glossSort: "appearance", // 生词注释列表排序：appearance=文中顺序，alpha=字母顺序
   mwSort: "appearance",    // 多词表达式列表排序
   ai: { providers: [], default: null, editing: null },
+  users: [],
 };
 
 function esc(s) {
@@ -540,6 +567,72 @@ async function setDefaultProvider(name) {
   toast(`默认提供者已设为 ${name}`);
 }
 
+// ---------- 用户账号 ----------
+
+function fmtTime(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts * 1000);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function renderUsers() {
+  state.users = (await api("/users")).items;
+  main().innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <strong>用户账号</strong>
+        <span class="muted">共 ${state.users.length} 个</span>
+      </div>
+    </div>
+    <div class="card">
+      ${state.users.length ? `
+        <div class="user-head">
+          <span>用户名</span><span>注册时间</span><span>最后登录</span>
+          <span>词汇量</span><span>作文</span><span>阅读记录</span><span></span>
+        </div>` : ""}
+      ${state.users.map((u) => `
+        <div class="user-item">
+          <strong>${esc(u.username)}</strong>
+          <span class="muted">${fmtTime(u.created_at)}</span>
+          <span class="muted">${fmtTime(u.last_login_at)}</span>
+          <span>${u.vocab_size ?? "—"}</span>
+          <span>${u.writings}</span>
+          <span>${u.reading_records}</span>
+          <button class="small" onclick="resetUserPassword('${esc(u.user_id)}')">重置密码</button>
+        </div>`).join("")}
+      ${state.users.length ? "" : '<div class="empty">暂无账号</div>'}
+    </div>`;
+}
+
+async function resetUserPassword(userId) {
+  if (!confirm("确认重置该用户的密码？其所有设备上的登录都会失效。")) return;
+  try {
+    const r = await api("/users/" + encodeURIComponent(userId) + "/reset-password", "POST");
+    $("pwd-user").textContent = r.username;
+    $("pwd-value").value = r.temp_password;
+    $("pwd-overlay").classList.add("show");
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+function closePwd() {
+  $("pwd-overlay").classList.remove("show");
+}
+
+async function copyPwd() {
+  const input = $("pwd-value");
+  try {
+    await navigator.clipboard.writeText(input.value);
+    toast("已复制");
+  } catch {
+    input.select();
+    document.execCommand("copy");
+    toast("已复制");
+  }
+}
+
 // ---------- 渲染 ----------
 
 async function switchTab(tab) {
@@ -548,9 +641,11 @@ async function switchTab(tab) {
   $("tab-articles").className = "tab" + (tab === "articles" ? " active" : "");
   $("tab-collections").className = "tab" + (tab === "collections" ? " active" : "");
   $("tab-ai").className = "tab" + (tab === "ai" ? " active" : "");
+  $("tab-users").className = "tab" + (tab === "users" ? " active" : "");
   if (tab === "topics") await renderTopics();
   else if (tab === "articles") await renderArticles();
   else if (tab === "collections") await renderCollections();
+  else if (tab === "users") await renderUsers();
   else await renderAi();
 }
 

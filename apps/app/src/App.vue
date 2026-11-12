@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import { isLoggedIn, isOnboarded } from "./utils/user";
+
 onLaunch(() => {
-  console.log("App Launch");
+  // 首次启动且未登录：先引导登录 / 注册，可选择「先匿名使用」
+  if (!isLoggedIn() && !isOnboarded()) {
+    uni.reLaunch({ url: "/pages/auth/login?first=1" });
+  }
 });
 onShow(() => {
   console.log("App Show");
