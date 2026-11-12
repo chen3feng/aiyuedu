@@ -44,7 +44,10 @@ MAX_LEVEL = 24              # wordlist.csv 覆盖 0~24 档
 MAX_SCORE = 25000           # 词库上限
 CORRECT_PRESENT_RATE = 0.75 # 正确释义出现在 3 个选项中的概率
 MIN_QUESTIONS = 20          # 线上「最少测满 20 题才能查看结果」
-MAX_QUESTIONS = 50          # 与现有 App 的题量上限保持一致
+MAX_QUESTIONS = 80          # 50 题后可继续答，最多 80 题；更多样本让估计更稳
+PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
+MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
+PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
 
 NONE_OF_ABOVE = "以上都不对"
 
@@ -158,8 +161,8 @@ class EudicSession:
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    n_eff: float = 0.0
-    last_delta: float = 1.0
+    info: float = 0.0          # Fisher 信息量 Σ p(1-p)，用于置信区间
+    se: float = 0.0            # 当前能力估计的标准误（分）
     streak: int = 0
     probe_remaining: int = 0
     probe_level: int = 0
@@ -192,18 +195,20 @@ def _base_level(sess: EudicSession) -> int:
 
 def _select_level(sess: EudicSession) -> int:
     if sess.total == 0:
-        # 线上第一题固定在 3~4 档
-        return 3 + sess.rng.choice([0, 1])
+        # 第一题用高频词热身（1~2 档），避免一上来就是生僻词
+        return 1 + sess.rng.choice([0, 1])
     if sess.probe_remaining > 0:
         return sess.probe_level
-    can_probe = sess.probes_used == 0 or (
-        sess.probes_used == 1
-        and sess.last_probe_failed
-        and sess.total - sess.last_probe_end_n <= 6
+    # 连续答对 4 题即可再次探顶，但两次探顶之间至少间隔 PROBE_COOLDOWN 题。
+    # 旧实现只允许「首次探顶失败后 6 题内」补探，用户后程才进入状态时永远
+    # 触发不了第二次探顶，导致分数被压在低档位（实测 36/50 正确只有 8130）。
+    can_probe = (
+        sess.probes_used < MAX_PROBES
+        and (sess.probes_used == 0 or sess.total - sess.last_probe_end_n >= PROBE_COOLDOWN)
     )
-    if sess.streak >= 4 and can_probe and sess.probes_used < 2:
+    if sess.streak >= 4 and can_probe:
         # 连续答对 4 题后探顶：跳到当前档位上方 3~4 档，最多 6 题。
-        sess.probe_remaining = 6
+        sess.probe_remaining = PROBE_QUESTIONS
         sess.probe_level = min(
             MAX_LEVEL, _base_level(sess) + 3 + sess.rng.choice([0, 1])
         )
@@ -224,6 +229,9 @@ def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
     n = sess.total + 1
     difficulty = LEVEL_WIDTH * q["level"] + LEVEL_OFFSET
     p = sigmoid((sess.score - difficulty) / SCALE)
+    # Fisher 信息量：题目的区分度越高（p 接近 0.5），对能力估计贡献越大。
+    # 这比「答错就把有效样本数减半」更符合实际信息量。
+    sess.info += p * (1.0 - p)
     gain = K0 / (1.0 + n / TAU) ** GAIN_EXP
     if outcome == "correct":
         sess.score += gain * (1.0 - p)
@@ -235,26 +243,27 @@ def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
     sess.total = n
 
 
-def _update_uncertainty(sess: EudicSession, outcome: str) -> None:
-    if outcome == "correct":
-        sess.n_eff = 1.0 if sess.n_eff == 0.0 else sess.n_eff + 0.5
-    else:
-        sess.n_eff = max(1.0, sess.n_eff * 0.5)
-    sess.last_delta = min(1.0, max(MIN_DELTA, 0.8 / (2.0 * sess.n_eff)))
+def _update_uncertainty(sess: EudicSession) -> None:
+    """按 Fisher 信息量计算标准误；信息量在 _update_score 中累计。"""
+    info = max(sess.info, 1e-9)
+    sess.se = SCALE / math.sqrt(info)
+    sess.last_delta = min(1.0, max(MIN_DELTA, 1.96 * sess.se / max(sess.score, 1.0)))
 
 
 def _progress(sess: EudicSession) -> dict:
     score = int(round(sess.score))
-    lower = max(0, int(round(sess.score * (1.0 - sess.last_delta))))
+    half = 1.96 * sess.se
+    lower = max(0, int(round(sess.score - half)))
+    upper = min(MAX_SCORE, int(round(sess.score + half)))
     return {
         "score": score if sess.total >= 1 else None,
         "total": sess.total,
         "correct": sess.correct,
         "unknown": sess.unknown,
         "wrong": sess.wrong,
-        "converged": sess.total >= MIN_QUESTIONS,
+        "converged": sess.total >= 50,
         "level": _base_level(sess),
-        "score_interval": [lower, score],
+        "score_interval": [lower, upper],
     }
 
 
@@ -340,7 +349,7 @@ def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> d
         sess.probes_used += 1
         sess.last_probe_failed = probe_failed
         sess.last_probe_end_n = sess.total
-    _update_uncertainty(sess, outcome)
+    _update_uncertainty(sess)
     sess.history.append(int(round(sess.score)))
     _log_answer(sess, q, outcome)
 

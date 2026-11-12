@@ -33,7 +33,7 @@ export default {
 
   assessment: {
     title: "词汇量评测",
-    subtitle: "看词选义 · 实时计分 · 约 50 题",
+    subtitle: "看词选义 · 实时计分 · 20–80 题",
     howTo: "怎么答？",
     knowRule: "认识 → 选正确意思",
     scoreUp: "得分上升",
@@ -55,7 +55,7 @@ export default {
     unknownN: "不认识 {n}",
     wrongN: "错 {n}",
     unknownWord: "不认识这个词",
-    converged: "得分已稳定，可以结束查看结果",
+    converged: "已测 50 题，可结束查看结果；继续答到 80 题会让结果更稳",
     finish: "结束并查看结果",
     correct: "答对了！",
     unknownMarked: "已标记不认识，正确答案：",
