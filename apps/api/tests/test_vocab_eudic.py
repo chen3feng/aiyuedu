@@ -9,6 +9,7 @@
 
 运行：uv run --directory apps/api pytest -q
 """
+import math
 import random
 
 import pytest
@@ -101,26 +102,40 @@ def test_score_never_negative():
     assert sess.score >= 0.0
 
 
-def test_interval_uses_effective_sample_size():
+def test_interval_uses_answer_information():
     sess = eudic.EudicSession(id="x")
-    eudic._update_uncertainty(sess, "correct")
-    assert sess.n_eff == 1.0
-    assert sess.last_delta == pytest.approx(0.4)
-    eudic._update_uncertainty(sess, "correct")
-    assert sess.n_eff == 1.5
-    assert sess.last_delta == pytest.approx(0.8 / 3)
-    eudic._update_uncertainty(sess, "wrong")
-    assert sess.n_eff == 1.0  # 减半但下限为 1
-    assert sess.last_delta == pytest.approx(0.4)
+    eudic._update_score(sess, {"level": 5}, "correct")
+    eudic._update_uncertainty(sess)
+    assert sess.info > 0
+    assert sess.se == pytest.approx(eudic.SCALE / math.sqrt(sess.info))
+    first = eudic._progress(sess)["score_interval"]
+    assert first[0] < first[1]
+
+    # 继续在同难度题上作答，信息量增加，区间应单调变窄
+    for _ in range(10):
+        eudic._update_score(sess, {"level": 5}, "correct")
+        eudic._update_uncertainty(sess)
+    later = eudic._progress(sess)["score_interval"]
+    assert (later[1] - later[0]) < (first[1] - first[0])
+
+
+def test_interval_is_symmetric_around_score():
+    sess = eudic.EudicSession(id="x")
+    for _ in range(10):
+        eudic._update_score(sess, {"level": 5}, "correct")
+    eudic._update_uncertainty(sess)
+    lo, hi = eudic._progress(sess)["score_interval"]
+    assert lo < sess.score < hi
+    assert (sess.score - lo) == pytest.approx(hi - sess.score, abs=1)
 
 
 # ---------- 自适应选题与探顶 ----------
 
-def test_first_question_is_warmup_level():
+def test_first_question_is_high_frequency_warmup():
     for seed in range(20):
         sess = eudic.EudicSession(id=str(seed), rng=random.Random(seed))
         sess.current = eudic._make_next(sess)
-        assert sess.current["level"] in (3, 4)
+        assert sess.current["level"] in (1, 2)
 
 
 def test_probe_starts_after_four_correct():
@@ -146,6 +161,43 @@ def test_probe_ends_on_wrong_answer():
     assert sess.probe_remaining == 0
     assert sess.probes_used == 1
     assert sess.last_probe_failed is True
+
+
+def test_probe_can_retrigger_after_cooldown():
+    """首次探顶结束后，后程再连对 4 题仍能探顶（旧实现 6 题后永久失去机会）。"""
+    sess = eudic.EudicSession(id="x", rng=random.Random(2))
+    sess.current = eudic._make_next(sess)
+    for _ in range(4):
+        q = sess.current
+        eudic.submit_answer(sess, q["correct_index"], False)
+    assert sess.probe_remaining == 6
+    eudic.submit_answer(sess, None, True)  # 第一次探顶失败
+    assert sess.probes_used == 1
+
+    end_n = sess.last_probe_end_n
+    # 冷却期内继续作答，不触发新的探顶
+    while sess.total < end_n + eudic.PROBE_COOLDOWN:
+        q = sess.current
+        eudic.submit_answer(sess, q["correct_index"], False)
+    assert sess.probes_used == 1
+
+    # 冷却结束后再连对 4 题 → 第二次探顶
+    for _ in range(4):
+        q = sess.current
+        eudic.submit_answer(sess, q["correct_index"], False)
+    assert sess.probes_used == 1  # 探顶进行中，尚未结束
+    assert sess.probe_remaining > 0
+
+
+def test_probe_count_is_capped():
+    sess = eudic.EudicSession(id="x", rng=random.Random(3))
+    sess.current = eudic._make_next(sess)
+    for _ in range(200):
+        if sess.finished:
+            break
+        q = sess.current
+        eudic.submit_answer(sess, q["correct_index"], False)
+    assert sess.probes_used <= eudic.MAX_PROBES
 
 
 # ---------- 完整流程 ----------

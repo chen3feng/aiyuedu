@@ -33,7 +33,7 @@ export default {
 
   assessment: {
     title: "Vocabulary Test",
-    subtitle: "Pick the meaning · Live scoring · ~50 words",
+    subtitle: "Pick the meaning · Live scoring · 20–80 words",
     howTo: "How does it work?",
     knowRule: "Know it → pick the right meaning",
     scoreUp: "score up",
@@ -55,7 +55,7 @@ export default {
     unknownN: "Unknown {n}",
     wrongN: "Wrong {n}",
     unknownWord: "Don't know this word",
-    converged: "Score has stabilized — you can finish now",
+    converged: "50 questions done — finish now, or continue to 80 for a more stable result",
     finish: "Finish & See Result",
     correct: "Correct! ",
     unknownMarked: "Marked unknown. Correct answer: ",
