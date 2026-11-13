@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.config import settings
 from app.main import app
-from app.services import auth, notebook, reading, users, vocab, vocab_eudic, vocab_tests, writing
+from app.services import auth, notebook, reading, users, vocab, vocab_adaptive, vocab_tests, writing
 
 DATA_FILES = (
     "accounts_path",
@@ -145,7 +145,7 @@ def test_register_imports_anonymous_data(stores):
     device = "device-abc"
     users.upsert_profile(device, {"vocab_size": 4000})
     notebook.add_item(device, "apple", "苹果")
-    vocab_tests.add(device, {"ts": 1.0, "algo": "eudic", "score": 4000})
+    vocab_tests.add(device, {"ts": 1.0, "algo": "adaptive", "score": 4000})
     writing._write({device: {"w1": {"id": "w1", "created_at": 1.0}}})
     reading.record_reading("r001", 4000, 0.5, 30, [], device)
 
@@ -173,7 +173,7 @@ def test_delete_account_removes_all_data(stores):
     device = "device-abc"
     users.upsert_profile(device, {"vocab_size": 4000})
     notebook.add_item(device, "apple", "苹果")
-    vocab_tests.add(device, {"ts": 1.0, "algo": "eudic", "score": 4000})
+    vocab_tests.add(device, {"ts": 1.0, "algo": "adaptive", "score": 4000})
     writing._write({device: {"w1": {"id": "w1", "created_at": 1.0}}})
     reading.record_reading("r001", 4000, 0.5, 30, [], device)
 
@@ -262,7 +262,7 @@ def test_api_vocab_and_notebook_use_account(client):
     # 匿名设备看不到账号生词本
     assert client.get("/notebook", headers={"X-User-Id": "device-x"}).json()["items"] == []
 
-    start = client.post("/vocab/test/start", json={"algo": "eudic"}, headers=headers)
+    start = client.post("/vocab/test/start", json={"algo": "adaptive"}, headers=headers)
     sid = start.json()["session_id"]
     q = start.json()["question"]
     client.post(
@@ -272,7 +272,7 @@ def test_api_vocab_and_notebook_use_account(client):
     )
     client.post("/vocab/test/finish", json={"session_id": sid}, headers=headers)
     tests = client.get("/vocab/tests", headers=headers).json()["items"]
-    assert len(tests) == 1 and tests[0]["algo"] == "eudic"
+    assert len(tests) == 1 and tests[0]["algo"] == "adaptive"
 
 
 def test_api_reading_progress(client, stores):
@@ -305,14 +305,14 @@ def test_notebook_requires_word(stores):
 
 
 def test_vocab_history_recorded_once(stores):
-    sid, q, _ = vocab_eudic.start_test("u1")
-    sess = vocab_eudic.get_session(sid)
-    vocab_eudic.submit_answer(sess, 0, False)
-    vocab_eudic.finish_test(sess)
-    vocab_eudic.finish_test(sess)  # 幂等
+    sid, q, _ = vocab_adaptive.start_test("u1")
+    sess = vocab_adaptive.get_session(sid)
+    vocab_adaptive.submit_answer(sess, 0, False)
+    vocab_adaptive.finish_test(sess)
+    vocab_adaptive.finish_test(sess)  # 幂等
     items = vocab_tests.list_tests("u1")
     assert len(items) == 1
-    assert items[0]["algo"] == "eudic"
+    assert items[0]["algo"] == "adaptive"
     assert items[0]["total"] == 1
 
 

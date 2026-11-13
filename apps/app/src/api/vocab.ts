@@ -54,7 +54,12 @@ export interface AnswerResp extends Progress {
   result?: Result;
 }
 
-export type VocabAlgo = "classic" | "eudic" | "cat";
+export type VocabAlgo = "classic" | "adaptive" | "cat";
+
+/** 算法改名前的历史记录/本地缓存仍可能带 "eudic"，统一归一化为 adaptive。 */
+export function normalizeAlgo(algo?: string): VocabAlgo {
+  return algo === "eudic" ? "adaptive" : ((algo as VocabAlgo) || "classic");
+}
 
 export const startTest = (algo?: VocabAlgo) =>
   request<StartResp>("/vocab/test/start", {

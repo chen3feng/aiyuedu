@@ -16,9 +16,9 @@
               >{{ t("assessment.algoClassic") }}</text>
               <text
                 class="algo-chip"
-                :class="{ active: algo === 'eudic' }"
-                @click="setAlgo('eudic')"
-              >{{ t("assessment.algoEudic") }}</text>
+                :class="{ active: algo === 'adaptive' }"
+                @click="setAlgo('adaptive')"
+              >{{ t("assessment.algoAdaptive") }}</text>
               <text
                 class="algo-chip"
                 :class="{ active: algo === 'cat' }"
@@ -94,7 +94,7 @@
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
-import { startTest } from "../../api/vocab";
+import { normalizeAlgo, startTest } from "../../api/vocab";
 import type { Question, Progress, Result, VocabAlgo } from "../../api/vocab";
 import { listVocabTests, type VocabTestRecord } from "../../api/history";
 import { saveProfile } from "../../api/users";
@@ -110,12 +110,10 @@ const phase = ref<Phase>("intro");
 const loading = ref(false);
 const error = ref("");
 const sessionId = ref("");
-// 算法开关：classic = 固定分层抽样，eudic = 自适应 Elo/IRT。记住上次选择。
-// 首次进入默认用欧路自适应，方便先测新算法；可随时切回经典。
+// 算法开关：classic = 固定分层抽样，adaptive = 自适应 IRT，cat = 词频 CAT。
+// 首次进入默认用自适应，方便先测新算法；可随时切回经典。
 const ALGO_KEY = "vocab_algo";
-const algo = ref<VocabAlgo>(
-  (uni.getStorageSync(ALGO_KEY) as VocabAlgo) || "eudic",
-);
+const algo = ref<VocabAlgo>(normalizeAlgo(uni.getStorageSync(ALGO_KEY) as string));
 function setAlgo(v: VocabAlgo) {
   algo.value = v;
   uni.setStorageSync(ALGO_KEY, v);
@@ -126,16 +124,16 @@ const algoHint = computed(() =>
   t(
     algo.value === "cat"
       ? "assessment.algoCatHint"
-      : algo.value === "eudic"
-        ? "assessment.algoEudicHint"
+      : algo.value === "adaptive"
+        ? "assessment.algoAdaptiveHint"
         : "assessment.algoClassicHint",
   ),
 );
 function algoLabel(v: string) {
-  return v === "cat"
+  return normalizeAlgo(v) === "cat"
     ? t("assessment.algoCat")
-    : v === "eudic"
-      ? t("assessment.algoEudic")
+    : normalizeAlgo(v) === "adaptive"
+      ? t("assessment.algoAdaptive")
       : t("assessment.algoClassic");
 }
 // 作为 AssessmentQuiz 的初始数据（start 返回），之后状态由组件自管

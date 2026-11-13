@@ -10,6 +10,9 @@ from .storage import atomic_write_json, load_json_or
 
 _lock = threading.Lock()
 
+# 算法改名前的历史记录里存的是 "eudic"，对外统一显示为 adaptive。
+_LEGACY_ALGOS = {"eudic": "adaptive"}
+
 
 def _read() -> dict:
     data = load_json_or(settings.vocab_tests_path, {})
@@ -37,11 +40,14 @@ def list_tests(user_id: str | None) -> list[dict]:
     if not user_id:
         return []
     items = _read().get(user_id) or []
-    return sorted(
-        (dict(it) for it in items if isinstance(it, dict)),
-        key=lambda it: it.get("ts", 0),
-        reverse=True,
-    )
+    records = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        rec = dict(it)
+        rec["algo"] = _LEGACY_ALGOS.get(rec.get("algo"), rec.get("algo"))
+        records.append(rec)
+    return sorted(records, key=lambda it: it.get("ts", 0), reverse=True)
 
 
 def count(user_id: str | None) -> int:

@@ -31,7 +31,7 @@
               <view class="trend-bar-wrap">
                 <view
                   class="trend-bar"
-                  :class="'bar-' + (p.algo || 'classic')"
+                  :class="'bar-' + normalizeAlgo(p.algo)"
                   :style="{ height: barHeight(p.vocab_size) }"
                 />
               </view>
@@ -104,6 +104,7 @@
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
+import { normalizeAlgo } from "../../api/vocab";
 import { listReadingProgress, listVocabTests, type ReadingProgress, type VocabTestRecord } from "../../api/history";
 import { listNotebook, removeNotebookItem, type NotebookItem } from "../../api/notebook";
 import Card from "../../components/Card.vue";
@@ -128,7 +129,7 @@ const notebook = ref<NotebookItem[]>([]);
 
 // 趋势图：取最近 12 次，按时间正序；柱高相对最高值
 const vocabTrend = computed(() => [...vocabTests.value].slice(0, 12).reverse());
-const trendAlgos = computed(() => [...new Set(vocabTrend.value.map((r) => r.algo || "classic"))]);
+const trendAlgos = computed(() => [...new Set(vocabTrend.value.map((r) => normalizeAlgo(r.algo)))]);
 const trendMax = computed(() => Math.max(1, ...vocabTrend.value.map((r) => r.vocab_size)));
 const trendDelta = computed(() => {
   if (vocabTrend.value.length < 2) return 0;
@@ -206,10 +207,10 @@ function fmt(ts: number) {
 }
 
 function algoLabel(algo: string) {
-  return algo === "cat"
+  return normalizeAlgo(algo) === "cat"
     ? t("assessment.algoCat")
-    : algo === "eudic"
-      ? t("assessment.algoEudic")
+    : normalizeAlgo(algo) === "adaptive"
+      ? t("assessment.algoAdaptive")
       : t("assessment.algoClassic");
 }
 </script>
@@ -337,7 +338,7 @@ function algoLabel(algo: string) {
   border-radius: 6rpx 6rpx 0 0;
   background: #9aa4b8;
 }
-.trend-bar.bar-eudic {
+.trend-bar.bar-adaptive {
   background: var(--brand);
 }
 .trend-bar.bar-cat {
@@ -366,7 +367,7 @@ function algoLabel(algo: string) {
   border-radius: 50%;
   background: #9aa4b8;
 }
-.legend-dot.dot-eudic {
+.legend-dot.dot-adaptive {
   background: var(--brand);
 }
 .legend-dot.dot-cat {

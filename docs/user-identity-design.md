@@ -311,7 +311,7 @@ def migrate_user_data(src: str, dst: str) -> dict:
 ```json
 {
   "items": [
-    {"ts": 1794448000.0, "algo": "eudic", "score": 8066, "vocab_size": 8070,
+    {"ts": 1794448000.0, "algo": "adaptive", "score": 8066, "vocab_size": 8070,
      "total": 50, "correct": 30, "wrong": 15, "unknown": 5}
   ]
 }

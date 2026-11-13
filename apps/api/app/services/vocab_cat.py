@@ -1,6 +1,6 @@
 """词频题库 CAT（Computerized Adaptive Testing）。
 
-与 ``vocab_eudic`` 共用 4 选 1 + 「以上都不对」题型和贝叶斯 EAP 估计，
+与 ``vocab_adaptive`` 共用 4 选 1 + 「以上都不对」题型和贝叶斯 EAP 估计，
 区别在选题：
 
 - 难度使用单词的精确词频 rank（而不是 1000 词一档的档位）
@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..config import settings
-from . import vocab_eudic as _eudic
+from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 
 MIN_QUESTIONS = 20
@@ -65,7 +65,7 @@ def _load_overrides() -> dict:
             continue
         try:
             b = float(val["b"])
-            a = float(val.get("a", 1.0 / _eudic.SCALE))
+            a = float(val.get("a", 1.0 / _adaptive.SCALE))
         except (KeyError, TypeError, ValueError):
             continue
         if b <= 0 or a <= 0:
@@ -78,10 +78,10 @@ def _load_overrides() -> dict:
 def _bank() -> list[dict]:
     """题库：每个词一份 {word, rank, gloss, pos, b, a}，按 rank 升序。"""
     overrides = _load_overrides()
-    default_a = 1.0 / _eudic.SCALE
+    default_a = 1.0 / _adaptive.SCALE
     seen: set[str] = set()
     items: list[dict] = []
-    for pool in _eudic._by_level():
+    for pool in _adaptive._by_level():
         for rank, lemma, gloss, _pos in pool:
             if lemma in seen:
                 continue
@@ -112,8 +112,8 @@ def reload_bank() -> None:
 
 def _info(item: dict, theta: float) -> float:
     """3PL Fisher 信息量：a²(1-c)²p²(1-p)² / (P(1-P))。"""
-    c = _eudic.GUESS_RATE
-    p = _eudic.sigmoid(item["a"] * (theta - item["b"]))
+    c = _adaptive.GUESS_RATE
+    p = _adaptive.sigmoid(item["a"] * (theta - item["b"]))
     prob = c + (1.0 - c) * p
     if prob <= 0.0 or prob >= 1.0:
         return 0.0
@@ -139,7 +139,7 @@ def _pick_item(sess: "CatSession") -> dict:
 
 
 def _make_question(item: dict, rng: random.Random) -> dict:
-    q = _eudic._question_from_word(
+    q = _adaptive._question_from_word(
         (item["rank"], item["word"], item["gloss"], item["pos"]), rng
     )
     # 下发给前端时 _public 会丢掉这两个字段，只用于服务端计分。
@@ -157,7 +157,7 @@ class CatSession:
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    log_post: list = field(default_factory=_eudic._prior_log_post)
+    log_post: list = field(default_factory=_adaptive._prior_log_post)
     se: float = 0.0
     current: Optional[dict] = None
     recent: list = field(default_factory=list)
@@ -175,7 +175,7 @@ def get_session(sid: str) -> Optional[CatSession]:
 
 
 def _base_level(sess: CatSession) -> int:
-    return max(0, min(_eudic.MAX_LEVEL, int(round(sess.score / _eudic.LEVEL_WIDTH))))
+    return max(0, min(_adaptive.MAX_LEVEL, int(round(sess.score / _adaptive.LEVEL_WIDTH))))
 
 
 def _progress(sess: CatSession) -> dict:
@@ -188,7 +188,7 @@ def _progress(sess: CatSession) -> dict:
         "wrong": sess.wrong,
         "converged": sess.total >= 50,
         "level": _base_level(sess),
-        "score_interval": _eudic._score_interval(sess),
+        "score_interval": _adaptive._score_interval(sess),
     }
 
 
@@ -255,28 +255,28 @@ def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     _sessions[sid] = sess
     sess.current = _make_question(_pick_item(sess), sess.rng)
     sess.recent.append(sess.current["word"])
-    return sid, _eudic._public(sess.current), _progress(sess)
+    return sid, _adaptive._public(sess.current), _progress(sess)
 
 
 def _update_score(sess: CatSession, q: dict, outcome: str) -> None:
-    """按题目自己的难度/区分度更新后验（与 eudic 相同的 3PL 似然）。"""
+    """按题目自己的难度/区分度更新后验（与 adaptive 相同的 3PL 似然）。"""
     b = float(q["b"])
     a = float(q["a"])
-    c = _eudic.GUESS_RATE
-    power = _eudic.UNKNOWN_LIKELIHOOD_POWER
+    c = _adaptive.GUESS_RATE
+    power = _adaptive.UNKNOWN_LIKELIHOOD_POWER
     lp = sess.log_post
-    for i, theta in enumerate(_eudic.GRID):
-        p = _eudic.sigmoid(a * (theta - b))
+    for i, theta in enumerate(_adaptive.GRID):
+        p = _adaptive.sigmoid(a * (theta - b))
         if outcome == "correct":
             lik = c + (1.0 - c) * p
-            lp[i] += math.log(max(lik, _eudic.PROB_FLOOR))
+            lp[i] += math.log(max(lik, _adaptive.PROB_FLOOR))
         elif outcome == "unknown":
-            lp[i] += power * math.log(max(1.0 - p, _eudic.PROB_FLOOR))
+            lp[i] += power * math.log(max(1.0 - p, _adaptive.PROB_FLOOR))
         else:
-            lp[i] += math.log(max((1.0 - c) * (1.0 - p), _eudic.PROB_FLOOR))
-    _eudic._normalize_log_post(sess)
+            lp[i] += math.log(max((1.0 - c) * (1.0 - p), _adaptive.PROB_FLOOR))
+    _adaptive._normalize_log_post(sess)
     sess.total += 1
-    _eudic._refresh_moments(sess)
+    _adaptive._refresh_moments(sess)
 
 
 def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dict:
@@ -319,7 +319,7 @@ def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dic
         "finished": False,
         "feedback": feedback,
         **progress,
-        "question": _eudic._public(sess.current),
+        "question": _adaptive._public(sess.current),
     }
 
 

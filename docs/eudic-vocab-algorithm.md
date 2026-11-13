@@ -296,15 +296,15 @@ n=30 档位= 9 词汇量= 8417 区间=[5050, 8417] 正/错/不认识=20/2/8
 后端已按同一套 `start → answer → finish` 协议接入，默认仍走经典分层算法。
 三种切换方式：
 
-1. **Web 端开关**：「词汇量评测」介绍页新增「算法」选项（经典分层 / 欧路自适应），
+1. **Web 端开关**：「词汇量评测」介绍页新增「算法」选项（经典分层 / 自适应），
    选择会记在 `localStorage`，开始测试时随请求下发。
-2. **接口参数**：`POST /vocab/test/start` body `{"algo": "eudic"}`。
-3. **服务端默认值**：环境变量 `VOCAB_ALGO=eudic`，对未显式传 `algo` 的客户端生效
+2. **接口参数**：`POST /vocab/test/start` body `{"algo": "adaptive"}`。
+3. **服务端默认值**：环境变量 `VOCAB_ALGO=adaptive`，对未显式传 `algo` 的客户端生效
    （Web 开关会显式下发选择，因此以开关为准）。
 
-欧路模式额外返回 `score_interval` 与 `level`，前端在得分下方显示区间；两套算法
+自适应模式额外返回 `score_interval` 与 `level`，前端在得分下方显示区间；两套算法
 共用现有题目组件和结果页，实现见
-[`apps/api/app/services/vocab_eudic.py`](../apps/api/app/services/vocab_eudic.py)。
+[`apps/api/app/services/vocab_adaptive.py`](../apps/api/app/services/vocab_adaptive.py)。
 
 本地若 8000 端口被其它服务占用，可用 `API_PORT=8002 ./scripts/dev.sh start`，
 H5 会通过 `VITE_API_PORT` 自动指向 8002。
@@ -332,7 +332,8 @@ H5 会通过 `VITE_API_PORT` 自动指向 8002。
 | 蒙对处理 | Wilson 下界显著高于 12% 才计入，并按 `c=0.12` 折算（§8.3） | IRT 的 `p` 天然处理，答错/不认识分别扣分 |
 | 覆盖率 | 无 | 10 个词表的模型估计 |
 
-现在欧路算法已作为独立服务 `vocab_eudic.py` 接入，路由按 `algo` 开关分发，
+现在欧路式自适应算法已作为独立服务 `vocab_adaptive.py` 接入（对外 `algo` 名为
+`adaptive`，不绑定欧路；旧值 `eudic` 仍作为别名兼容），路由按 `algo` 开关分发，
 前端协议保持不变；`score_interval` / `level` 已下发，`coverage` 暂未在结果页展示。
 
 ### 8.1 本地实现的稳定性调整（2026-11）
@@ -379,7 +380,7 @@ score_interval = [score - half, score + half]
 
 第三套算法 `cat` 保留同一题型和 EAP 估计，只替换选题：
 
-| 项目 | eudic | cat |
+| 项目 | adaptive | cat |
 | --- | --- | --- |
 | 难度 | 1000 词一档，档内同难度 | 精确词频 rank |
 | 选题 | 档位 ±1 + 连对探顶 | 当前能力附近按 3PL Fisher 信息量选题 |
@@ -414,7 +415,7 @@ score_interval = [score - half, score + half]
 现在每段先过一道 Wilson 检验，再做猜测校正：
 
 ```python
-if _wilson_lower(known, n) <= GUESS_RATE:   # c = 0.12，与 vocab_eudic 一致
+if _wilson_lower(known, n) <= GUESS_RATE:   # c = 0.12，与 vocab_adaptive 一致
     continue                                # 没有显著高于蒙对的知识信号
 know_rate = (smoothed_rate - GUESS_RATE) / (1 - GUESS_RATE)
 ```

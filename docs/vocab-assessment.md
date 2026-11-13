@@ -1,24 +1,24 @@
 # 词汇量评测：三种算法
 
 > 实现：[`vocab.py`](../apps/api/app/services/vocab.py)（classic）、
-> [`vocab_eudic.py`](../apps/api/app/services/vocab_eudic.py)（eudic）、
+> [`vocab_adaptive.py`](../apps/api/app/services/vocab_adaptive.py)（adaptive）、
 > [`vocab_cat.py`](../apps/api/app/services/vocab_cat.py)（cat）
 > 测试：[`test_vocab.py`](../apps/api/tests/test_vocab.py)、
-> [`test_vocab_eudic.py`](../apps/api/tests/test_vocab_eudic.py)、
+> [`test_vocab_adaptive.py`](../apps/api/tests/test_vocab_adaptive.py)、
 > [`test_vocab_cat.py`](../apps/api/tests/test_vocab_cat.py)
 > 诊断：[`diagnose_vocab_bands.py`](../apps/api/scripts/diagnose_vocab_bands.py)
 > 欧路原版逆向与推导细节：[eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)
 
 ## 1. 三种算法一览
 
-| | **classic 经典分层** | **eudic 欧路自适应** | **cat 词频 CAT** |
+| | **classic 经典分层** | **adaptive 自适应** | **cat 词频 CAT** |
 | --- | --- | --- | --- |
-| `algo` | `classic` | `eudic` | `cat` |
-| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 eudic |
+| `algo` | `classic` | `adaptive` | `cat` |
+| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 adaptive |
 | 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 精确 rank ±80 内按 Fisher 信息量 |
-| 估分 | 段认识率 × 段宽累加 | 网格贝叶斯 EAP 后验均值 | 同 eudic，难度用精确 rank |
-| 区间 | 无 | 95% 估计区间 | 同 eudic |
-| 单题影响 | 有界（≤ 段宽 / 该段题数） | 似然更新，随题量收敛 | 同 eudic |
+| 估分 | 段认识率 × 段宽累加 | 网格贝叶斯 EAP 后验均值 | 同 adaptive，难度用精确 rank |
+| 区间 | 无 | 95% 估计区间 | 同 adaptive |
+| 单题影响 | 有界（≤ 段宽 / 该段题数） | 似然更新，随题量收敛 | 同 adaptive |
 | 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 |
 | 定位 | 基线 / 对照 | 默认 | 实验，等题库标定 |
 
@@ -28,10 +28,10 @@
 2. 接口参数 `POST /vocab/test/start` body `{"algo": "cat"}`；
 3. 服务端默认值环境变量 `VOCAB_ALGO`（默认 `classic`），对未显式下发的客户端生效。
 
-未知 `algo` 返回 400。三套算法的会话各自维护，`/test/answer` 与 `/test/finish`
-按 `session_id` 自动分发。
+未知 `algo` 返回 400（旧值 `eudic` 会自动归一化为 `adaptive`）。三套算法的会话各自维护，
+`/test/answer` 与 `/test/finish` 按 `session_id` 自动分发。
 
-**历史**：classic 是最初实现，2026-09 为稳定性选定；2026-11 加入 eudic（把
+**历史**：classic 是最初实现，2026-09 为稳定性选定；2026-11 加入 adaptive（把
 Elo 增量更新换成 EAP）和 cat。classic 保留作基线，但它的「面积口径」与另外两套
 的「阈值口径」不是同一个量，见 §6。
 
@@ -43,7 +43,7 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
 （去掉无释义、非纯字母、敏感词黑名单，并按 lemma 去重）。
 
 - classic：按 rank 切成 10 段；
-- eudic：每 1,000 词一档，共 25 档（0–24）；
+- adaptive：每 1,000 词一档，共 25 档（0–24）；
 - cat：直接用精确 rank 作为难度先验。
 
 ### 2.2 题型
@@ -54,7 +54,7 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
 - 正确释义按 `CORRECT_PRESENT_RATE = 0.75` 的概率出现在前 3 个选项中，否则正确答案
   就是「以上都不对」；
 - 另有独立的「不认识」按钮（前端第 5 个操作），不等同于选错；
-- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；eudic/cat 优先同档、同词性，
+- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/cat 优先同档、同词性，
   并避免释义互相包含。
 
 答后反馈统一为：
@@ -82,7 +82,7 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
 ts, session, algo, n, rank, word, response
 ```
 
-各算法追加：classic `band / n_samples / estimate`；eudic `level / score`；
+各算法追加：classic `band / n_samples / estimate`；adaptive `level / score`；
 cat 再加 `b / a / se`（供后续题库标定）。
 
 ## 3. classic：固定分层抽样
@@ -118,7 +118,7 @@ BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
    认识率），再乘段宽。
 
 `GUESS_RATE = 0.12` 是「不会时仍蒙对」的有效概率：四选一 25% × 不会时仍会猜的
-比例（观测约 45%–50%）。与 eudic 共用同一套题面，取值一致。
+比例（观测约 45%–50%）。与 adaptive 共用同一套题面，取值一致。
 
 > 2026-11 之前只有「点估计 ≤ 25% 计 0」一道判断，且不扣蒙对：真实一次 50 题里，
 > 15k 以上 4/15 与纯猜区分不开，却被按 2/5=40% 计入两个高段，给出 16,500；
@@ -147,12 +147,14 @@ BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
 - 报的是**面积**：「认识多少个词」（25,000 里的占比 × 段宽累加），不是「50% 正确率
   对应的词频位置」。对同一个人，面积通常高于阈值点。
 - 每段只有 5 题，段边界附近会在「计入 / 清零」之间跳动；单次波动约 ±1,500–2,000 词。
-- 结果页不返回区间（`score_interval` 只有 eudic/cat 有）。
+- 结果页不返回区间（`score_interval` 只有 adaptive/cat 有）。
 - 适合看趋势和量级，不适合与另外两套算法逐分比较（见 §6）。
 
-## 4. eudic：贝叶斯 EAP
+## 4. adaptive：贝叶斯 EAP
 
-复现自 dict.eudic.net 的词汇量测试，但把原版的 Elo 增量更新换成**网格贝叶斯 EAP**。
+选题与估计方式参考 dict.eudic.net 的词汇量测试（逆向分析见
+[eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)），但把原版的 Elo 增量更新
+换成**网格贝叶斯 EAP**。算法本身不绑定欧路，cat 也复用了同一套估计。
 
 ### 4.1 模型
 
@@ -214,7 +216,7 @@ score_interval = [score - half, score + half]
 
 ## 5. cat：词频题库 CAT
 
-与 eudic 共用题型和 EAP 估计，只替换选题与难度参数。
+与 adaptive 共用题型和 EAP 估计，只替换选题与难度参数。
 
 ### 5.1 题库
 
@@ -261,7 +263,7 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 
 ### 6.1 三种算法的「分」不是同一个量
 
-| | classic | eudic / cat |
+| | classic | adaptive / cat |
 | --- | --- | --- |
 | 定义 | 认识多少个词（面积） | 正确率 56% 对应的词频位置（阈值） |
 | 对同一批答案 | 通常更高 | 更低 |
@@ -303,13 +305,13 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"eudic"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度 |
+| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"adaptive"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度 |
 | POST | `/vocab/test/answer` | body `{session_id, choice, unknown}`；返回反馈、进度、下一题；答满返回 `finished` + `result` |
 | POST | `/vocab/test/finish` | body `{session_id}`；提前结束，幂等 |
 | GET | `/vocab/tests` | 当前用户的历史记录（含 `algo`） |
 
 进度字段：`score`（classic 前 3 题为 `null`）、`total`、`correct`、`unknown`、
-`wrong`、`converged`；eudic/cat 另有 `level`、`score_interval`，结果另有 `ready`。
+`wrong`、`converged`；adaptive/cat 另有 `level`、`score_interval`，结果另有 `ready`。
 
 ## 8. 测试与诊断
 
@@ -333,7 +335,7 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   `test_stability_on_spiky_profile`（相对标准差 < 20%）；
 - 公共：`test_question_format_matches_eudic` / `test_question_has_three_glosses_plus_none_of_above`
   （3 释义 +「以上都不对」固定第 4 项）；
-- eudic：`test_posterior_score_is_order_invariant`（顺序无关）、
+- adaptive：`test_posterior_score_is_order_invariant`（顺序无关）、
   `test_interval_has_between_form_floor`（区间下限）、探顶三条规则；
 - cat：`test_bank_is_sorted_and_covers_all_levels`、`test_selection_follows_ability`、
   `test_posterior_score_is_order_invariant`、`test_cat_result_records_algo`。

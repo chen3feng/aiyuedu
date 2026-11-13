@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
-    # 词汇量测试算法开关：classic（固定分层抽样）| eudic（自适应 EAP）|
+    # 词汇量测试算法开关：classic（固定分层抽样）| adaptive（自适应 EAP）|
     # cat（词频题库 CAT）。前端可在开始测试时用 algo 参数覆盖。
     vocab_algo: str = "classic"
     # 后台管理（admin app，8001）口令：用户名固定 admin。
