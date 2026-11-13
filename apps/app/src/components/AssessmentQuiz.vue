@@ -4,9 +4,7 @@
       <view class="score-main">
         <view class="score-head">
           <text class="score-label">{{ t("assessment.score") }}</text>
-          <text class="algo-tag">
-            {{ algo === "eudic" ? t("assessment.algoEudic") : t("assessment.algoClassic") }}
-          </text>
+          <text class="algo-tag">{{ algoLabel }}</text>
         </view>
         <text class="score-value">{{ progress.score }}</text>
         <text v-if="progress.score !== null && progress.score_interval" class="score-range">
@@ -56,18 +54,26 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { answer, finishTest } from "../api/vocab";
-import type { Question, Feedback, Progress, Result } from "../api/vocab";
+import type { Question, Feedback, Progress, Result, VocabAlgo } from "../api/vocab";
 import StateView from "./StateView.vue";
 
 const props = defineProps<{
   sessionId: string;
-  algo?: "classic" | "eudic";
+  algo?: VocabAlgo;
   initialQuestion: Question;
   initialProgress: Progress;
 }>();
 const emit = defineEmits<{ finished: [result: Result] }>();
 
 const { t } = useI18n();
+
+const algoLabel = computed(() =>
+  props.algo === "cat"
+    ? t("assessment.algoCat")
+    : props.algo === "eudic"
+      ? t("assessment.algoEudic")
+      : t("assessment.algoClassic"),
+);
 
 const letters = ["A", "B", "C", "D"];
 

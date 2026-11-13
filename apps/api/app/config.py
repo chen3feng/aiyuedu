@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     sessions_path: str = str(PROJECT_ROOT / "data" / "users" / "sessions.json")
     notebooks_path: str = str(PROJECT_ROOT / "data" / "notebooks" / "notebooks.json")
     vocab_tests_path: str = str(PROJECT_ROOT / "data" / "vocab_tests" / "vocab_tests.json")
+    # CAT 题库的标定参数（可选）。不存在时按词频 rank 作为难度先验。
+    vocab_cat_items_path: str = str(PROJECT_ROOT / "data" / "calibration" / "vocab_cat_items.json")
     topics_path: str = str(PROJECT_ROOT / "data" / "topics" / "topics.json")
     sensitive_blacklist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "sensitive_blacklist.json")
     mwe_path: str = str(PROJECT_ROOT / "data" / "mwe" / "mwe.json")
@@ -28,8 +30,8 @@ class Settings(BaseSettings):
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
-    # 词汇量测试算法开关：classic（固定分层抽样）| eudic（自适应 Elo/IRT）。
-    # 前端可在开始测试时用 algo 参数覆盖；也可用环境变量 VOCAB_ALGO 改默认值。
+    # 词汇量测试算法开关：classic（固定分层抽样）| eudic（自适应 EAP）|
+    # cat（词频题库 CAT）。前端可在开始测试时用 algo 参数覆盖。
     vocab_algo: str = "classic"
     # 后台管理（admin app，8001）口令：用户名固定 admin。
     # 部署/局域网使用务必通过环境变量 ADMIN_PASSWORD 覆盖默认值。

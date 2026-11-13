@@ -21,7 +21,7 @@ export interface Progress {
 
 export interface StartResp extends Progress {
   session_id: string;
-  algo: "classic" | "eudic";
+  algo: VocabAlgo;
   rules: string;
   question: Question;
 }
@@ -54,7 +54,7 @@ export interface AnswerResp extends Progress {
   result?: Result;
 }
 
-export type VocabAlgo = "classic" | "eudic";
+export type VocabAlgo = "classic" | "eudic" | "cat";
 
 export const startTest = (algo?: VocabAlgo) =>
   request<StartResp>("/vocab/test/start", {
