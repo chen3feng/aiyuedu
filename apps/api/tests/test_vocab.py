@@ -114,6 +114,7 @@ def test_question_has_four_options_with_correct():
     assert q["word"]
     assert len(q["options"]) == 4
     assert vocab.NONE_OF_ABOVE in q["options"]
+    assert q["options"][3] == vocab.NONE_OF_ABOVE  # 固定为最后一个选项
     assert 0 <= q["correct_index"] < 4
     assert q["options"][q["correct_index"]] == q["correct_gloss"]
 
@@ -125,7 +126,7 @@ def test_question_format_matches_eudic():
     for _ in range(200):
         q = vocab._pick_in_band(random.randrange(vocab.N_BANDS), set())
         assert len(q["options"]) == 4
-        assert vocab.NONE_OF_ABOVE in q["options"]
+        assert q["options"][3] == vocab.NONE_OF_ABOVE
         if q["correct_gloss"] == vocab.NONE_OF_ABOVE:
             absent += 1
             assert q["gloss"] not in q["options"]
