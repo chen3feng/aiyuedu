@@ -1,7 +1,8 @@
-"""欧路式自适应词汇量测试：贝叶斯 EAP 能力估计。
+"""自适应词汇量测试：贝叶斯 EAP 能力估计。
 
-复现自 dict.eudic.net 的词汇量测试（分析见 ``docs/eudic-vocab-algorithm.md``），
-但把原版的 Elo 式增量更新换成了**网格贝叶斯 EAP**：
+算法参考 dict.eudic.net 的词汇量测试（逆向分析见
+``docs/eudic-vocab-algorithm.md``），但把原版的 Elo 式增量更新换成了
+**网格贝叶斯 EAP**：
 
     p(θ) = sigmoid((θ - (1000 * level + 100)) / 2500)
     posterior(θ) ∝ prior(θ) × Π likelihood(θ | 每题结果)
@@ -73,8 +74,8 @@ RULES = (
     "认识就选正确意思，不认识请点「不认识」。诚实作答，测评更准。"
 )
 RESULT_MESSAGE = (
-    "词汇量按自适应 Elo/IRT 估计：每答一题，根据当前分数与题目难度更新估计，"
-    "连续答对会挑战更高词频档位。最少 20 题即可查看结果，继续答会更稳。"
+    "词汇量按自适应 IRT（贝叶斯 EAP）估计：每答一题，根据当前分数与题目难度"
+    "更新后验，连续答对会挑战更高词频档位。最少 20 题即可查看结果，继续答会更稳。"
 )
 
 
@@ -179,7 +180,7 @@ def _prior_log_post() -> list[float]:
 
 
 @dataclass
-class EudicSession:
+class AdaptiveSession:
     id: str
     rng: random.Random = field(default_factory=random.Random)
     score: float = 0.0
@@ -203,10 +204,10 @@ class EudicSession:
     recorded: bool = False                           # 历史只记一次
 
 
-_sessions: dict[str, EudicSession] = {}
+_sessions: dict[str, AdaptiveSession] = {}
 
 
-def get_session(sid: str) -> Optional[EudicSession]:
+def get_session(sid: str) -> Optional[AdaptiveSession]:
     return _sessions.get(sid)
 
 
@@ -215,11 +216,11 @@ def _public(q: dict) -> dict:
     return {"word": q["word"], "options": q["options"], "level": q["level"]}
 
 
-def _base_level(sess: EudicSession) -> int:
+def _base_level(sess: AdaptiveSession) -> int:
     return max(0, min(MAX_LEVEL, int(round(sess.score / LEVEL_WIDTH))))
 
 
-def _select_level(sess: EudicSession) -> int:
+def _select_level(sess: AdaptiveSession) -> int:
     if sess.total == 0:
         # 第一题用高频词热身（1~2 档），避免一上来就是生僻词
         return 1 + sess.rng.choice([0, 1])
@@ -243,7 +244,7 @@ def _select_level(sess: EudicSession) -> int:
     return max(0, min(MAX_LEVEL, _base_level(sess) + offset))
 
 
-def _make_next(sess: EudicSession) -> dict:
+def _make_next(sess: AdaptiveSession) -> dict:
     q = _make_question(_select_level(sess), sess.rng, set(sess.recent[-20:]))
     sess.recent.append(q["word"])
     if len(sess.recent) > 40:
@@ -251,7 +252,7 @@ def _make_next(sess: EudicSession) -> dict:
     return q
 
 
-def _normalize_log_post(sess: EudicSession) -> None:
+def _normalize_log_post(sess: AdaptiveSession) -> None:
     """把对数后验归一化，并整体平移使最大值为 0，避免数值下溢。"""
     peak = max(sess.log_post)
     weights = [math.exp(v - peak) for v in sess.log_post]
@@ -259,7 +260,7 @@ def _normalize_log_post(sess: EudicSession) -> None:
     sess.log_post = [v - peak - log_z for v in sess.log_post]
 
 
-def _refresh_moments(sess: EudicSession) -> None:
+def _refresh_moments(sess: AdaptiveSession) -> None:
     """从后验计算均值（得分）与标准差（不确定性）。"""
     weights = [math.exp(v) for v in sess.log_post]
     mean = sum(g * w for g, w in zip(GRID, weights))
@@ -268,7 +269,7 @@ def _refresh_moments(sess: EudicSession) -> None:
     sess.se = math.sqrt(max(var, 0.0))
 
 
-def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
+def _update_score(sess: AdaptiveSession, q: dict, outcome: str) -> None:
     """按题目难度把本次作答的事实乘进后验。
 
     答对用 p(θ)，答错用 1-p(θ)，「不认识」用 (1-p(θ))^0.625（软惩罚）。
@@ -294,7 +295,7 @@ def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
     _refresh_moments(sess)
 
 
-def _score_interval(sess: EudicSession) -> list:
+def _score_interval(sess: AdaptiveSession) -> list:
     """95% 估计区间：后验标准误 + 换题方差下限。
 
     后验只回答「给这些题时能力在哪」，不包含换一套题带来的难度抽样波动，
@@ -307,7 +308,7 @@ def _score_interval(sess: EudicSession) -> list:
     ]
 
 
-def _progress(sess: EudicSession) -> dict:
+def _progress(sess: AdaptiveSession) -> dict:
     score = int(round(sess.score))
     return {
         "score": score if sess.total >= 1 else None,
@@ -321,7 +322,7 @@ def _progress(sess: EudicSession) -> dict:
     }
 
 
-def _log_answer(sess: EudicSession, q: dict, response: str) -> None:
+def _log_answer(sess: AdaptiveSession, q: dict, response: str) -> None:
     """追加一条评测记录（JSONL），供离线分析。日志失败不影响评测。"""
     try:
         path = Path(settings.vocab_log_path)
@@ -329,7 +330,7 @@ def _log_answer(sess: EudicSession, q: dict, response: str) -> None:
         rec = {
             "ts": round(time.time(), 3),
             "session": sess.id,
-            "algo": "eudic",
+            "algo": "adaptive",
             "n": sess.total,
             "rank": q["rank"],
             "level": q["level"],
@@ -343,7 +344,7 @@ def _log_answer(sess: EudicSession, q: dict, response: str) -> None:
         pass
 
 
-def _result(sess: EudicSession) -> dict:
+def _result(sess: AdaptiveSession) -> dict:
     score = int(round(sess.score)) if sess.total else 0
     return {
         "vocab_size": int(round(sess.score / 10) * 10),
@@ -360,13 +361,13 @@ def _result(sess: EudicSession) -> dict:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    sess = EudicSession(id=sid, user_id=user_id)
+    sess = AdaptiveSession(id=sid, user_id=user_id)
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)
 
 
-def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> dict:
+def submit_answer(sess: AdaptiveSession, choice: Optional[int], unknown: bool) -> dict:
     q = sess.current
     if q is None:
         raise RuntimeError("测试已结束")
@@ -430,7 +431,7 @@ def submit_answer(sess: EudicSession, choice: Optional[int], unknown: bool) -> d
     }
 
 
-def _record(sess: EudicSession) -> None:
+def _record(sess: AdaptiveSession) -> None:
     """把完成的测评写进用户历史（幂等；匿名/未作答不记）。"""
     if sess.recorded or not sess.user_id or sess.total == 0:
         return
@@ -438,7 +439,7 @@ def _record(sess: EudicSession) -> None:
     result = _result(sess)
     vocab_tests.add(sess.user_id, {
         "ts": round(time.time(), 3),
-        "algo": "eudic",
+        "algo": "adaptive",
         "score": result["score"],
         "vocab_size": result["vocab_size"],
         "total": result["total"],
@@ -448,7 +449,7 @@ def _record(sess: EudicSession) -> None:
     })
 
 
-def finish_test(sess: EudicSession) -> dict:
+def finish_test(sess: AdaptiveSession) -> dict:
     """用户主动结束测评，返回最终成绩（幂等，可重复调用）。"""
     sess.finished = True
     _record(sess)

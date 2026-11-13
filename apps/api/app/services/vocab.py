@@ -36,9 +36,9 @@ MAX_QUESTIONS = N_BANDS * ROUNDS         # 50
 MIN_SAMPLES = 3                          # 至少 3 词才下发估值（前端显示「测评中…」）
 SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝「突变」
 # 不会时仍蒙对的概率：四选一 25% × 「不确定时仍会猜」的比例（观测约 45%–50%）。
-# 与欧路自适应算法共用同一套题面，取值保持一致（vocab_eudic.GUESS_RATE）。
+# 与自适应算法共用同一套题面，取值保持一致（vocab_adaptive.GUESS_RATE）。
 GUESS_RATE = 0.12
-# 题面与欧路/CAT 对齐：3 个中文释义 +「以上都不对」，正确释义只出现 75% 的次数。
+# 题面与 adaptive/CAT 对齐：3 个中文释义 +「以上都不对」，正确释义只出现 75% 的次数。
 # 旧版永远把正确释义放进选项，可以用排除法/词形猜出来，三套算法的分数不可比。
 CORRECT_PRESENT_RATE = 0.75
 NONE_OF_ABOVE = "以上都不对"
@@ -156,7 +156,7 @@ def _band_of(rank: int) -> int:
 def _make_question(target) -> dict:
     """把候选词 target=(rank, lemma, gloss) 做成一道四选一题（干扰项取相邻频段）。
 
-    题面与欧路/CAT 一致：3 个中文释义 +「以上都不对」；正确释义只有
+    题面与 adaptive/CAT 一致：3 个中文释义 +「以上都不对」；正确释义只有
     `CORRECT_PRESENT_RATE` 的概率出现在选项里，否则正确答案就是「以上都不对」。
     这样三套算法测的是同一种能力，分数才有可比性。
     """
@@ -188,7 +188,7 @@ def _make_question(target) -> dict:
 
     if include_correct:
         distractors.append(target[2])
-    # 只打乱释义，让「以上都不对」固定为最后一个选项（与欧路/CAT 一致）。
+    # 只打乱释义，让「以上都不对」固定为最后一个选项（与 adaptive/CAT 一致）。
     random.shuffle(distractors)
     options = distractors + [NONE_OF_ABOVE]
     correct_gloss = target[2] if include_correct else NONE_OF_ABOVE

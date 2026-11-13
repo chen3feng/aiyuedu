@@ -3,13 +3,15 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..deps import current_user_id
-from ..services import vocab, vocab_cat, vocab_eudic, vocab_tests
+from ..services import vocab, vocab_adaptive, vocab_cat, vocab_tests
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
 
-# 算法开关：classic = 固定分层抽样，eudic = 欧路式自适应 EAP，
+# 算法开关：classic = 固定分层抽样，adaptive = 自适应 EAP，
 # cat = 词频题库 CAT（精确 rank + 最大信息量选题）。
-_ALGOS = {"classic": vocab, "eudic": vocab_eudic, "cat": vocab_cat}
+_ALGOS = {"classic": vocab, "adaptive": vocab_adaptive, "cat": vocab_cat}
+# 兼容旧客户端/本地缓存里的 "eudic"（算法改名前的值），归一化为 adaptive。
+_ALIASES = {"eudic": "adaptive"}
 
 
 class StartIn(BaseModel):
@@ -38,6 +40,7 @@ def _service_and_session(sid: str):
 @router.post("/test/start")
 def start(payload: StartIn | None = None, user_id: str = Depends(current_user_id)):
     algo = ((payload.algo if payload else None) or settings.vocab_algo).lower()
+    algo = _ALIASES.get(algo, algo)
     svc = _ALGOS.get(algo)
     if svc is None:
         raise HTTPException(status_code=400, detail=f"未知算法：{algo}")

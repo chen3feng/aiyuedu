@@ -70,8 +70,8 @@ const { t } = useI18n();
 const algoLabel = computed(() =>
   props.algo === "cat"
     ? t("assessment.algoCat")
-    : props.algo === "eudic"
-      ? t("assessment.algoEudic")
+    : props.algo === "adaptive"
+      ? t("assessment.algoAdaptive")
       : t("assessment.algoClassic"),
 );
 
