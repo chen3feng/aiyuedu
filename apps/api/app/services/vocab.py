@@ -188,8 +188,9 @@ def _make_question(target) -> dict:
 
     if include_correct:
         distractors.append(target[2])
+    # 只打乱释义，让「以上都不对」固定为最后一个选项（与欧路/CAT 一致）。
+    random.shuffle(distractors)
     options = distractors + [NONE_OF_ABOVE]
-    random.shuffle(options)
     correct_gloss = target[2] if include_correct else NONE_OF_ABOVE
     return {
         "word": target[1],
