@@ -113,6 +113,25 @@ def test_score_never_negative():
     assert sess.score >= 0.0
 
 
+def test_guessing_lowers_score_for_same_evidence(monkeypatch):
+    """同样答对时，考虑「蒙对」会把证据打折，估计更低。"""
+    def score(rate):
+        monkeypatch.setattr(eudic, "GUESS_RATE", rate)
+        sess = eudic.EudicSession(id="x")
+        _apply(sess, [(10, "correct")] * 3)
+        return sess.score
+
+    assert score(0.12) < score(0.0)
+
+
+def test_interval_has_between_form_floor():
+    """换题方差下限保证区间不会随着答题增多收缩到不合理的小。"""
+    sess = eudic.EudicSession(id="x")
+    _apply(sess, [(5, "correct")] * 40)
+    lo, hi = eudic._progress(sess)["score_interval"]
+    assert hi - lo >= int(2 * 1.96 * eudic.FORM_SD) - 2
+
+
 def test_interval_contains_estimate_and_narrows():
     sess = eudic.EudicSession(id="x")
     _apply(sess, [(5, "correct")])

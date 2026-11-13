@@ -6,13 +6,13 @@
     p(θ) = sigmoid((θ - (1000 * level + 100)) / 2500)
     posterior(θ) ∝ prior(θ) × Π likelihood(θ | 每题结果)
 
-- 答对：likelihood = p(θ)
-- 答错：likelihood = 1 - p(θ)
+- 答对：likelihood = c + (1 - c) * p(θ)，c 为有效猜测率
+- 答错：likelihood = (1 - c) * (1 - p(θ))
 - 不认识：likelihood = (1 - p(θ)) ** 0.625（延续原版的软惩罚）
 
-得分取后验均值，95% 区间取后验分位数。因为后验是各题似然的乘积，
-**给定答过的题和结果，最终得分与作答顺序无关**，不再受 Elo 步长衰减和
-路径依赖影响。选词仍沿用原版的档位偏移与探顶启发式。
+得分取后验均值，95% 区间取「后验标准误 + 换题方差下限」。
+因为后验是各题似然的乘积，**给定答过的题和结果，最终得分与作答顺序无关**，
+不再受 Elo 步长衰减和路径依赖影响。选词仍沿用原版的档位偏移与探顶启发式。
 
 题目为「3 个中文释义 + 以上都不对」，另有独立的「不认识」按钮（前端已有的
 第五个操作）。约 75% 的题会把正确释义放进前三个选项，25% 的题三个释义全错、
@@ -41,6 +41,13 @@ LEVEL_WIDTH = 1000          # 每个词频档约 1000 词
 LEVEL_OFFSET = 100          # 档位难度偏移
 SCALE = 2500                # logistic 斜率（分）
 UNKNOWN_LIKELIHOOD_POWER = 0.625  # 「不认识」的软惩罚：似然取 (1-p)^0.625
+# 有效猜测率：4 选 1 的 0.25 乘以「不会时仍选择猜」的比例（观测约 0.45–0.5）。
+# 直接用 0.25 会把「不认识」的诚实作答也当成一定蒙对，导致系统性高估。
+GUESS_RATE = 0.12
+# 换题方差下限（分）：模型只反映「给定这些题」的答题噪声，词表内难度差异、
+# 当天状态等会让不同次测试再波动约 1,000–1,300 分。先用保守下限，
+# 题目级标定（#40）后可替换为实测方差。
+FORM_SD = 1200
 MAX_LEVEL = 24              # wordlist.csv 覆盖 0~24 档
 MAX_SCORE = 25000           # 词库上限
 CORRECT_PRESENT_RATE = 0.75 # 正确释义出现在 3 个选项中的概率
@@ -269,31 +276,31 @@ def _update_score(sess: EudicSession, q: dict, outcome: str) -> None:
     for i, theta in enumerate(GRID):
         p = sigmoid((theta - difficulty) / SCALE)
         if outcome == "correct":
-            lp[i] += math.log(max(p, PROB_FLOOR))
-        else:
+            # 3PL：不会时仍可能蒙对，正确选项只提供部分证据。
+            lik = GUESS_RATE + (1.0 - GUESS_RATE) * p
+            lp[i] += math.log(max(lik, PROB_FLOOR))
+        elif outcome == "unknown":
+            # 明确表示不认识：按未掌握处理，保留原版的软惩罚。
             lp[i] += power * math.log(max(1.0 - p, PROB_FLOOR))
+        else:
+            # 猜错：未掌握且没有蒙对。
+            lp[i] += math.log(max((1.0 - GUESS_RATE) * (1.0 - p), PROB_FLOOR))
     _normalize_log_post(sess)
     sess.total += 1
     _refresh_moments(sess)
 
 
 def _score_interval(sess: EudicSession) -> list:
-    """后验的 95% 等尾区间（分位数），比均值 ± 1.96se 更稳。"""
-    weights = [math.exp(v) for v in sess.log_post]
-    total = sum(weights)
-    lo_target = 0.025 * total
-    hi_target = 0.975 * total
-    lower: Optional[int] = None
-    upper: Optional[int] = None
-    acc = 0.0
-    for g, w in zip(GRID, weights):
-        acc += w
-        if lower is None and acc >= lo_target:
-            lower = int(round(g))
-        if acc >= hi_target:
-            upper = int(round(g))
-            break
-    return [0 if lower is None else lower, MAX_SCORE if upper is None else upper]
+    """95% 估计区间：后验标准误 + 换题方差下限。
+
+    后验只回答「给这些题时能力在哪」，不包含换一套题带来的难度抽样波动，
+    所以用 FORM_SD 把区间放宽到接近实测的重测波动。
+    """
+    half = 1.96 * math.sqrt(sess.se ** 2 + FORM_SD ** 2)
+    return [
+        max(0, int(round(sess.score - half))),
+        min(MAX_SCORE, int(round(sess.score + half))),
+    ]
 
 
 def _progress(sess: EudicSession) -> dict:
