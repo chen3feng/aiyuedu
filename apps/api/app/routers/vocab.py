@@ -3,13 +3,20 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..deps import current_user_id
-from ..services import vocab, vocab_adaptive, vocab_cat, vocab_tests
+from ..services import vocab, vocab_adaptive, vocab_adaptive2, vocab_cat, vocab_tests
+from ..services import vocab_trend
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
 
 # 算法开关：classic = 固定分层抽样，adaptive = 自适应 EAP，
+# adaptive2 = 双参数自适应（θ + α，词汇量按曲线面积），
 # cat = 词频题库 CAT（精确 rank + 最大信息量选题）。
-_ALGOS = {"classic": vocab, "adaptive": vocab_adaptive, "cat": vocab_cat}
+_ALGOS = {
+    "classic": vocab,
+    "adaptive": vocab_adaptive,
+    "adaptive2": vocab_adaptive2,
+    "cat": vocab_cat,
+}
 # 兼容旧客户端/本地缓存里的 "eudic"（算法改名前的值），归一化为 adaptive。
 _ALIASES = {"eudic": "adaptive"}
 
@@ -75,3 +82,9 @@ def finish(payload: FinishIn):
 @router.get("/tests")
 def list_tests(user_id: str = Depends(current_user_id)):
     return {"items": vocab_tests.list_tests(user_id)}
+
+
+@router.get("/trend")
+def trend(algo: str | None = None, user_id: str = Depends(current_user_id)):
+    """同一算法的多次测试趋势（issue #42）。"""
+    return vocab_trend.trend(user_id, algo)

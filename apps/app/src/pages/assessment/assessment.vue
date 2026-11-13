@@ -21,6 +21,11 @@
               >{{ t("assessment.algoAdaptive") }}</text>
               <text
                 class="algo-chip"
+                :class="{ active: algo === 'adaptive2' }"
+                @click="setAlgo('adaptive2')"
+              >{{ t("assessment.algoAdaptive2") }}</text>
+              <text
+                class="algo-chip"
                 :class="{ active: algo === 'cat' }"
                 @click="setAlgo('cat')"
               >{{ t("assessment.algoCat") }}</text>
@@ -74,9 +79,12 @@
         <view v-if="delta !== null" class="delta" :class="{ up: delta >= 0, down: delta < 0 }">
           {{ t("assessment.vsLast", { delta: (delta >= 0 ? "+" : "") + delta }) }}
         </view>
-        <view v-if="result?.score_interval" class="range">
-          <text class="range-value">{{ t("assessment.scoreRange", { low: result.score_interval[0], high: result.score_interval[1] }) }}</text>
+        <view v-if="resultInterval" class="range">
+          <text class="range-value">{{ t("assessment.scoreRange", { low: resultInterval[0], high: resultInterval[1] }) }}</text>
           <text class="range-hint">{{ t("assessment.scoreRangeHint") }}</text>
+        </view>
+        <view v-if="result?.alpha" class="algo-used">
+          {{ t("assessment.alphaValue", { alpha: result.alpha.toFixed(2) }) }}
         </view>
         <view class="score-line">
           <text class="muted">{{ t("assessment.summary", { correct: result?.correct, unknown: result?.unknown, wrong: result?.wrong, total: result?.total }) }}</text>
@@ -110,7 +118,8 @@ const phase = ref<Phase>("intro");
 const loading = ref(false);
 const error = ref("");
 const sessionId = ref("");
-// 算法开关：classic = 固定分层抽样，adaptive = 自适应 IRT，cat = 词频 CAT。
+// 算法开关：classic = 固定分层抽样，adaptive = 自适应 IRT，
+// adaptive2 = 双参数 θ+α，cat = 词频 CAT。
 // 首次进入默认用自适应，方便先测新算法；可随时切回经典。
 const ALGO_KEY = "vocab_algo";
 const algo = ref<VocabAlgo>(normalizeAlgo(uni.getStorageSync(ALGO_KEY) as string));
@@ -120,26 +129,36 @@ function setAlgo(v: VocabAlgo) {
 }
 // 文案与选项共用同一套算法名称，历史记录和结果页也能显示算法。
 const algoName = computed(() => algoLabel(algo.value));
-const algoHint = computed(() =>
-  t(
-    algo.value === "cat"
+const algoHint = computed(() => {
+  const v = normalizeAlgo(algo.value);
+  return t(
+    v === "cat"
       ? "assessment.algoCatHint"
-      : algo.value === "adaptive"
-        ? "assessment.algoAdaptiveHint"
-        : "assessment.algoClassicHint",
-  ),
-);
+      : v === "adaptive2"
+        ? "assessment.algoAdaptive2Hint"
+        : v === "adaptive"
+          ? "assessment.algoAdaptiveHint"
+          : "assessment.algoClassicHint",
+  );
+});
 function algoLabel(v: string) {
-  return normalizeAlgo(v) === "cat"
+  const a = normalizeAlgo(v);
+  return a === "cat"
     ? t("assessment.algoCat")
-    : normalizeAlgo(v) === "adaptive"
-      ? t("assessment.algoAdaptive")
-      : t("assessment.algoClassic");
+    : a === "adaptive2"
+      ? t("assessment.algoAdaptive2")
+      : a === "adaptive"
+        ? t("assessment.algoAdaptive")
+        : t("assessment.algoClassic");
 }
 // 作为 AssessmentQuiz 的初始数据（start 返回），之后状态由组件自管
 const question = ref<Question>({ word: "", options: [] });
 const progress = ref<Progress>({ score: 0, total: 0, correct: 0, unknown: 0, wrong: 0, converged: false });
 const result = ref<Result | null>(null);
+// 双参数算法给出的是词汇量（面积）区间；其余算法给分位区间。
+const resultInterval = computed<[number, number] | null>(
+  () => result.value?.vocab_interval ?? result.value?.score_interval ?? null,
+);
 // 历史记录（最新在前）；用于介绍页「上次测试」和结果页「比上次」
 const history = ref<VocabTestRecord[]>([]);
 const previous = ref<VocabTestRecord | null>(null);
@@ -304,6 +323,7 @@ function again() {
 }
 .algo-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 12rpx;
 }
 .algo-chip {

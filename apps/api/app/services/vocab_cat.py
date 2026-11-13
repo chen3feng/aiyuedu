@@ -27,9 +27,12 @@ from typing import Optional
 from ..config import settings
 from . import vocab_adaptive as _adaptive
 from . import vocab_tests
+from . import vocab_trend
 
 MIN_QUESTIONS = 20
 MAX_QUESTIONS = 80
+# 后验标准误降到阈值以下就停止（不必答满 80 题）。实测 3PL 下约 55–65 题。
+SE_STOP = 800.0
 RECENT_LIMIT = 40
 CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
@@ -168,6 +171,7 @@ class CatSession:
     user_id: Optional[str] = None
     recorded: bool = False
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
+    stop_reason: str = ""                            # "se" / "max" / "manual"
 
 
 _sessions: dict[str, CatSession] = {}
@@ -189,9 +193,11 @@ def _progress(sess: CatSession) -> dict:
         "correct": sess.correct,
         "unknown": sess.unknown,
         "wrong": sess.wrong,
-        "converged": sess.total >= 50,
+        "converged": sess.total >= 50 or bool(sess.stop_reason),
         "level": _base_level(sess),
         "score_interval": _adaptive._score_interval(sess),
+        "se": int(round(sess.se)),
+        "stop_reason": sess.stop_reason or None,
     }
 
 
@@ -206,6 +212,8 @@ def _result(sess: CatSession) -> dict:
         "wrong": sess.wrong,
         "ready": sess.total >= MIN_QUESTIONS,
         "score_interval": _progress(sess)["score_interval"],
+        "se": int(round(sess.se)),
+        "stop_reason": sess.stop_reason or None,
         "message": RESULT_MESSAGE,
     }
 
@@ -252,18 +260,34 @@ def _record(sess: CatSession) -> None:
     vocab_tests.add(sess.user_id, {
         "ts": round(time.time(), 3),
         "algo": "cat",
+        "algo_version": ALGO_VERSION,
         "score": result["score"],
         "vocab_size": result["vocab_size"],
         "total": result["total"],
         "correct": result["correct"],
         "wrong": result["wrong"],
         "unknown": result["unknown"],
+        "se": result["se"],
+        "stop_reason": result["stop_reason"],
     })
 
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    sess = CatSession(id=sid, user_id=user_id)
+    prior = (
+        vocab_trend.history_prior(user_id, "cat")
+        if settings.vocab_history_prior
+        else None
+    )
+    sess = CatSession(
+        id=sid,
+        user_id=user_id,
+        log_post=(
+            _adaptive._prior_log_post(prior["mean"], prior["sd"])
+            if prior
+            else _adaptive._prior_log_post()
+        ),
+    )
     _sessions[sid] = sess
     sess.current = _make_question(_pick_item(sess), sess.rng)
     sess.recent.append(sess.current["word"])
@@ -316,9 +340,13 @@ def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dic
         "correct_gloss": q["correct_gloss"],
         "word_gloss": q["gloss"],
     }
-    progress = _progress(sess)
-
+    # 停止规则：答满上限，或后验标准误已足够小（真 CAT 的 SE 停止）。
     if sess.total >= MAX_QUESTIONS:
+        sess.stop_reason = "max"
+    elif sess.total >= MIN_QUESTIONS and sess.se <= SE_STOP:
+        sess.stop_reason = "se"
+    progress = _progress(sess)
+    if sess.stop_reason:
         sess.finished = True
         _record(sess)
         return {"finished": True, "feedback": feedback, **progress, "result": _result(sess)}
@@ -336,6 +364,8 @@ def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dic
 
 
 def finish_test(sess: CatSession) -> dict:
+    if not sess.stop_reason:
+        sess.stop_reason = "manual"
     sess.finished = True
     _record(sess)
     return _result(sess)

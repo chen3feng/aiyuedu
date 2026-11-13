@@ -39,7 +39,7 @@ SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝�
 # 与自适应算法共用同一套题面，取值保持一致（vocab_adaptive.GUESS_RATE）。
 GUESS_RATE = 0.12
 # 题面与 adaptive/CAT 对齐：3 个中文释义 +「以上都不对」，正确释义只出现 75% 的次数。
-# 旧版永远把正确释义放进选项，可以用排除法/词形猜出来，三套算法的分数不可比。
+# 旧版永远把正确释义放进选项，可以用排除法/词形猜出来，各算法的分数不可比。
 CORRECT_PRESENT_RATE = 0.75
 NONE_OF_ABOVE = "以上都不对"
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
@@ -160,7 +160,7 @@ def _make_question(target) -> dict:
 
     题面与 adaptive/CAT 一致：3 个中文释义 +「以上都不对」；正确释义只有
     `CORRECT_PRESENT_RATE` 的概率出现在选项里，否则正确答案就是「以上都不对」。
-    这样三套算法测的是同一种能力，分数才有可比性。
+    这样各算法测的是同一种能力，分数才有可比性。
     """
     cands = _candidates()
     frqs = [c[0] for c in cands]
