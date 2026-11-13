@@ -291,12 +291,13 @@ def test_answer_log_records_estimation_fields(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "vocab_log_path", str(log))
     sid, _, _ = adaptive.start_test(user_id="u1")
     sess = adaptive.get_session(sid)
-    adaptive.submit_answer(sess, sess.current["correct_index"], False)
+    q = sess.current
+    adaptive.submit_answer(sess, q["correct_index"], False)
     rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
     assert rec["algo"] == "adaptive"
     assert rec["algo_version"] == adaptive.ALGO_VERSION
     assert rec["user_id"] == "u1"
-    assert rec["include_correct"] is True
+    assert rec["include_correct"] is (q["correct_index"] != 3)
     assert rec["elapsed_ms"] is None
     assert isinstance(rec["se"], int)
 

@@ -203,18 +203,21 @@ def test_answer_log_records_algo(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "vocab_log_path", str(log))
     sid, _, _ = vocab.start_test()
     sess = vocab.get_session(sid)
-    vocab.submit_answer(sess, sess.current["correct_index"], False)
+    q = sess.current
+    vocab.submit_answer(sess, q["correct_index"], False)
     rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
     assert rec["algo"] == "classic"
     assert rec["algo_version"] == vocab.ALGO_VERSION
     assert rec["response"] == "correct"
-    assert rec["include_correct"] is True
+    assert rec["include_correct"] is (q["correct_index"] != 3)
     assert rec["user_id"] == ""
     assert rec["elapsed_ms"] is None  # 第一题没有上一题
 
     # 第二题应带上与上一题的时间差
-    vocab.submit_answer(sess, sess.current["correct_index"], False)
+    q2 = sess.current
+    vocab.submit_answer(sess, q2["correct_index"], False)
     rec2 = json.loads(log.read_text(encoding="utf-8").splitlines()[1])
+    assert rec2["include_correct"] is (q2["correct_index"] != 3)
     assert isinstance(rec2["elapsed_ms"], int) and rec2["elapsed_ms"] >= 0
 
 
