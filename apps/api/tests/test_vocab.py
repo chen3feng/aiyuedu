@@ -194,7 +194,7 @@ def test_estimate_real_session_guess_corrected():
 
 
 def test_answer_log_records_algo(monkeypatch, tmp_path):
-    """作答日志要带 algo，离线对比三套算法时不必再靠时间戳猜。"""
+    """作答日志要带 algo 等字段，离线对比三套算法时不必再靠时间戳猜。"""
     import json
 
     from app.config import settings
@@ -206,7 +206,16 @@ def test_answer_log_records_algo(monkeypatch, tmp_path):
     vocab.submit_answer(sess, sess.current["correct_index"], False)
     rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
     assert rec["algo"] == "classic"
+    assert rec["algo_version"] == vocab.ALGO_VERSION
     assert rec["response"] == "correct"
+    assert rec["include_correct"] is True
+    assert rec["user_id"] == ""
+    assert rec["elapsed_ms"] is None  # 第一题没有上一题
+
+    # 第二题应带上与上一题的时间差
+    vocab.submit_answer(sess, sess.current["correct_index"], False)
+    rec2 = json.loads(log.read_text(encoding="utf-8").splitlines()[1])
+    assert isinstance(rec2["elapsed_ms"], int) and rec2["elapsed_ms"] >= 0
 
 
 def test_start_test_returns_question_and_null_score():

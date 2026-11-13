@@ -79,11 +79,15 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
 逐题日志（`data/logs/vocab_sessions.jsonl`，每答一题一行，已 gitignore）公共字段：
 
 ```text
-ts, session, algo, n, rank, word, response
+ts, session, algo, algo_version, user_id, n, rank, word, response,
+include_correct, elapsed_ms
 ```
 
-各算法追加：classic `band / n_samples / estimate`；adaptive `level / score`；
-cat 再加 `b / a / se`（供后续题库标定）。
+`include_correct` 表示正确释义是否在选项中（`false` 即本题正确选项为「以上都不对」），
+`elapsed_ms` 是与上一题的间隔（首题为 `null`），`algo_version` 用于分版回放与标定。
+
+各算法追加：classic `band / n_samples / estimate`；adaptive `level / score / se`；
+cat 再加 `b / a`（供后续题库标定）。
 
 ## 3. classic：固定分层抽样
 

@@ -57,6 +57,8 @@ MAX_QUESTIONS = 80          # 50 题后可继续答，最多 80 题；更多样�
 PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
 MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
 PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
+# 日志版本号：算法口径变化时递增，便于按版本回放与标定。
+ALGO_VERSION = "2026-11"
 
 # —— 后验网格：0~25000 分，步长 50（501 个点）——
 GRID_STEP = 50
@@ -202,6 +204,7 @@ class AdaptiveSession:
     finished: bool = False
     user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
     recorded: bool = False                           # 历史只记一次
+    last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
 _sessions: dict[str, AdaptiveSession] = {}
@@ -327,16 +330,26 @@ def _log_answer(sess: AdaptiveSession, q: dict, response: str) -> None:
     try:
         path = Path(settings.vocab_log_path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        now = time.time()
+        elapsed_ms = (
+            int(round((now - sess.last_ts) * 1000)) if sess.last_ts else None
+        )
+        sess.last_ts = now
         rec = {
-            "ts": round(time.time(), 3),
+            "ts": round(now, 3),
             "session": sess.id,
             "algo": "adaptive",
+            "algo_version": ALGO_VERSION,
+            "user_id": sess.user_id or "",
             "n": sess.total,
             "rank": q["rank"],
             "level": q["level"],
             "word": q["word"],
             "response": response,
+            "include_correct": q["correct_index"] != 3,
+            "elapsed_ms": elapsed_ms,
             "score": int(round(sess.score)),
+            "se": int(round(sess.se)),
         }
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")

@@ -34,6 +34,8 @@ RECENT_LIMIT = 40
 CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
 DEFAULT_START = 1500.0     # 首题难度（高频词热身）
+# 日志版本号：算法口径变化时递增，便于按版本回放与标定。
+ALGO_VERSION = "2026-11"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -165,6 +167,7 @@ class CatSession:
     finished: bool = False
     user_id: Optional[str] = None
     recorded: bool = False
+    last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
 _sessions: dict[str, CatSession] = {}
@@ -212,10 +215,17 @@ def _log_answer(sess: CatSession, q: dict, response: str) -> None:
     try:
         path = Path(settings.vocab_log_path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        now = time.time()
+        elapsed_ms = (
+            int(round((now - sess.last_ts) * 1000)) if sess.last_ts else None
+        )
+        sess.last_ts = now
         rec = {
-            "ts": round(time.time(), 3),
+            "ts": round(now, 3),
             "session": sess.id,
             "algo": "cat",
+            "algo_version": ALGO_VERSION,
+            "user_id": sess.user_id or "",
             "n": sess.total,
             "rank": q["rank"],
             "level": q["level"],
@@ -223,6 +233,8 @@ def _log_answer(sess: CatSession, q: dict, response: str) -> None:
             "a": q["a"],
             "word": q["word"],
             "response": response,
+            "include_correct": q["correct_index"] != 3,
+            "elapsed_ms": elapsed_ms,
             "score": int(round(sess.score)),
             "se": int(round(sess.se)),
         }
