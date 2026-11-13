@@ -281,6 +281,27 @@ def test_classic_feedback_also_has_word_gloss():
 
 # ---------- 路由开关 ----------
 
+def test_answer_log_records_estimation_fields(monkeypatch, tmp_path):
+    """日志要能支撑回放与标定：版本、题型、耗时、不确定度都要有。"""
+    import json
+
+    from app.config import settings
+
+    log = tmp_path / "vocab_sessions.jsonl"
+    monkeypatch.setattr(settings, "vocab_log_path", str(log))
+    sid, _, _ = adaptive.start_test(user_id="u1")
+    sess = adaptive.get_session(sid)
+    q = sess.current
+    adaptive.submit_answer(sess, q["correct_index"], False)
+    rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+    assert rec["algo"] == "adaptive"
+    assert rec["algo_version"] == adaptive.ALGO_VERSION
+    assert rec["user_id"] == "u1"
+    assert rec["include_correct"] is (q["correct_index"] != 3)
+    assert rec["elapsed_ms"] is None
+    assert isinstance(rec["se"], int)
+
+
 def test_router_start_adaptive_creates_adaptive_session():
     resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="")
     assert resp["algo"] == "adaptive"

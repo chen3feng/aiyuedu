@@ -117,3 +117,22 @@ def test_cat_result_records_algo(tmp_path, monkeypatch):
     items = vocab_tests.list_tests("u1")
     assert len(items) == 1
     assert items[0]["algo"] == "cat"
+
+
+def test_answer_log_records_estimation_fields(tmp_path, monkeypatch):
+    import json
+
+    log = tmp_path / "vocab_sessions.jsonl"
+    monkeypatch.setattr(settings, "vocab_log_path", str(log))
+    sid, _, _ = cat.start_test(user_id="u1")
+    sess = cat.get_session(sid)
+    q = sess.current
+    cat.submit_answer(sess, q["correct_index"], False)
+    rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+    assert rec["algo"] == "cat"
+    assert rec["algo_version"] == cat.ALGO_VERSION
+    assert rec["user_id"] == "u1"
+    assert rec["include_correct"] is (q["correct_index"] != 3)
+    assert rec["elapsed_ms"] is None
+    assert isinstance(rec["se"], int)
+    assert rec["b"] > 0 and rec["a"] > 0

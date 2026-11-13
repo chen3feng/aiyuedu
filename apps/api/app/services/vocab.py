@@ -42,6 +42,8 @@ GUESS_RATE = 0.12
 # 旧版永远把正确释义放进选项，可以用排除法/词形猜出来，三套算法的分数不可比。
 CORRECT_PRESENT_RATE = 0.75
 NONE_OF_ABOVE = "以上都不对"
+# 日志版本号：算法口径变化时递增，便于按版本回放与标定。
+ALGO_VERSION = "2026-11"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -326,6 +328,7 @@ class TestSession:
     history: list = field(default_factory=list)      # 每次估值，供调试
     user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
     recorded: bool = False                           # 历史只记一次
+    last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
 _sessions: dict[str, TestSession] = {}
@@ -387,15 +390,24 @@ def _log_answer(sess: TestSession, q: dict, response: str, estimate: float) -> N
     try:
         path = Path(settings.vocab_log_path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        now = time.time()
+        elapsed_ms = (
+            int(round((now - sess.last_ts) * 1000)) if sess.last_ts else None
+        )
+        sess.last_ts = now
         rec = {
-            "ts": round(time.time(), 3),
+            "ts": round(now, 3),
             "session": sess.id,
             "algo": "classic",
+            "algo_version": ALGO_VERSION,
+            "user_id": sess.user_id or "",
             "n": sess.total,
             "rank": q["rank"],
             "band": _band_of(q["rank"]),
             "word": q["word"],
             "response": response,
+            "include_correct": q["correct_index"] != 3,
+            "elapsed_ms": elapsed_ms,
             "n_samples": sess.total,
             "estimate": round(estimate, 1) if estimate else None,
         }
