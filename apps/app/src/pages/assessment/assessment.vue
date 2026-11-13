@@ -19,11 +19,14 @@
                 :class="{ active: algo === 'eudic' }"
                 @click="setAlgo('eudic')"
               >{{ t("assessment.algoEudic") }}</text>
+              <text
+                class="algo-chip"
+                :class="{ active: algo === 'cat' }"
+                @click="setAlgo('cat')"
+              >{{ t("assessment.algoCat") }}</text>
             </view>
           </view>
-          <text class="algo-hint">
-            {{ algo === "eudic" ? t("assessment.algoEudicHint") : t("assessment.algoClassicHint") }}
-          </text>
+          <text class="algo-hint">{{ algoHint }}</text>
         </view>
         <view class="rules">
           <view class="rule-title">{{ t("assessment.howTo") }}</view>
@@ -45,7 +48,7 @@
         </view>
         <view class="hint">{{ t("assessment.honestHint") }}</view>
         <view v-if="history.length" class="last-test" @click="goHistory">
-          <text>{{ t("assessment.lastTest", { n: history[0].vocab_size, date: fmtDate(history[0].ts) }) }}</text>
+          <text>{{ t("assessment.lastTest", { n: history[0].vocab_size, date: fmtDate(history[0].ts) }) }} · {{ algoLabel(history[0].algo) }}</text>
           <text class="last-test-arrow">›</text>
         </view>
         <button class="btn primary" :loading="loading" @click="start">{{ t("assessment.start") }}</button>
@@ -78,6 +81,7 @@
         <view class="score-line">
           <text class="muted">{{ t("assessment.summary", { correct: result?.correct, unknown: result?.unknown, wrong: result?.wrong, total: result?.total }) }}</text>
         </view>
+        <view class="algo-used">{{ t("assessment.algoUsed", { algo: algoName }) }}</view>
         <view class="message">{{ result?.message }}</view>
         <button class="btn primary" @click="again">{{ t("assessment.again") }}</button>
         <button class="btn ghost" @click="goHistory">{{ t("assessment.viewHistory") }}</button>
@@ -87,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { startTest } from "../../api/vocab";
@@ -115,6 +119,24 @@ const algo = ref<VocabAlgo>(
 function setAlgo(v: VocabAlgo) {
   algo.value = v;
   uni.setStorageSync(ALGO_KEY, v);
+}
+// 文案与选项共用同一套算法名称，历史记录和结果页也能显示算法。
+const algoName = computed(() => algoLabel(algo.value));
+const algoHint = computed(() =>
+  t(
+    algo.value === "cat"
+      ? "assessment.algoCatHint"
+      : algo.value === "eudic"
+        ? "assessment.algoEudicHint"
+        : "assessment.algoClassicHint",
+  ),
+);
+function algoLabel(v: string) {
+  return v === "cat"
+    ? t("assessment.algoCat")
+    : v === "eudic"
+      ? t("assessment.algoEudic")
+      : t("assessment.algoClassic");
 }
 // 作为 AssessmentQuiz 的初始数据（start 返回），之后状态由组件自管
 const question = ref<Question>({ word: "", options: [] });
@@ -363,6 +385,12 @@ function again() {
   display: block;
   margin-top: 6rpx;
   font-size: 22rpx;
+  color: var(--ink-4);
+}
+.algo-used {
+  text-align: center;
+  margin-top: 12rpx;
+  font-size: 24rpx;
   color: var(--ink-4);
 }
 

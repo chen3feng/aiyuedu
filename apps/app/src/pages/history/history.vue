@@ -29,9 +29,19 @@
             <view v-for="(p, i) in vocabTrend" :key="i" class="trend-col">
               <text class="trend-value">{{ p.vocab_size }}</text>
               <view class="trend-bar-wrap">
-                <view class="trend-bar" :style="{ height: barHeight(p.vocab_size) }" />
+                <view
+                  class="trend-bar"
+                  :class="'bar-' + (p.algo || 'classic')"
+                  :style="{ height: barHeight(p.vocab_size) }"
+                />
               </view>
               <text class="trend-date">{{ shortDate(p.ts) }}</text>
+            </view>
+          </view>
+          <view v-if="trendAlgos.length > 1" class="trend-legend">
+            <view v-for="a in trendAlgos" :key="a" class="legend-item">
+              <view class="legend-dot" :class="'dot-' + a" />
+              <text>{{ algoLabel(a) }}</text>
             </view>
           </view>
         </Card>
@@ -118,6 +128,7 @@ const notebook = ref<NotebookItem[]>([]);
 
 // 趋势图：取最近 12 次，按时间正序；柱高相对最高值
 const vocabTrend = computed(() => [...vocabTests.value].slice(0, 12).reverse());
+const trendAlgos = computed(() => [...new Set(vocabTrend.value.map((r) => r.algo || "classic"))]);
 const trendMax = computed(() => Math.max(1, ...vocabTrend.value.map((r) => r.vocab_size)));
 const trendDelta = computed(() => {
   if (vocabTrend.value.length < 2) return 0;
@@ -195,7 +206,11 @@ function fmt(ts: number) {
 }
 
 function algoLabel(algo: string) {
-  return algo === "eudic" ? t("assessment.algoEudic") : t("assessment.algoClassic");
+  return algo === "cat"
+    ? t("assessment.algoCat")
+    : algo === "eudic"
+      ? t("assessment.algoEudic")
+      : t("assessment.algoClassic");
 }
 </script>
 
@@ -320,11 +335,42 @@ function algoLabel(algo: string) {
 .trend-bar {
   width: 28rpx;
   border-radius: 6rpx 6rpx 0 0;
+  background: #9aa4b8;
+}
+.trend-bar.bar-eudic {
   background: var(--brand);
+}
+.trend-bar.bar-cat {
+  background: var(--success);
 }
 .trend-date {
   font-size: 20rpx;
   color: var(--ink-4);
+}
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-4);
+}
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #9aa4b8;
+}
+.legend-dot.dot-eudic {
+  background: var(--brand);
+}
+.legend-dot.dot-cat {
+  background: var(--success);
 }
 .progress-row {
   display: flex;

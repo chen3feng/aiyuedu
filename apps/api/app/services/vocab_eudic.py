@@ -149,9 +149,8 @@ def _distractors(target: tuple, n: int, rng: random.Random) -> list:
     return chosen[:n]
 
 
-def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
-    """生成一道与线上同构的题：3 个释义 + 以上都不对（「不认识」由前端按钮承担）。"""
-    word = _pick_word(level, rng, avoid)
+def _question_from_word(word: tuple, rng: random.Random) -> dict:
+    """把候选词 ``(rank, lemma, gloss, pos)`` 做成一道题。"""
     include_correct = rng.random() < CORRECT_PRESENT_RATE
     glosses = _distractors(word, 2 if include_correct else 3, rng)
     if include_correct:
@@ -167,6 +166,11 @@ def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
         "correct_gloss": word[2] if include_correct else NONE_OF_ABOVE,
         "gloss": word[2],  # 词的真实含义（「以上都不对」时用于答后反馈）
     }
+
+
+def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
+    """生成一道与线上同构的题：3 个释义 + 以上都不对（「不认识」由前端按钮承担）。"""
+    return _question_from_word(_pick_word(level, rng, avoid), rng)
 
 
 def _prior_log_post() -> list[float]:

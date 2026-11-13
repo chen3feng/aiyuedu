@@ -3,12 +3,13 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..deps import current_user_id
-from ..services import vocab, vocab_eudic, vocab_tests
+from ..services import vocab, vocab_cat, vocab_eudic, vocab_tests
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
 
-# 算法开关：classic = 固定分层抽样，eudic = 自适应 Elo/IRT。
-_ALGOS = {"classic": vocab, "eudic": vocab_eudic}
+# 算法开关：classic = 固定分层抽样，eudic = 欧路式自适应 EAP，
+# cat = 词频题库 CAT（精确 rank + 最大信息量选题）。
+_ALGOS = {"classic": vocab, "eudic": vocab_eudic, "cat": vocab_cat}
 
 
 class StartIn(BaseModel):
