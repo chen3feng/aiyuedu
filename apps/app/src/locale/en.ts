@@ -35,7 +35,7 @@ export default {
     title: "Vocabulary Test",
     subtitle: "Pick the meaning · Live scoring · 20–80 words",
     howTo: "How does it work?",
-    knowRule: "Know it → pick the right meaning",
+    knowRule: "Know it → pick the right meaning; if it's absent, pick \"None of the above\"",
     scoreUp: "score up",
     unknownRule: "Don't know → tap \"Don't know\"",
     scoreLess: "small deduction",

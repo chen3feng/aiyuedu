@@ -113,8 +113,28 @@ def test_question_has_four_options_with_correct():
     q = vocab._pick_in_band(0, set())
     assert q["word"]
     assert len(q["options"]) == 4
+    assert vocab.NONE_OF_ABOVE in q["options"]
     assert 0 <= q["correct_index"] < 4
     assert q["options"][q["correct_index"]] == q["correct_gloss"]
+
+
+def test_question_format_matches_eudic():
+    """题面与欧路/CAT 对齐：正确释义只出现 75%，否则答案是「以上都不对」。"""
+    random.seed(7)
+    present = absent = 0
+    for _ in range(200):
+        q = vocab._pick_in_band(random.randrange(vocab.N_BANDS), set())
+        assert len(q["options"]) == 4
+        assert vocab.NONE_OF_ABOVE in q["options"]
+        if q["correct_gloss"] == vocab.NONE_OF_ABOVE:
+            absent += 1
+            assert q["gloss"] not in q["options"]
+        else:
+            present += 1
+            assert q["correct_gloss"] == q["gloss"]
+            assert q["gloss"] in q["options"]
+    assert present > 0 and absent > 0
+    assert 0.6 < present / (present + absent) < 0.9  # 期望 0.75
 
 
 def test_pick_in_band_respects_rank_range():

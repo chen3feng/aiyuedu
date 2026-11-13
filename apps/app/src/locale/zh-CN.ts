@@ -35,7 +35,7 @@ export default {
     title: "词汇量评测",
     subtitle: "看词选义 · 实时计分 · 20–80 题",
     howTo: "怎么答？",
-    knowRule: "认识 → 选正确意思",
+    knowRule: "认识 → 选正确意思，选项里没有就选「以上都不对」",
     scoreUp: "得分上升",
     unknownRule: "不认识 → 点「不认识」",
     scoreLess: "扣分较轻",

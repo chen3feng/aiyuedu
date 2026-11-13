@@ -38,9 +38,13 @@ SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝�
 # 不会时仍蒙对的概率：四选一 25% × 「不确定时仍会猜」的比例（观测约 45%–50%）。
 # 与欧路自适应算法共用同一套题面，取值保持一致（vocab_eudic.GUESS_RATE）。
 GUESS_RATE = 0.12
+# 题面与欧路/CAT 对齐：3 个中文释义 +「以上都不对」，正确释义只出现 75% 的次数。
+# 旧版永远把正确释义放进选项，可以用排除法/词形猜出来，三套算法的分数不可比。
+CORRECT_PRESENT_RATE = 0.75
+NONE_OF_ABOVE = "以上都不对"
 
 RULES = (
-    "认识就选正确的中文意思；"
+    "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
     "不认识请点「不认识」；"
     "不确定而猜错会被判为不认识。诚实作答，测评更准。"
 )
@@ -150,7 +154,12 @@ def _band_of(rank: int) -> int:
 
 
 def _make_question(target) -> dict:
-    """把候选词 target=(rank, lemma, gloss) 做成一道四选一题（干扰项取相邻频段）。"""
+    """把候选词 target=(rank, lemma, gloss) 做成一道四选一题（干扰项取相邻频段）。
+
+    题面与欧路/CAT 一致：3 个中文释义 +「以上都不对」；正确释义只有
+    `CORRECT_PRESENT_RATE` 的概率出现在选项里，否则正确答案就是「以上都不对」。
+    这样三套算法测的是同一种能力，分数才有可比性。
+    """
     cands = _candidates()
     frqs = [c[0] for c in cands]
     r = target[0]
@@ -160,29 +169,35 @@ def _make_question(target) -> dict:
     if not pool:
         pool = cands
 
+    include_correct = random.random() < CORRECT_PRESENT_RATE
+    want = 2 if include_correct else 3
     distractors: list[str] = []
     seen = {target[2]}
     for _ in range(80):
-        if len(distractors) >= 3:
+        if len(distractors) >= want:
             break
         c = random.choice(pool)
         if c[2] not in seen and c[1] != target[1]:
             seen.add(c[2])
             distractors.append(c[2])
-    while len(distractors) < 3:
+    while len(distractors) < want:
         c = random.choice(cands)
         if c[2] not in seen:
             seen.add(c[2])
             distractors.append(c[2])
 
-    options = [target[2]] + distractors
+    if include_correct:
+        distractors.append(target[2])
+    options = distractors + [NONE_OF_ABOVE]
     random.shuffle(options)
+    correct_gloss = target[2] if include_correct else NONE_OF_ABOVE
     return {
         "word": target[1],
         "rank": target[0],
         "options": options,
-        "correct_index": options.index(target[2]),
-        "correct_gloss": target[2],
+        "correct_index": options.index(correct_gloss),
+        "correct_gloss": correct_gloss,
+        "gloss": target[2],  # 词的真实含义；正确答案是「以上都不对」时用于答后反馈
     }
 
 
@@ -436,9 +451,9 @@ def submit_answer(sess: TestSession, choice: Optional[int], unknown: bool) -> di
     feedback = {
         "response": response,
         "word": q["word"],
+        # 正确答案可能是「以上都不对」；前端用 word_gloss 展示词的真实含义。
         "correct_gloss": q["correct_gloss"],
-        # 经典算法的正确选项就是词义；统一字段，前端无需区分算法。
-        "word_gloss": q["correct_gloss"],
+        "word_gloss": q["gloss"],
     }
     progress = _progress(sess, estimate)
 
