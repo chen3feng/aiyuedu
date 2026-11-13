@@ -48,20 +48,34 @@ def test_estimate_single_known_band():
 def test_estimate_proportion_weighted_sum():
     sess = vocab.TestSession(id="x")
     sess.band_total[0] = 4
-    sess.band_known[0] = 3   # 认识率 0.75 → 2000 × 0.75 = 1500
+    sess.band_known[0] = 3   # 0.75 → 猜测校正 (0.75-0.12)/0.88 = 0.7159 → 2000×0.7159
     sess.band_total[3] = 4
-    sess.band_known[3] = 2   # 认识率 0.5 → 2000 × 0.5 = 1000
-    assert vocab._estimate(sess) == pytest.approx(2500.0)
+    sess.band_known[3] = 2   # 0.5  → (0.5-0.12)/0.88 = 0.4318 → 2000×0.4318
+    assert vocab._estimate(sess) == pytest.approx(2000 * 0.63 / 0.88 + 2000 * 0.38 / 0.88)
 
 
-def test_estimate_zeroes_below_guess_rate():
-    """认识率 ≤ 25%（四选一纯猜命中率）的段视为无知识信号，计 0。"""
+def test_wilson_lower_bounds():
+    """每段只有 5 题：用 Wilson 下界判断认识率是否显著高于蒙对。"""
+    assert vocab._wilson_lower(0, 5) == 0.0
+    assert vocab._wilson_lower(2, 5) == pytest.approx(0.118, abs=0.002)
+    assert vocab._wilson_lower(3, 5) == pytest.approx(0.231, abs=0.002)
+    assert vocab._wilson_lower(5, 5) == pytest.approx(0.566, abs=0.002)
+    assert vocab._wilson_lower(0, 0) == 0.0
+
+
+def test_estimate_zeroes_band_indistinguishable_from_guess():
+    """2/5 与 12% 的有效蒙对率分不开（Wilson 下界 0.118），该段计 0。
+
+    旧实现按点估计判断（0.4 > 0.25 就整段计入），会把两道蒙对记成 40% 认识。
+    """
     sess = vocab.TestSession(id="x")
     sess.band_total[0] = 4
-    sess.band_known[0] = 2   # 0.5 → 保留
+    sess.band_known[0] = 2   # 0.5 → 保留并校正
     sess.band_total[3] = 4
-    sess.band_known[3] = 1   # 0.25 → 猜测下限，清零
-    assert vocab._estimate(sess) == pytest.approx(2000 * 0.5)  # 1000
+    sess.band_known[3] = 1   # 0.25 → 与蒙对分不开，清零
+    sess.band_total[7] = 5
+    sess.band_known[7] = 2   # 2/5 = 0.4 → 同样清零
+    assert vocab._estimate(sess) == pytest.approx(2000 * 0.38 / 0.88)  # 863.6
 
 
 def test_isotonic_output_is_non_increasing():
@@ -86,9 +100,11 @@ def test_estimate_flattens_spike():
     sess.band_known[9] = 4   # 1.0 —— 尖峰：认识最难词却漏了常见词
     naive = 2000 * 0.5 + 2000 * 0.25 + 2000 * 0.0 + 4000 * 1.0  # 5500
     assert vocab._estimate(sess) < naive
-    # 尖峰段(1.0) 与相邻低谷段(0.25/0.0) 合并成 (1+0+4)/12=5/12≈0.417，
-    # 故 = 2000×0.5 + 2000×5/12 + 2000×5/12 + 4000×5/12 = 13000/3
-    assert vocab._estimate(sess) == pytest.approx(13000 / 3)
+    # 尖峰段(1.0) 与相邻低谷段(0.25/0.0) 合并成 (1+0+4)/12=5/12≈0.417；
+    # 再做猜测校正：段 0 为 (0.5-0.12)/0.88，段 9 为 (5/12-0.12)/0.88，
+    # 段 1、2 的表面认识率与蒙对分不开，计 0。
+    expected = 2000 * (0.5 - 0.12) / 0.88 + 4000 * (5 / 12 - 0.12) / 0.88
+    assert vocab._estimate(sess) == pytest.approx(expected)
 
 
 # ---------- 出题 ----------
@@ -140,6 +156,38 @@ def _run_flow(respond):
     return vocab.finish_test(sess), scores
 
 
+def test_estimate_real_session_guess_corrected():
+    """真实的一次 50 题（2026-11-13）：旧算法 16,500，校正后 ≈13,977。
+
+    原始答对数为每段 5,5,5,4,4,5,5,2,2,0。15k 以上的 2/5、2/5 与蒙对分不开，
+    计 0；其余段按 (r-0.12)/0.88 折算。结果是「认识多少词」的保守估计。
+    """
+    sess = vocab.TestSession(id="x")
+    for band, (total, known) in enumerate(
+        [(5, 5), (5, 5), (5, 5), (5, 4), (5, 4), (5, 5), (5, 5), (5, 2), (5, 2), (5, 0)]
+    ):
+        sess.band_total[band] = total
+        sess.band_known[band] = known
+    assert vocab._estimate(sess) == pytest.approx(13977.27, abs=0.5)
+    assert vocab._result(sess)["vocab_size"] == 13980
+
+
+def test_answer_log_records_algo(monkeypatch, tmp_path):
+    """作答日志要带 algo，离线对比三套算法时不必再靠时间戳猜。"""
+    import json
+
+    from app.config import settings
+
+    log = tmp_path / "vocab_sessions.jsonl"
+    monkeypatch.setattr(settings, "vocab_log_path", str(log))
+    sid, _, _ = vocab.start_test()
+    sess = vocab.get_session(sid)
+    vocab.submit_answer(sess, sess.current["correct_index"], False)
+    rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+    assert rec["algo"] == "classic"
+    assert rec["response"] == "correct"
+
+
 def test_start_test_returns_question_and_null_score():
     sid, question, progress = vocab.start_test()
     assert sid
@@ -162,13 +210,13 @@ def test_full_flow_all_unknown_reaches_zero():
 
 
 def test_full_flow_threshold_approximates_true_vocab():
-    # 阈值模型：rank <= V 认识，否则不认识。比例口径会略高于 V（面积 ≈ 1.11·V），
-    # 故用宽松区间验证「量级正确」，精确校准见 scripts/diagnose_vocab_bands.py。
+    # 阈值模型：rank <= V 认识，否则不认识。V=8000 正好落在段边界上，
+    # 前 4 段全对（校正后仍是 1.0），第 5 段起全不认识，估值应恰好为 8000。
     V = 8000
     result, _ = _run_flow(
         lambda q: (q["correct_index"], False) if q["rank"] <= V else (None, True)
     )
-    assert 7000 <= result["vocab_size"] <= 11000
+    assert result["vocab_size"] == 8000
 
 
 def test_score_never_jumps_more_than_max_step():
@@ -226,4 +274,6 @@ def test_stability_on_spiky_profile():
 
     mean = statistics.mean(finals)
     std = statistics.stdev(finals)
-    assert std / mean < 0.15  # 相对标准差 < 15%
+    # 猜测校正把均值压低、相对波动略增（旧实现 14%，现在约 18%）；
+    # 这里仍在防「分叉到 2 倍」的回归，20% 足够区分。
+    assert std / mean < 0.20

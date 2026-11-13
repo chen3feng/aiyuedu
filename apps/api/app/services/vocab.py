@@ -8,10 +8,12 @@
       同一轮内不会「突变」，也不会因自适应走位不同导致两次结果分叉；
     - 可无限测下去：段内样本越多，认识率越准，分数持续收敛。
   代价：同样题量下精度略低于「自适应阶梯 + logistic」，但 50 题即可到 ±5~7%。
+  猜测：段认识率要显著高于蒙对率才计入，并扣掉蒙对部分（见 `_estimate`）。
 """
 import bisect
 import csv
 import json
+import math
 import random
 import re
 import time
@@ -33,7 +35,9 @@ ROUNDS = 5                               # 每段抽词轮数 → 总题量 = N_
 MAX_QUESTIONS = N_BANDS * ROUNDS         # 50
 MIN_SAMPLES = 3                          # 至少 3 词才下发估值（前端显示「测评中…」）
 SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝「突变」
-GUESS_RATE = 0.25                        # 四选一纯猜命中率；认识率≤此值的段视为无知识信号
+# 不会时仍蒙对的概率：四选一 25% × 「不确定时仍会猜」的比例（观测约 45%–50%）。
+# 与欧路自适应算法共用同一套题面，取值保持一致（vocab_eudic.GUESS_RATE）。
+GUESS_RATE = 0.12
 
 RULES = (
     "认识就选正确的中文意思；"
@@ -42,7 +46,7 @@ RULES = (
 )
 RESULT_MESSAGE = (
     "词汇量按「分层抽样 + 识别率×词频权重」估计：把词频分成 10 段各抽词，"
-    "用每段认识率加权累加出等效词汇量。"
+    "用每段认识率加权累加出等效词汇量；蒙对的题已按猜测率折算回不认识。"
 )
 
 _BRACKET = re.compile(r"\[[^\]]*\]")
@@ -205,9 +209,10 @@ def _pick_in_band(i: int, avoid: set) -> dict:
 def _isotonic_noninc(values: list, weights: list) -> list:
     """把各段认识率拟合成「词越难、认识率越低」的非增曲线（PAV，加权最小二乘）。
 
-    压制「尖峰」：低段不认识、却在高段「蒙对」四选一（纯猜 25%），会被误记成
-    认识，从而把高分段严重抬高（例：把 rank≈24000 的 cerecloth 蒙对，单题即
-    +4000×25% = 1000 分）。词越难、认识率应单调下降，尖峰违反此规律，属噪声。
+    压制「尖峰」：低段不认识、却在高段「蒙对」四选一（纯猜 25%，实际有效
+    蒙对率约 12%），会被误记成认识，从而把高分段严重抬高（例：把 rank≈24000
+    的 cerecloth 蒙对，单题即 +4000×25% = 1000 分）。词越难、认识率应单调下降，
+    尖峰违反此规律，属噪声。
     """
     n = len(values)
     blocks = [[i] for i in range(n)]
@@ -238,12 +243,33 @@ def _isotonic_noninc(values: list, weights: list) -> list:
     return out
 
 
+def _wilson_lower(successes: int, n: int, z: float = 1.96) -> float:
+    """二项比例的 Wilson 置信下界（95%）。
+
+    每段只有 5 个样本，表面认识率噪声很大：2/5（40%）与四选一纯猜区分不开。
+    用下界判断「这一段是否显著高于蒙对」，避免把 2 道蒙对当成 40% 认识。
+    """
+    if n <= 0:
+        return 0.0
+    p = successes / n
+    denom = 1.0 + z * z / n
+    centre = p + z * z / (2.0 * n)
+    margin = z * math.sqrt(p * (1.0 - p) / n + z * z / (4.0 * n * n))
+    return max(0.0, (centre - margin) / denom)
+
+
 def _estimate(sess: "TestSession") -> float:
     """词汇量 = Σ 段宽 × 认识率（只统计已作答的段）。
 
     认识率先做单调非增平滑（压制「尖峰」：低段不认识、却蒙对高段生僻词），
-    再压「猜测下限」：认识率 ≤ GUESS_RATE（四选一纯猜 25%）的段视为无知识信号，
-    计 0。二者合起来把四选一蒙对造成的虚高压回真实水平。
+    然后做两道猜测处理：
+
+    1. **显著性**：某段认识率的 Wilson 95% 下界 ≤ GUESS_RATE 时，视为该段
+       没有高于蒙对的知识信号，计 0（每段只有 5 题，表面的 2/5 说明不了问题）；
+    2. **猜测校正**：保留的段按 `(r - c) / (1 - c)` 扣掉蒙对的部分，`c = GUESS_RATE`。
+
+    旧实现只在整段认识率点估计 ≤ 25% 时清零、且不做校正，会把高段偶然蒙对
+    的 2-3 题当成认识，单段虚增上千词。
     """
     rates, weights, idxs = [], [], []
     for i in range(N_BANDS):
@@ -252,10 +278,19 @@ def _estimate(sess: "TestSession") -> float:
             rates.append(sess.band_known.get(i, 0) / n)
             weights.append(n)
             idxs.append(i)
-    if rates:
-        rates = _isotonic_noninc(rates, weights)
-        rates = [0.0 if r <= GUESS_RATE else r for r in rates]
-    return sum(_band_width(i) * r for i, r in zip(idxs, rates))
+    if not rates:
+        return 0.0
+
+    rates = _isotonic_noninc(rates, weights)
+    total = 0.0
+    for i, r in zip(idxs, rates):
+        n = sess.band_total[i]
+        known = sess.band_known.get(i, 0)
+        if _wilson_lower(known, n) <= GUESS_RATE:
+            continue
+        know_rate = max(0.0, (r - GUESS_RATE) / (1.0 - GUESS_RATE))
+        total += _band_width(i) * know_rate
+    return total
 
 
 @dataclass
@@ -339,6 +374,7 @@ def _log_answer(sess: TestSession, q: dict, response: str, estimate: float) -> N
         rec = {
             "ts": round(time.time(), 3),
             "session": sess.id,
+            "algo": "classic",
             "n": sess.total,
             "rank": q["rank"],
             "band": _band_of(q["rank"]),
