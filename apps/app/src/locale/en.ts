@@ -66,8 +66,8 @@ export default {
     lastTest: "Last test {n} · {date}",
     vsLast: "{delta} vs last time",
     viewHistory: "View History & Trend",
-    scoreRange: "95% range {low}–{high}",
-    scoreRangeHint: "Scores within this range across tests are normal",
+    scoreRange: "95% estimate {low}–{high}",
+    scoreRangeHint: "Includes item and state variation; scores within this range are normal",
   },
 
   reading: {

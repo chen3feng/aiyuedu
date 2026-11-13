@@ -66,8 +66,8 @@ export default {
     lastTest: "上次测试 {n} · {date}",
     vsLast: "比上次 {delta}",
     viewHistory: "查看历史变化",
-    scoreRange: "95% 置信区间 {low}–{high}",
-    scoreRangeHint: "多次测试落在此范围内波动属正常",
+    scoreRange: "95% 估计区间 {low}–{high}",
+    scoreRangeHint: "含换题与状态波动；单次分数在此范围内浮动属正常",
   },
 
   reading: {
