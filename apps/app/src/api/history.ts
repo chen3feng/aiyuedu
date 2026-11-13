@@ -10,6 +10,19 @@ export interface VocabTestRecord {
   correct: number;
   wrong: number;
   unknown: number;
+  se?: number;
+  alpha?: number;
+}
+
+export interface VocabTrend {
+  algo: string | null;
+  n: number;
+  slope_per_month: number | null;
+  ci: [number, number] | null;
+  p_value?: number;
+  significant: boolean;
+  message: string;
+  points: { ts: number; vocab_size: number; sigma: number }[];
 }
 
 export interface ReadingProgress {
@@ -26,6 +39,9 @@ export interface ReadingProgress {
 }
 
 export const listVocabTests = () => request<{ items: VocabTestRecord[] }>("/vocab/tests");
+
+export const getVocabTrend = (algo?: string) =>
+  request<VocabTrend>(`/vocab/trend${algo ? `?algo=${encodeURIComponent(algo)}` : ""}`);
 
 export const listReadingProgress = () =>
   request<{ items: ReadingProgress[] }>("/readings/progress");

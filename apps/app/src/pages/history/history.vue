@@ -25,6 +25,7 @@
               {{ trendDelta >= 0 ? "+" : "" }}{{ trendDelta }}
             </text>
           </view>
+          <text v-if="trendText" class="trend-summary" :class="trendClass">{{ trendText }}</text>
           <view class="trend-bars">
             <view v-for="(p, i) in vocabTrend" :key="i" class="trend-col">
               <text class="trend-value">{{ p.vocab_size }}</text>
@@ -105,7 +106,7 @@ import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 import { useI18n } from "vue-i18n";
 import { normalizeAlgo } from "../../api/vocab";
-import { listReadingProgress, listVocabTests, type ReadingProgress, type VocabTestRecord } from "../../api/history";
+import { listReadingProgress, listVocabTests, getVocabTrend, type ReadingProgress, type VocabTestRecord, type VocabTrend } from "../../api/history";
 import { listNotebook, removeNotebookItem, type NotebookItem } from "../../api/notebook";
 import Card from "../../components/Card.vue";
 import StateView from "../../components/StateView.vue";
@@ -124,8 +125,26 @@ const active = ref<TabKey>("vocab");
 const loading = ref(false);
 const error = ref("");
 const vocabTests = ref<VocabTestRecord[]>([]);
+const trend = ref<VocabTrend | null>(null);
 const progress = ref<ReadingProgress[]>([]);
 const notebook = ref<NotebookItem[]>([]);
+
+// 同一算法的加权趋势（后端按测量方差加权，跨算法不混算）
+const trendText = computed(() => {
+  const tr = trend.value;
+  if (!tr || !tr.n) return "";
+  if (tr.slope_per_month === null) return t("history.trendInsufficient");
+  const slope = Math.round(tr.slope_per_month);
+  if (!tr.significant) return t("history.trendFlat", { n: tr.n, slope });
+  return t(slope >= 0 ? "history.trendUp" : "history.trendDown", {
+    n: tr.n,
+    slope: Math.abs(slope),
+  });
+});
+const trendClass = computed(() => {
+  if (!trend.value?.significant) return "flat";
+  return (trend.value.slope_per_month ?? 0) >= 0 ? "up" : "down";
+});
 
 // 趋势图：取最近 12 次，按时间正序；柱高相对最高值
 const vocabTrend = computed(() => [...vocabTests.value].slice(0, 12).reverse());
@@ -160,7 +179,9 @@ async function load() {
   error.value = "";
   try {
     if (active.value === "vocab") {
-      vocabTests.value = (await listVocabTests()).items;
+      const [tests, tr] = await Promise.all([listVocabTests(), getVocabTrend()]);
+      vocabTests.value = tests.items;
+      trend.value = tr;
     } else if (active.value === "reading") {
       progress.value = (await listReadingProgress()).items;
     } else {
@@ -207,11 +228,14 @@ function fmt(ts: number) {
 }
 
 function algoLabel(algo: string) {
-  return normalizeAlgo(algo) === "cat"
+  const a = normalizeAlgo(algo);
+  return a === "cat"
     ? t("assessment.algoCat")
-    : normalizeAlgo(algo) === "adaptive"
-      ? t("assessment.algoAdaptive")
-      : t("assessment.algoClassic");
+    : a === "adaptive2"
+      ? t("assessment.algoAdaptive2")
+      : a === "adaptive"
+        ? t("assessment.algoAdaptive")
+        : t("assessment.algoClassic");
 }
 </script>
 
@@ -308,6 +332,21 @@ function algoLabel(algo: string) {
 .trend-delta.down {
   color: var(--danger);
 }
+.trend-summary {
+  display: block;
+  font-size: 24rpx;
+  color: var(--ink-3);
+  margin: -8rpx 0 16rpx;
+}
+.trend-summary.up {
+  color: var(--success);
+}
+.trend-summary.down {
+  color: var(--danger);
+}
+.trend-summary.flat {
+  color: var(--ink-4);
+}
 .trend-bars {
   display: flex;
   align-items: flex-end;
@@ -341,6 +380,9 @@ function algoLabel(algo: string) {
 .trend-bar.bar-adaptive {
   background: var(--brand);
 }
+.trend-bar.bar-adaptive2 {
+  background: #9a6bff;
+}
 .trend-bar.bar-cat {
   background: var(--success);
 }
@@ -369,6 +411,9 @@ function algoLabel(algo: string) {
 }
 .legend-dot.dot-adaptive {
   background: var(--brand);
+}
+.legend-dot.dot-adaptive2 {
+  background: #9a6bff;
 }
 .legend-dot.dot-cat {
   background: var(--success);

@@ -1,26 +1,30 @@
-# 词汇量评测：三种算法
+# 词汇量评测：四种算法
 
 > 实现：[`vocab.py`](../apps/api/app/services/vocab.py)（classic）、
 > [`vocab_adaptive.py`](../apps/api/app/services/vocab_adaptive.py)（adaptive）、
+> [`vocab_adaptive2.py`](../apps/api/app/services/vocab_adaptive2.py)（adaptive2）、
 > [`vocab_cat.py`](../apps/api/app/services/vocab_cat.py)（cat）
 > 测试：[`test_vocab.py`](../apps/api/tests/test_vocab.py)、
 > [`test_vocab_adaptive.py`](../apps/api/tests/test_vocab_adaptive.py)、
+> [`test_vocab_adaptive2.py`](../apps/api/tests/test_vocab_adaptive2.py)、
 > [`test_vocab_cat.py`](../apps/api/tests/test_vocab_cat.py)
+> 标定与趋势：[`vocab_calibration.py`](../apps/api/app/services/vocab_calibration.py)、
+> [`vocab_trend.py`](../apps/api/app/services/vocab_trend.py)
 > 诊断：[`diagnose_vocab_bands.py`](../apps/api/scripts/diagnose_vocab_bands.py)
 > 欧路原版逆向与推导细节：[eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)
 
-## 1. 三种算法一览
+## 1. 四种算法一览
 
-| | **classic 经典分层** | **adaptive 自适应** | **cat 词频 CAT** |
-| --- | --- | --- | --- |
-| `algo` | `classic` | `adaptive` | `cat` |
-| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 adaptive |
-| 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 精确 rank ±80 内按 Fisher 信息量 |
-| 估分 | 段认识率 × 段宽累加 | 网格贝叶斯 EAP 后验均值 | 同 adaptive，难度用精确 rank |
-| 区间 | 无 | 95% 估计区间 | 同 adaptive |
-| 单题影响 | 有界（≤ 段宽 / 该段题数） | 似然更新，随题量收敛 | 同 adaptive |
-| 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 |
-| 定位 | 基线 / 对照 | 默认 | 实验，等题库标定 |
+| | **classic 经典分层** | **adaptive 自适应** | **adaptive2 双参数** | **cat 词频 CAT** |
+| --- | --- | --- | --- | --- |
+| `algo` | `classic` | `adaptive` | `adaptive2` | `cat` |
+| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 adaptive | 20 题起，SE 达标即停，最多 80 |
+| 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 同 adaptive | 精确 rank ±80 内按 Fisher 信息量 |
+| 模型 | 段认识率 | 一维贝叶斯 EAP（θ） | 二维 EAP（θ + α） | 一维 EAP，难度用精确 rank |
+| 词汇量 | 段宽 × 认识率累加 | θ（50% 阈值） | 曲线面积 Σ 1000 × P(know) | θ |
+| 区间 | 无 | 95% 估计区间 | 分数区间 + 面积区间 | 95% 估计区间 |
+| 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 | 是 |
+| 定位 | 基线 / 对照 | 默认 | 实验，看曲线斜率 | 实验，等题库标定 |
 
 **怎么选**：
 
@@ -28,12 +32,12 @@
 2. 接口参数 `POST /vocab/test/start` body `{"algo": "cat"}`；
 3. 服务端默认值环境变量 `VOCAB_ALGO`（默认 `classic`），对未显式下发的客户端生效。
 
-未知 `algo` 返回 400（旧值 `eudic` 会自动归一化为 `adaptive`）。三套算法的会话各自维护，
+未知 `algo` 返回 400（旧值 `eudic` 会自动归一化为 `adaptive`）。各算法的会话各自维护，
 `/test/answer` 与 `/test/finish` 按 `session_id` 自动分发。
 
 **历史**：classic 是最初实现，2026-09 为稳定性选定；2026-11 加入 adaptive（把
-Elo 增量更新换成 EAP）和 cat。classic 保留作基线，但它的「面积口径」与另外两套
-的「阈值口径」不是同一个量，见 §6。
+Elo 增量更新换成 EAP）、adaptive2（双参数）和 cat。classic 保留作基线，但它的
+「面积口径」与另外三套的「阈值口径」不是同一个量，见 §7。
 
 ## 2. 公共基础
 
@@ -48,13 +52,13 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
 
 ### 2.2 题型
 
-三种算法题面一致（classic 于 2026-11 对齐）：
+四种算法题面一致（classic 于 2026-11 对齐）：
 
 - 每题 **3 个中文释义 +「以上都不对」**，共 4 个选项；「以上都不对」固定为第 4 项（D）；
 - 正确释义按 `CORRECT_PRESENT_RATE = 0.75` 的概率出现在前 3 个选项中，否则正确答案
   就是「以上都不对」；
 - 另有独立的「不认识」按钮（前端第 5 个操作），不等同于选错；
-- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/cat 优先同档、同词性，
+- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/adaptive2/cat 优先同档、同词性，
   并避免释义互相包含。
 
 答后反馈统一为：
@@ -87,7 +91,7 @@ include_correct, elapsed_ms
 `elapsed_ms` 是与上一题的间隔（首题为 `null`），`algo_version` 用于分版回放与标定。
 
 各算法追加：classic `band / n_samples / estimate`；adaptive `level / score / se`；
-cat 再加 `b / a`（供后续题库标定）。
+adaptive2 再加 `alpha`；cat 再加 `b / a`（供后续题库标定）。
 
 ## 3. classic：固定分层抽样
 
@@ -152,7 +156,7 @@ BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
   对应的词频位置」。对同一个人，面积通常高于阈值点。
 - 每段只有 5 题，段边界附近会在「计入 / 清零」之间跳动；单次波动约 ±1,500–2,000 词。
 - 结果页不返回区间（`score_interval` 只有 adaptive/cat 有）。
-- 适合看趋势和量级，不适合与另外两套算法逐分比较（见 §6）。
+- 适合看趋势和量级，不适合与另外三套算法逐分比较（见 §7）。
 
 ## 4. adaptive：贝叶斯 EAP
 
@@ -218,6 +222,48 @@ score_interval = [score - half, score + half]
 | `MIN_QUESTIONS` / `MAX_QUESTIONS` | 20 / 80 |
 | `PROBE_QUESTIONS` / `MAX_PROBES` / `PROBE_COOLDOWN` | 6 / 3 / 8 |
 
+## 4.5 adaptive2：双参数（θ + α）
+
+单参数模型假设所有人的「认识概率—词频」曲线斜率相同，只估计一个能力点 θ。
+现实中有人断崖式（斜率大），有人平缓地部分认识很多词（斜率小）。adaptive2 把
+能力扩展为两个参数：
+
+```text
+p(know) = sigmoid(α × (θ - b) / 2500)
+```
+
+- **θ**：50% 认识阈值（分数尺度，0–25,000）；
+- **α**：个人区分度，相对基准斜率 `1/2500` 的倍数，`1.0` 与单参数模型相同。
+
+### 4.5.1 估计
+
+在 `(θ, α)` 二维网格上做贝叶斯 EAP：θ 沿用 501 个网格点（步长 50），
+α 取 `(0.5, 0.65, 0.8, 1.0, 1.25, 1.6, 2.0)` 共 7 档；先验
+`θ ~ N(1000, 3000²)`、`log α ~ N(0, 0.35²)`。似然与 adaptive 相同（3PL +
+「不认识」软惩罚），只是把 `p` 换成上面的双参数形式。
+
+### 4.5.2 词汇量 = 曲线下面积
+
+```text
+词汇量 = Σ_level 1000 × sigmoid(α × (θ - b_level) / 2500)
+```
+
+不再只报 50% 阈值点，而是对整条「认识概率—词频」曲线积分。α 小（曲线平缓）
+时面积通常大于 θ，α 大（断崖式）时接近或低于 θ。面积区间由二维后验按面积
+加权取 2.5% / 97.5% 分位数得到。
+
+> 注意：在无限词表上，对称 logistic 的面积严格等于 θ；这里的差异来自
+> 0–25,000 的有限边界与曲线在边界附近的形状。因此 adaptive2 的主要增量是
+> **α（曲线斜率）**与面积区间，而不是把面积当成另一个独立的分数。
+
+### 4.5.3 参数
+
+| 参数 | 值 |
+| --- | --- |
+| `ALPHA_GRID` | 0.5 / 0.65 / 0.8 / 1.0 / 1.25 / 1.6 / 2.0 |
+| `ALPHA_PRIOR_LOG_SD` | 0.35 |
+| 其余 | 与 adaptive 相同（题量、探顶、猜测率、FORM_SD） |
+
 ## 5. cat：词频题库 CAT
 
 与 adaptive 共用题型和 EAP 估计，只替换选题与难度参数。
@@ -234,11 +280,14 @@ score_interval = [score - half, score + half]
 `b` 是分数尺度上的难度（0–25,000），`a` 是分数尺度上的区分度（2PL 标定后按
 `a_logit / 2500` 换算）。文件缺失或格式错误时退化为词频先验。
 
-### 5.2 选题
+### 5.2 选题与停止
 
 - 当前能力 θ（首题 1,500）；在 rank 落在 `θ ± 80` 的窗口内取候选；
 - 按 3PL Fisher 信息量排序，取信息量最高的 12 题，按信息量加权随机（增加曝光多样性）；
 - 最近 40 题不重复；
+- **SE 停止规则**：答满 `MIN_QUESTIONS = 20` 后，若后验标准误 `se ≤ SE_STOP = 800`
+  就自动结束（典型约 55–65 题），不必固定答满 80 题；`stop_reason` 返回
+  `se` / `max` / `manual`；
 - 信息量：
 
 ```text
@@ -250,24 +299,65 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 
 日志里的历史 session 绝大多数是脚本模拟（同一天上千个、准确率为 5 的倍数、
 时间戳成组重复），无法做逐词标定。cat 目前用词频先验；等真实作答积累到每词
-≥30–50 次后，再拟合 1PL/2PL 并写入覆盖文件。完整流程见 issue #40。
+≥30–50 次后，再拟合 1PL/2PL 并写入覆盖文件。
+
+标定流水线已实现（`vocab_calibration.py` + `scripts/calibrate_vocab_items.py`）：
+
+```bash
+# 只打印清洗/就绪度报告，不写文件
+uv run --directory apps/api python scripts/calibrate_vocab_items.py --dry-run
+
+# 合成数据自检（验证 θ 恢复误差）
+uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
+```
+
+清洗规则：剔除单日 session 数 > 100 的批量模拟日、答案全同、时长 < 1 秒、
+题数 < 20 的 session；只用 `include_correct == true` 的标准题面作答。
+就绪门槛为 ≥30 个真实 session、≥600 条作答、≥100 个词各 ≥30 次；不满足时
+只报告、不写覆盖文件，避免用模拟数据拟合噪声。当前真实数据（2026-11）只有
+27 个 session / 125 条可用作答，远未就绪。
 
 ### 5.4 参数
 
 | 参数 | 值 |
 | --- | --- |
 | `MIN_QUESTIONS` / `MAX_QUESTIONS` | 20 / 80 |
+| `SE_STOP` | 800（后验标准误阈值） |
 | `CANDIDATE_WINDOW` | ±80 rank |
 | `TOP_K` | 12 |
 | `RECENT_LIMIT` | 40 |
 | `DEFAULT_START` | 1500 |
 | 默认 `a` | 1/2500 |
 
-## 6. 怎么读这个分数
+## 6. 多次测试：趋势与历史先验（issue #42）
 
-### 6.1 三种算法的「分」不是同一个量
+单次测试的 95% 区间约 ±2,700 词，几百词的真实进步会被噪声淹没。`vocab_trend.py`
+提供两件事：
 
-| | classic | adaptive / cat |
+### 6.1 趋势
+
+- 只比较同一算法的记录（`score` 口径）；默认取最近一次测试所用的算法；
+- 对 `vocab_size` 与时间做加权线性回归，权重 `1/σ²`，`σ = max(1500, se)`；
+- 输出每月变化量、95% 区间、p 值与是否显著（`|斜率| > 1.96 × 标准误`，且至少 3 次测试）；
+- 接口 `GET /vocab/trend?algo=...`，前端在历史页趋势图下方显示一句话结论。
+
+### 6.2 历史先验
+
+- 新测试开始时，取最近一次同算法测试的 `score` 作为 θ 先验均值；
+- 先验 sd = `min(4500, 1500 + 15 × 间隔天数)`，超过 180 天不用；
+- 先验很弱（sd ≥ 1,500），20–80 题的数据仍然主导；`VOCAB_HISTORY_PRIOR=false`
+  可关闭，关闭后每次测试完全独立。
+
+### 6.3 局限
+
+- 历史记录跨算法不可比，趋势默认只看同一算法；
+- 先验会让多次测试之间产生轻微相关；如果怀疑能力在短期内有突变，可关闭先验。
+
+## 7. 怎么读这个分数
+
+### 7.1 四种算法的「分」不是同一个量
+
+| | classic | adaptive / adaptive2 / cat |
 | --- | --- | --- |
 | 定义 | 认识多少个词（面积） | 正确率 56% 对应的词频位置（阈值） |
 | 对同一批答案 | 通常更高 | 更低 |
@@ -276,7 +366,7 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 2026-11 题面对齐后 classic 已和另外两套同题面，但估计量仍不同，**不要逐分比较**；
 历史记录不重算。
 
-### 6.2 不确定度
+### 7.2 不确定度
 
 - 单次 80 题：后验 `se ≈ 700`，`FORM_SD = 1200` → 95% 区间约 **±2,700**；
 - 实测 13 次 EAP 系测试（猜测校正上线后）：
@@ -290,7 +380,7 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 
   多次取中位数可以把标准误压到 ±800 以内。
 
-### 6.3 与母语者的参照（词族口径）
+### 7.3 与母语者的参照（词族口径）
 
 | 参照 | 词族量 |
 | --- | --- |
@@ -305,19 +395,21 @@ I(θ) = [a(1 - c)p(1 - p)]² / [P(1 - P)]
 > 这是「认得出中文释义」的接受性词汇，不等于能主动使用；产出性词汇通常是它的
 > 50%–70%。跨测试（中文释义 vs 英语释义）比较只能看量级。
 
-## 7. API
+## 8. API
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"adaptive"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度 |
-| POST | `/vocab/test/answer` | body `{session_id, choice, unknown}`；返回反馈、进度、下一题；答满返回 `finished` + `result` |
+| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"adaptive"\|"adaptive2"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度 |
+| POST | `/vocab/test/answer` | body `{session_id, choice, unknown}`；返回反馈、进度、下一题；答满或 SE 达标返回 `finished` + `result` |
 | POST | `/vocab/test/finish` | body `{session_id}`；提前结束，幂等 |
 | GET | `/vocab/tests` | 当前用户的历史记录（含 `algo`） |
+| GET | `/vocab/trend` | 同一算法的趋势（`?algo=` 可选），返回每月斜率、区间与显著性 |
 
 进度字段：`score`（classic 前 3 题为 `null`）、`total`、`correct`、`unknown`、
-`wrong`、`converged`；adaptive/cat 另有 `level`、`score_interval`，结果另有 `ready`。
+`wrong`、`converged`；adaptive/adaptive2/cat 另有 `level`、`score_interval`，
+cat 还有 `se`、`stop_reason`，adaptive2 还有 `alpha`、`vocab_size`，结果另有 `ready`。
 
-## 8. 测试与诊断
+## 9. 测试与诊断
 
 ```bash
 # 全量测试
@@ -341,13 +433,21 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   （3 释义 +「以上都不对」固定第 4 项）；
 - adaptive：`test_posterior_score_is_order_invariant`（顺序无关）、
   `test_interval_has_between_form_floor`（区间下限）、探顶三条规则；
+- adaptive2：`test_recovers_theta_and_alpha`（合成数据恢复 θ/α）、
+  `test_flat_curve_has_larger_area_at_low_ability`、`test_vocab_interval_contains_point_estimate`；
 - cat：`test_bank_is_sorted_and_covers_all_levels`、`test_selection_follows_ability`、
-  `test_posterior_score_is_order_invariant`、`test_cat_result_records_algo`。
+  `test_se_stop_ends_before_max`（SE 停止）、`test_posterior_score_is_order_invariant`；
+- 标定：`test_clean_sessions_drops_bulk_day_bots_and_short`、
+  `test_fit_recovers_synthetic_theta`；
+- 趋势：`test_trend_detects_upward_change`、`test_trend_flat_noise_not_significant`、
+  `test_adaptive_start_uses_history_prior`。
 
-## 9. 数据与标定
+## 10. 数据与标定
 
 - 逐题日志用于离线分析（`data/logs/vocab_sessions.jsonl`），测试通过
   `conftest.py` 重定向到临时目录，不会污染真实日志；
 - 历史日志里有大量脚本模拟 session（同一天上千个、准确率为 5 的倍数、时间戳成组
   重复），做标定前必须先清洗；
-- 题库标定（1PL/2PL、MFI、SE 停止规则）见 issue #40；cat 已预留覆盖文件接口。
+- 题库标定流水线：`scripts/calibrate_vocab_items.py`（清洗 → 1PL/2PL → 就绪度检查
+  → 写 `data/calibration/vocab_cat_items.json`），详见 §5.3；
+- 多次测试的趋势与历史先验见 §6，数据来自 `data/vocab_tests/vocab_tests.json`。

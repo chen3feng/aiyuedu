@@ -88,15 +88,16 @@ def _run_flow(respond):
 
 def test_all_correct_flow_reaches_high_score():
     result = _run_flow(lambda q: (q["correct_index"], False))
-    assert result["total"] == cat.MAX_QUESTIONS
-    assert result["correct"] == cat.MAX_QUESTIONS
+    assert cat.MIN_QUESTIONS <= result["total"] <= cat.MAX_QUESTIONS
+    assert result["correct"] == result["total"]
     assert result["score"] > 10000
+    assert result["stop_reason"] in {"se", "max"}
 
 
 def test_all_unknown_flow_scores_low():
     result = _run_flow(lambda q: (None, True))
-    assert result["total"] == cat.MAX_QUESTIONS
-    assert result["unknown"] == cat.MAX_QUESTIONS
+    assert cat.MIN_QUESTIONS <= result["total"] <= cat.MAX_QUESTIONS
+    assert result["unknown"] == result["total"]
     assert result["score"] < 1000
 
 
@@ -106,6 +107,35 @@ def test_router_start_cat_creates_cat_session():
     sid = resp["session_id"]
     assert cat.get_session(sid) is not None
     assert len(resp["question"]["options"]) == 4
+
+
+def test_se_stop_ends_before_max():
+    """后验 SE 降到阈值后自动结束，而不是固定答满 80 题。"""
+    import random
+
+    sid, _, _ = cat.start_test()
+    sess = cat.get_session(sid)
+    rng = random.Random(0)
+    ans = None
+    while not sess.finished:
+        q = sess.current
+        p = cat._adaptive.sigmoid(q["a"] * (12000 - q["b"]))
+        prob = cat._adaptive.GUESS_RATE + (1 - cat._adaptive.GUESS_RATE) * p
+        choice = q["correct_index"] if rng.random() < prob else (q["correct_index"] + 1) % 4
+        ans = cat.submit_answer(sess, choice, False)
+    assert ans is not None and ans["finished"]
+    assert sess.stop_reason == "se"
+    assert cat.MIN_QUESTIONS <= sess.total < cat.MAX_QUESTIONS
+    assert ans["result"]["stop_reason"] == "se"
+    assert ans["result"]["se"] <= cat.SE_STOP
+
+
+def test_finish_sets_manual_stop_reason():
+    sid, _, _ = cat.start_test()
+    sess = cat.get_session(sid)
+    cat.submit_answer(sess, sess.current["correct_index"], False)
+    result = cat.finish_test(sess)
+    assert result["stop_reason"] == "manual"
 
 
 def test_cat_result_records_algo(tmp_path, monkeypatch):

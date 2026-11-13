@@ -31,8 +31,12 @@ class Settings(BaseSettings):
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
     # 词汇量测试算法开关：classic（固定分层抽样）| adaptive（自适应 EAP）|
-    # cat（词频题库 CAT）。前端可在开始测试时用 algo 参数覆盖。
+    # adaptive2（双参数 θ+α）| cat（词频题库 CAT）。前端可在开始测试时用
+    # algo 参数覆盖。
     vocab_algo: str = "classic"
+    # 用最近一次同算法测试作为下一次的弱先验（issue #42）。先验 sd ≥ 1500，
+    # 数据仍然主导；关闭后每次测试完全独立。
+    vocab_history_prior: bool = True
     # 后台管理（admin app，8001）口令：用户名固定 admin。
     # 部署/局域网使用务必通过环境变量 ADMIN_PASSWORD 覆盖默认值。
     admin_password: str = "changeme"

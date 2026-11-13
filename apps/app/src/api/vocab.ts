@@ -45,6 +45,10 @@ export interface Result {
   message: string;
   /** 自适应算法的 95% 置信区间（经典算法不返回） */
   score_interval?: [number, number];
+  /** 双参数算法：词汇量（曲线面积）的 95% 区间 */
+  vocab_interval?: [number, number];
+  /** 双参数算法：个人区分度（相对基准斜率，1.0 = 单参数模型） */
+  alpha?: number;
 }
 
 export interface AnswerResp extends Progress {
@@ -54,7 +58,7 @@ export interface AnswerResp extends Progress {
   result?: Result;
 }
 
-export type VocabAlgo = "classic" | "adaptive" | "cat";
+export type VocabAlgo = "classic" | "adaptive" | "adaptive2" | "cat";
 
 /** 算法改名前的历史记录/本地缓存仍可能带 "eudic"，统一归一化为 adaptive。 */
 export function normalizeAlgo(algo?: string): VocabAlgo {

@@ -36,6 +36,7 @@ from typing import Optional
 from ..config import settings
 from . import vocab as _classic
 from . import vocab_tests
+from . import vocab_trend
 
 # —— 拟合得到的算法常数（见 docs/eudic-vocab-algorithm.md §4）——
 LEVEL_WIDTH = 1000          # 每个词频档约 1000 词
@@ -176,9 +177,16 @@ def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
     return _question_from_word(_pick_word(level, rng, avoid), rng)
 
 
-def _prior_log_post() -> list[float]:
-    """先验的对数密度（未归一化；每次更新后会重新归一化）。"""
-    return [-0.5 * ((g - PRIOR_MEAN) / PRIOR_SD) ** 2 for g in GRID]
+def _prior_log_post(
+    mean: Optional[float] = None, sd: Optional[float] = None
+) -> list[float]:
+    """先验的对数密度（未归一化；每次更新后会重新归一化）。
+
+    传入 mean/sd 时用历史测试作弱先验（issue #42），否则用默认弱信息先验。
+    """
+    mean = PRIOR_MEAN if mean is None else mean
+    sd = PRIOR_SD if sd is None else max(300.0, sd)
+    return [-0.5 * ((g - mean) / sd) ** 2 for g in GRID]
 
 
 @dataclass
@@ -266,8 +274,9 @@ def _normalize_log_post(sess: AdaptiveSession) -> None:
 def _refresh_moments(sess: AdaptiveSession) -> None:
     """从后验计算均值（得分）与标准差（不确定性）。"""
     weights = [math.exp(v) for v in sess.log_post]
-    mean = sum(g * w for g, w in zip(GRID, weights))
-    var = sum(w * (g - mean) ** 2 for g, w in zip(GRID, weights))
+    total = sum(weights)
+    mean = sum(g * w for g, w in zip(GRID, weights)) / total
+    var = sum(w * (g - mean) ** 2 for g, w in zip(GRID, weights)) / total
     sess.score = max(0.0, min(float(MAX_SCORE), mean))
     sess.se = math.sqrt(max(var, 0.0))
 
@@ -374,7 +383,18 @@ def _result(sess: AdaptiveSession) -> dict:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    sess = AdaptiveSession(id=sid, user_id=user_id)
+    prior = (
+        vocab_trend.history_prior(user_id, "adaptive")
+        if settings.vocab_history_prior
+        else None
+    )
+    sess = AdaptiveSession(
+        id=sid,
+        user_id=user_id,
+        log_post=(
+            _prior_log_post(prior["mean"], prior["sd"]) if prior else _prior_log_post()
+        ),
+    )
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)
@@ -453,12 +473,15 @@ def _record(sess: AdaptiveSession) -> None:
     vocab_tests.add(sess.user_id, {
         "ts": round(time.time(), 3),
         "algo": "adaptive",
+        "algo_version": ALGO_VERSION,
         "score": result["score"],
         "vocab_size": result["vocab_size"],
         "total": result["total"],
         "correct": result["correct"],
         "wrong": result["wrong"],
         "unknown": result["unknown"],
+        "se": int(round(sess.se)),
+        "score_interval": result["score_interval"],
     })
 
 
