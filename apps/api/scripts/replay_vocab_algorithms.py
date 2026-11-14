@@ -7,6 +7,9 @@ adaptive2 / cat，比较四者的最终估计。这样排除了「不同天、�
 1. 四种算法的结果是否一致、偏差有多大；
 2. adaptive2 的（θ, α）面积是否真的比 adaptive 多提供信息。
 
+2026-11f 起 API 的 adaptive 也使用 (θ, α) 二维引擎，因此这里的 adaptive 与
+adaptive2 两列应当完全一致；保留 adaptive 列是为了检查路由/历史口径没有串线。
+
 用法：
     uv run --directory apps/api python scripts/replay_vocab_algorithms.py
     uv run --directory apps/api python scripts/replay_vocab_algorithms.py --include-anonymous
@@ -89,12 +92,12 @@ def replay_classic(seq: list[tuple], max_answers: int = 50) -> float:
     return vocab._estimate(sess)
 
 
-def replay_adaptive(seq: list[tuple]) -> float:
-    """adaptive：把每次作答按档位难度乘进后验。"""
-    sess = adaptive.AdaptiveSession(id="replay")
+def replay_adaptive(seq: list[tuple]) -> tuple[float, float]:
+    """adaptive：2026-11f 起与 adaptive2 同一 (θ, α) 引擎，输出面积与 α。"""
+    sess = adaptive2.Adaptive2Session(id="replay", algo="adaptive")
     for rank, resp, _ in seq:
-        adaptive._update_score(sess, {"level": adaptive._level_of(rank)}, resp)
-    return sess.score
+        adaptive2._update_score(sess, {"level": adaptive._level_of(rank)}, resp)
+    return adaptive2._vocab_area(sess.score, sess.alpha), sess.alpha
 
 
 def replay_adaptive2(seq: list[tuple]) -> tuple[float, float]:
@@ -134,7 +137,7 @@ def replay_session(
     if "classic" in algos:
         out["classic"] = replay_classic(seq, classic_max)
     if "adaptive" in algos:
-        out["adaptive"] = replay_adaptive(seq)
+        out["adaptive"], out["alpha_adaptive"] = replay_adaptive(seq)
     if "adaptive2" in algos:
         out["adaptive2"], out["alpha2"] = replay_adaptive2(seq)
     if "cat" in algos:

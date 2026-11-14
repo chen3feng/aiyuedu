@@ -18,8 +18,8 @@ def store(tmp_path, monkeypatch):
     return path
 
 
-def _add(user_id, ts, score, vocab_size, algo="adaptive", se=700):
-    vocab_tests.add(user_id, {
+def _add(user_id, ts, score, vocab_size, algo="adaptive", se=700, algo_version=None):
+    rec = {
         "ts": ts,
         "algo": algo,
         "score": score,
@@ -29,7 +29,10 @@ def _add(user_id, ts, score, vocab_size, algo="adaptive", se=700):
         "correct": 40,
         "wrong": 10,
         "unknown": 10,
-    })
+    }
+    if algo_version:
+        rec["algo_version"] = algo_version
+    vocab_tests.add(user_id, rec)
 
 
 def test_trend_detects_upward_change(store):
@@ -81,6 +84,30 @@ def test_history_prior_uses_latest_score(store):
     assert prior is not None
     assert prior["mean"] == 12000
     assert prior["sd"] >= vocab_trend.BASE_SD
+
+
+def test_trend_ignores_records_from_old_algo_version(store):
+    """口径变化（θ → 面积）后只比较新版本，避免趋势里出现口径跳变。"""
+    now = time.time()
+    for i in range(4):
+        _add("u1", now - (90 - i * 10) * 86400, 16000, 16000,
+             algo_version="2026-11c")
+    for i in range(3):
+        _add("u1", now - (20 - i * 5) * 86400, 14000 + i * 300, 14000 + i * 300,
+             algo_version="2026-11f")
+    result = vocab_trend.trend("u1")
+    assert result["n"] == 3
+    assert all(p["vocab_size"] >= 14000 for p in result["points"])
+
+
+def test_trend_keeps_old_records_until_two_new_version_tests(store):
+    now = time.time()
+    for i in range(4):
+        _add("u1", now - (90 - i * 10) * 86400, 16000, 16000,
+             algo_version="2026-11c")
+    _add("u1", now, 14000, 14000, algo_version="2026-11f")
+    result = vocab_trend.trend("u1")
+    assert result["n"] == 5
 
 
 def test_history_prior_ignores_old_and_other_algo(store):
@@ -138,6 +165,24 @@ def test_adaptive2_second_question_keeps_history_level(store):
     sess = adaptive2.get_session(sid)
     adaptive2.submit_answer(sess, None, True)
     assert sess.current["level"] >= 9
+
+
+def test_router_adaptive_uses_its_own_history(store):
+    """adaptive 与 adaptive2 共用二维引擎，但历史按算法名分开取。"""
+    from app.routers import vocab as vocab_router
+
+    now = time.time()
+    _add("u1", now - 86400, 12000, 12000, algo="adaptive")
+    _add("u1", now - 86400, 18000, 18000, algo="adaptive2")
+    resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="u1")
+    sess = adaptive2.get_session(resp["session_id"])
+    assert sess.algo == "adaptive"
+    assert sess.start_level == 12
+
+    resp = vocab_router.start(vocab_router.StartIn(algo="adaptive2"), user_id="u1")
+    sess = adaptive2.get_session(resp["session_id"])
+    assert sess.algo == "adaptive2"
+    assert sess.start_level == 18
 
 
 def test_cat_start_level_is_capped(store):

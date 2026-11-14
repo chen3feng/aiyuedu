@@ -8,8 +8,8 @@
    ``vocab_adaptive.start_test``）；不再作为后验先验，避免多次测试链式抬分。
    不确定度随间隔天数增长，超过 180 天不用。
 
-分数口径：用 ``score``（θ，50% 认识阈值）做起点与趋势，不用 classic 的
-面积口径，避免把两种量混在一起。
+分数口径：趋势用 ``vocab_size``（各算法自己的词汇量口径，按 ``algo_version``
+分组，避免口径变化后混算）；起点用 ``score``（θ，50% 认识阈值）。
 """
 from __future__ import annotations
 
@@ -58,6 +58,14 @@ def trend(user_id: Optional[str], algo: Optional[str] = None) -> dict:
         )
     records = _records(user_id, algo)
     records = [r for r in records if isinstance(r.get("vocab_size"), (int, float))]
+    # 口径变化后不跨版本比较：例如 adaptive 在 2026-11f 从 θ 改为曲线面积，
+    # 新旧 vocab_size 不是同一个量。新版本至少积累两次测试后只比较新版本。
+    versions = [r.get("algo_version") for r in records if r.get("algo_version")]
+    if versions:
+        latest = max(versions)
+        same_version = [r for r in records if r.get("algo_version") == latest]
+        if len(same_version) >= 2:
+            records = same_version
     if not records:
         return {
             "algo": algo,

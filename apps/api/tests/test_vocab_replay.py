@@ -84,7 +84,8 @@ def test_replay_estimators_are_deterministic_and_in_range():
 def test_replay_session_respects_algo_selection():
     seq = [(100, "correct", "w"), (200, "unknown", "w2")]
     out = replay.replay_session(seq, algos=("adaptive", "cat"))
-    assert set(out) == {"adaptive", "cat", "alpha_cat"}
+    assert set(out) == {"adaptive", "cat", "alpha_adaptive", "alpha_cat"}
+    assert 0 < out["alpha_adaptive"] < 5
     assert 0 < out["alpha_cat"] < 5
 
 

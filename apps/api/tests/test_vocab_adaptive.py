@@ -16,6 +16,7 @@ from fastapi import HTTPException
 
 from app.routers import vocab as vocab_router
 from app.services import vocab, vocab_adaptive as adaptive
+from app.services import vocab_adaptive2 as adaptive2
 
 
 # ---------- 档位与题目 ----------
@@ -311,10 +312,35 @@ def test_router_start_adaptive_creates_adaptive_session():
     resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="")
     assert resp["algo"] == "adaptive"
     sid = resp["session_id"]
-    assert adaptive.get_session(sid) is not None
+    # 2026-11f 起 adaptive 也走 (θ, α) 二维引擎，但历史/日志口径仍是 adaptive。
+    sess = adaptive2.get_session(sid)
+    assert sess is not None
+    assert sess.algo == "adaptive"
+    assert adaptive.get_session(sid) is None
     assert vocab.get_session(sid) is None
     assert len(resp["question"]["options"]) == 4
     assert resp["question"]["options"][3] == adaptive.NONE_OF_ABOVE
+
+
+def test_router_adaptive_logs_dual_engine_under_adaptive_name(monkeypatch, tmp_path):
+    """adaptive 入口改用二维估计后，日志要保留 algo=adaptive 与 α 字段。"""
+    import json
+
+    from app.config import settings
+
+    log = tmp_path / "vocab_sessions.jsonl"
+    monkeypatch.setattr(settings, "vocab_log_path", str(log))
+    resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="u1")
+    sid = resp["session_id"]
+    sess = adaptive2.get_session(sid)
+    q = sess.current
+    vocab_router.answer(vocab_router.AnswerIn(
+        session_id=sid, choice=q["correct_index"], unknown=False
+    ))
+    rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+    assert rec["algo"] == "adaptive"
+    assert rec["algo_version"] == adaptive2.ALGO_VERSION
+    assert "alpha" in rec
 
 
 def test_router_answer_and_finish_dispatch_by_session():
@@ -339,7 +365,7 @@ def test_router_accepts_legacy_eudic_alias():
     """算法改名前的客户端/本地缓存仍会传 "eudic"，路由应归一化为 adaptive。"""
     resp = vocab_router.start(vocab_router.StartIn(algo="eudic"), user_id="")
     assert resp["algo"] == "adaptive"
-    assert adaptive.get_session(resp["session_id"]) is not None
+    assert adaptive2.get_session(resp["session_id"]) is not None
 
 
 def test_router_rejects_unknown_algo():

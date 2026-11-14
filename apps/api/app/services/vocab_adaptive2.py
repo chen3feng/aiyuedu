@@ -6,6 +6,10 @@
 
     p(know) = sigmoid(α * (θ - b) / 2500)
 
+2026-11f 起，API 的 ``adaptive`` 也使用本引擎（``algo`` 参数区分历史与日志），
+因为固定斜率会把平缓曲线解释成明显更高的 θ；``adaptive2`` 保留为同一引擎的
+另一个入口。
+
 - θ：50% 认识阈值（分数尺度，0–25,000）
 - α：个人区分度（相对基准斜率 1/2500 的倍数，1.0 = 与单参数模型相同）
 
@@ -32,7 +36,7 @@ from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 from . import vocab_trend
 
-ALGO_VERSION = "2026-11e"
+ALGO_VERSION = "2026-11f"
 NONE_OF_ABOVE = _adaptive.NONE_OF_ABOVE
 GUESS_RATE = _adaptive.GUESS_RATE
 UNKNOWN_LIKELIHOOD_POWER = _adaptive.UNKNOWN_LIKELIHOOD_POWER
@@ -92,6 +96,7 @@ N_ALPHA = len(ALPHA_GRID)
 @dataclass
 class Adaptive2Session:
     id: str
+    algo: str = "adaptive2"     # 历史/日志口径：adaptive 也走本引擎（2026-11f 起）
     rng: random.Random = field(default_factory=random.Random)
     score: float = 0.0          # θ 后验均值
     alpha: float = 1.0          # α 后验均值（相对基准斜率）
@@ -311,7 +316,7 @@ def _log_answer(sess: Adaptive2Session, q: dict, response: str) -> None:
         rec = {
             "ts": round(now, 3),
             "session": sess.id,
-            "algo": "adaptive2",
+            "algo": sess.algo,
             "algo_version": ALGO_VERSION,
             "user_id": sess.user_id or "",
             "n": sess.total,
@@ -338,7 +343,7 @@ def _record(sess: Adaptive2Session) -> None:
     result = _result(sess)
     vocab_tests.add(sess.user_id, {
         "ts": round(time.time(), 3),
-        "algo": "adaptive2",
+        "algo": sess.algo,
         "algo_version": ALGO_VERSION,
         "score": result["score"],
         "vocab_size": result["vocab_size"],
@@ -353,12 +358,16 @@ def _record(sess: Adaptive2Session) -> None:
     })
 
 
-def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
+def start_test(
+    user_id: Optional[str] = None, algo: str = "adaptive2"
+) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
     # 历史成绩只提供「起点」：首题档位 + 一个宽先验（见 adaptive.start_test）。
     # 若只用默认先验，首题答完后后验会掉回均值，第二题直接跌到 2–3 档。
+    # 2026-11f 起 "adaptive" 也走本引擎（一维模型会把平缓曲线解释成更高的 θ），
+    # 历史与日志按调用方给的算法名区分。
     prior = (
-        vocab_trend.history_prior(user_id, "adaptive2")
+        vocab_trend.history_prior(user_id, algo)
         if settings.vocab_history_prior
         else None
     )
@@ -371,6 +380,7 @@ def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
         log_post = _prior_log_post(mean, sd)
     sess = Adaptive2Session(
         id=sid,
+        algo=algo,
         user_id=user_id,
         start_level=start_level,
         log_post=log_post if log_post is not None else _prior_log_post(),

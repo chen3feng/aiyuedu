@@ -51,7 +51,7 @@ def test_simulate_reports_requested_algos():
                           scale=2500, guess_prop=0.48, seed=0)
     assert result["theta"] == 12000
     assert set(result["algos"]) == {"adaptive", "cat"}
-    for alg, s in result["algos"].items():
+    for s in result["algos"].values():
         assert s["questions"] > 0
-        # adaptive 报 θ，cat 报曲线面积（与 adaptive2 同口径）
-        assert s["truth"] == (12000 if alg == "adaptive" else result["area_truth"])
+        # adaptive 与 cat 都报曲线面积（同一 (θ, α) 引擎）
+        assert s["truth"] == result["area_truth"]

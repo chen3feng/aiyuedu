@@ -20,8 +20,8 @@
 | `algo` | `classic` | `adaptive` | `adaptive2` | `cat` |
 | 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 adaptive | 20 题起，SE 达标即停，最多 80 |
 | 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 同 adaptive | 精确 rank ±80 内按 Fisher 信息量，每 5 题插一道跨档锚题 |
-| 模型 | 段认识率 | 一维贝叶斯 EAP（θ） | 二维 EAP（θ + α） | 二维 EAP（θ + α），难度用精确 rank |
-| 词汇量 | 段宽 × 认识率累加 | θ（50% 阈值） | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) |
+| 模型 | 段认识率 | 二维 EAP（θ + α，2026-11f 起） | 二维 EAP（θ + α） | 二维 EAP（θ + α），难度用精确 rank |
+| 词汇量 | 段宽 × 认识率累加 | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) |
 | 区间 | 无 | 95% 估计区间 | 分数区间 + 面积区间 | 分数区间 + 面积区间 |
 | 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 | 是 |
 | 定位 | 基线 / 对照 | 默认 | 实验，看曲线斜率 | 实验，等题库标定 |
@@ -190,6 +190,11 @@ BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
 [eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)），但把原版的 Elo 增量更新
 换成**网格贝叶斯 EAP**。算法本身不绑定欧路，cat 也复用了同一套估计。
 
+**2026-11f 起 API 的 `adaptive` 改用 §4.5 的 (θ, α) 二维引擎**：固定斜率会把
+平缓曲线读成明显更高的 θ（同一会话一维 θ=17,191，二维面积 15,328）。下面
+§4.1–4.4 的一维实现仍是公共题面、网格、似然与选题启发式的来源，也保留为
+离线反事实回放的对照。
+
 ### 4.1 模型
 
 在 0–25,000 分上取 501 个网格点（步长 50）：
@@ -249,6 +254,9 @@ score_interval = [score - half, score + half]
 | `PROBE_QUESTIONS` / `MAX_PROBES` / `PROBE_COOLDOWN` | 6 / 3 / 8 |
 
 ## 4.5 adaptive2：双参数（θ + α）
+
+> 2026-11f 起 API 的 `adaptive` 也使用本节引擎，`adaptive2` 保留为同一引擎的
+> 另一个入口；两者只是历史与日志里的算法名不同。
 
 单参数模型假设所有人的「认识概率—词频」曲线斜率相同，只估计一个能力点 θ。
 现实中有人断崖式（斜率大），有人平缓地部分认识很多词（斜率小）。adaptive2 把
@@ -381,7 +389,9 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 
 ### 6.1 趋势
 
-- 只比较同一算法的记录（`score` 口径）；默认取最近一次测试所用的算法；
+- 只比较同一算法的记录（`vocab_size` 口径），并按 `algo_version` 分组：口径
+  变化后（例如 adaptive 在 2026-11f 从 θ 改为曲线面积）新版本积累两次测试起
+  只比较新版本，避免趋势里出现口径跳变；默认取最近一次测试所用的算法；
 - 对 `vocab_size` 与时间做加权线性回归，权重 `1/σ²`，`σ = max(1500, se)`；
 - 输出每月变化量、95% 区间、p 值与是否显著（`|斜率| > 1.96 × 标准误`，且至少 3 次测试）；
 - 接口 `GET /vocab/trend?algo=...`，前端在历史页趋势图下方显示一句话结论。
@@ -426,13 +436,14 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 
 ### 7.1 四种算法的「分」不是同一个量
 
-| | classic / adaptive2 / cat | adaptive |
-| --- | --- | --- |
-| `vocab_size` 定义 | 认识多少个词（面积口径） | 正确率 56% 对应的词频位置（阈值 θ） |
-| 对同一批答案 | 通常更高 | 更低 |
+| | classic / adaptive / adaptive2 / cat |
+| --- | --- |
+| `vocab_size` 定义 | 认识多少个词（classic 为分段加权，其余为 (θ, α) 曲线面积） |
+| 对同一批答案 | classic 通常略高；adaptive 系三套口径一致 |
 
-adaptive2 / cat 另外返回 `score`（θ，50% 认识阈值）与 `alpha`；它们的
-`vocab_size` 是 `(θ, α)` 曲线面积，与 classic 的面积口径接近，但仍不能逐分比较。
+adaptive / adaptive2 / cat 另外返回 `score`（θ，50% 认识阈值）与 `alpha`；
+它们的 `vocab_size` 都是曲线面积，与 classic 的面积口径接近，但仍不能逐分比较。
+2026-11f 起三套 EAP 算法共用同一个二维引擎，同一批答案应给出相同的面积。
 
 实测（2026-11-13，同一批 50 题答案）：classic 15,773 / 17,227，EAP 11,451 / 13,114。
 2026-11 题面对齐后 classic 已和另外两套同题面，但估计量仍不同，**不要逐分比较**；
@@ -478,8 +489,10 @@ adaptive2 / cat 另外返回 `score`（θ，50% 认识阈值）与 `alpha`；它
 | GET | `/vocab/trend` | 同一算法的趋势（`?algo=` 可选），返回每月斜率、区间与显著性 |
 
 进度字段：`score`（classic 前 3 题为 `null`）、`total`、`correct`、`unknown`、
-`wrong`、`converged`；adaptive/adaptive2/cat 另有 `level`、`score_interval`，
-cat 还有 `se`、`stop_reason`，adaptive2 还有 `alpha`、`vocab_size`，结果另有 `ready`。
+`wrong`、`converged`；adaptive/adaptive2/cat 另有 `level`、`score_interval`、
+`alpha` 与 `vocab_size`（曲线面积），cat 还有 `se`、`stop_reason`；结果另有
+`ready`、`vocab_interval`（面积区间）。2026-11f 起 adaptive 与 adaptive2 返回
+相同的字段与数值口径。
 
 ## 9. 测试与诊断
 
@@ -512,7 +525,9 @@ uv run --directory apps/api python scripts/smoke_vocab.py
 - adaptive2：`test_recovers_theta_and_alpha`（合成数据恢复 θ/α）、
   `test_flat_curve_has_larger_area_at_low_ability`、`test_vocab_interval_contains_point_estimate`；
 - cat：`test_bank_is_sorted_and_covers_all_levels`、`test_selection_follows_ability`、
-  `test_se_stop_ends_before_max`（SE 停止）、`test_posterior_score_is_order_invariant`；
+  `test_se_stop_ends_before_max`（SE 停止）、`test_posterior_score_is_order_invariant`、
+  `test_fifth_question_is_cross_band_anchor` / `test_anchors_rotate_across_bands`（锚题轮换）；
+- 路由：`test_router_adaptive_uses_its_own_history`（adaptive 与 adaptive2 共用引擎但历史分开）；
 - 标定：`test_clean_sessions_drops_bulk_day_bots_and_short`、
   `test_fit_recovers_synthetic_theta`；
 - 趋势：`test_trend_detects_upward_change`、`test_trend_flat_noise_not_significant`、
