@@ -32,7 +32,7 @@ from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 from . import vocab_trend
 
-ALGO_VERSION = "2026-11c"
+ALGO_VERSION = "2026-11e"
 NONE_OF_ABOVE = _adaptive.NONE_OF_ABOVE
 GUESS_RATE = _adaptive.GUESS_RATE
 UNKNOWN_LIKELIHOOD_POWER = _adaptive.UNKNOWN_LIKELIHOOD_POWER
@@ -50,8 +50,9 @@ CORRECT_PRESENT_RATE = _adaptive.CORRECT_PRESENT_RATE
 
 # θ 网格沿用单参数模型（0–25,000，步长 50）
 THETA_GRID = _adaptive.GRID
-# α 网格：相对基准斜率的倍数。7 档足以区分「平缓 / 正常 / 断崖」。
-ALPHA_GRID = (0.5, 0.65, 0.8, 1.0, 1.25, 1.6, 2.0)
+# α 网格：相对基准斜率的倍数。9 档覆盖「很平缓 / 平缓 / 正常 / 断崖」；
+# 下界从 0.5 放宽到 0.25，避免曲线很平的用户把 α 顶在边界上。
+ALPHA_GRID = (0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.25, 1.6, 2.0)
 ALPHA_PRIOR_LOG_SD = 0.35       # log α 先验标准差：弱信息，数据可主导
 PROB_FLOOR = 1e-12
 

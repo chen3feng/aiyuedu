@@ -47,8 +47,29 @@ def test_selection_follows_ability():
     sess = cat.CatSession(id="x")
     sess.total = 1
     sess.score = 12000.0
-    item = cat._pick_item(sess)
+    item, is_anchor = cat._pick_item(sess)
+    assert is_anchor is False
     assert 11000 <= item["b"] <= 13000
+
+
+def test_fifth_question_is_cross_band_anchor():
+    """第 5 题起每隔 5 题插一道远离当前 θ 的锚题，用来识别 α。"""
+    sess = cat.CatSession(id="x")
+    sess.total = 1
+    sess.score = 12000.0
+    assert cat._anchor_level(sess) is None
+
+    sess.total = 4
+    assert cat._anchor_level(sess) == 2
+    item, is_anchor = cat._pick_item(sess)
+    assert is_anchor is True
+    assert 1700 <= item["b"] <= 2400
+
+    sess.total = 9
+    assert cat._anchor_level(sess) == 6
+    item, is_anchor = cat._pick_item(sess)
+    assert is_anchor is True
+    assert 5700 <= item["b"] <= 6400
 
 
 def test_posterior_score_is_order_invariant():
@@ -99,6 +120,31 @@ def test_all_unknown_flow_scores_low():
     assert cat.MIN_QUESTIONS <= result["total"] <= cat.MAX_QUESTIONS
     assert result["unknown"] == result["total"]
     assert result["score"] < 1000
+
+
+def test_result_reports_area_and_alpha():
+    """结果里的 vocab_size 是 (θ, α) 曲线面积，并附带斜率与面积区间。"""
+    result = _run_flow(lambda q: (q["correct_index"], False))
+    assert result["vocab_size"] > 0
+    assert 0.2 <= result["alpha"] <= 2.0
+    lo, hi = result["vocab_interval"]
+    assert 0 <= lo <= result["vocab_size"] <= hi
+
+
+def test_anchors_rotate_across_bands():
+    """实际答题流程里第 5 题起每 5 题出现一道锚题，档位按 2/6/10/14/18/22 轮换。"""
+    sid, _, _ = cat.start_test()
+    sess = cat.get_session(sid)
+    seen = []
+    while not sess.finished:
+        seen.append((sess.total, sess.current["anchor"], sess.current["level"]))
+        cat.submit_answer(sess, sess.current["correct_index"], False)
+    anchors = [(n, lv) for n, is_anchor, lv in seen if is_anchor]
+    assert anchors[0] == (4, 2)
+    assert [lv for _, lv in anchors[:6]] == [2, 6, 10, 14, 18, 22]
+    # 非锚题的 nth 不应落在 5 的倍数减一上
+    for n, is_anchor, _ in seen:
+        assert is_anchor is (n > 0 and n % cat.ANCHOR_EVERY == cat.ANCHOR_EVERY - 1)
 
 
 def test_router_start_cat_creates_cat_session():
@@ -168,6 +214,8 @@ def test_answer_log_records_estimation_fields(tmp_path, monkeypatch):
     assert rec["elapsed_ms"] is None
     assert isinstance(rec["se"], int)
     assert rec["b"] > 0 and rec["a"] > 0
+    assert 0.2 <= rec["alpha"] <= 2.0
+    assert rec["anchor"] is False
 
 
 def _flat_curve_score(start_level: int, seed: int) -> float:
@@ -183,9 +231,10 @@ def _flat_curve_score(start_level: int, seed: int) -> float:
         id=f"flat-{start_level}-{seed}",
         rng=rng,
         start_level=start_level,
-        log_post=cat._adaptive._prior_log_post(start_level * 1000 + 100, 4000),
+        log_post=cat._dual._prior_log_post(start_level * 1000 + 100, 4000),
     )
-    sess.current = cat._make_question(cat._pick_item(sess), rng)
+    item, is_anchor = cat._pick_item(sess)
+    sess.current = cat._make_question(item, rng, anchor=is_anchor)
     sess.recent.append(sess.current["word"])
     while not sess.finished:
         q = sess.current

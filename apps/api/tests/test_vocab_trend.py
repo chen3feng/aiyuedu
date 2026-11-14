@@ -150,7 +150,7 @@ def test_cat_start_level_is_capped(store):
     assert sess.start_level == 8
     assert question["level"] == 8
     assert sess.log_post == pytest.approx(
-        adaptive._prior_log_post(8100, adaptive.HISTORY_PRIOR_MIN_SD)
+        cat._dual._prior_log_post(8100, adaptive.HISTORY_PRIOR_MIN_SD)
     )
     cat.submit_answer(sess, None, True)
     assert 5000 <= sess.current["rank"] <= 11000
