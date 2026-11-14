@@ -76,6 +76,7 @@ _LEAK_PROPER = re.compile(r"人名|地名|姓氏")
 _LATIN = re.compile(r"[A-Za-z][A-Za-z'\-]*")
 _PAREN = re.compile(r"[（(][^（）()]*[）)]")
 _SENSE_SPLIT = re.compile(r"[,，]")
+_GROUP_SPLIT = re.compile(r"[；;]")
 # 截断到 32 字时可能留下半个词性标记（"…；vi…"），去掉它避免像英文泄漏。
 _TRUNC_POS = re.compile(r"[；;]\s*[a-z]{1,5}…$")
 # 粗粒度词性：同词性干扰项能封掉「按词性排除」的盲猜。
@@ -156,6 +157,17 @@ def _load_blacklist() -> frozenset:
         return frozenset()
 
 
+@lru_cache(maxsize=1)
+def _load_transliteration_blacklist() -> frozenset:
+    """低频纯音译词黑名单（人名/地名/乐器/药名等，抽题时排除）。"""
+    try:
+        with open(settings.transliteration_blacklist_path, encoding="utf-8") as f:
+            data = json.load(f)
+        return frozenset(data.get("lemmas", []))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+
+
 def gloss(translation: str) -> str:
     """从 ECDICT 释义提取词义：保留词性前缀与多个义项，去掉 [医][计] 等领域标签。
 
@@ -170,7 +182,7 @@ def gloss(translation: str) -> str:
     for line in translation.split("\n"):
         if line.strip().startswith("[网络]"):
             continue
-        for g in line.split("；"):
+        for g in _GROUP_SPLIT.split(line):
             g = _FULL_BRACKET.sub("", g)
             g = g.strip(" ,，;；\n\t")
             if not g:
@@ -181,10 +193,19 @@ def gloss(translation: str) -> str:
                 seen.add(g)
                 groups.append(g)
     if not groups:
+        # 兜底只用于「所有义项都带 [医][计] 等领域标签」的情况。但 [人名]/[地名]
+        # 这类专名标签不能剥掉标签后当普通释义用，否则裸名字（如 (德)迪姆）
+        # 会混进题库变成送分题；按分号逐段剔除，保留同一行里的普通义项。
         for line in translation.split("\n"):
-            seg = _FULL_BRACKET.sub("", _BRACKET.sub("", line)).strip(" ,，;；\n\t")
-            if seg:
-                groups = [seg]
+            segs = []
+            for seg in _GROUP_SPLIT.split(line):
+                if _LEAK_PROPER.search(seg):
+                    continue
+                seg = _FULL_BRACKET.sub("", _BRACKET.sub("", seg)).strip(" ,，;；\n\t")
+                if seg:
+                    segs.append(seg)
+            if segs:
+                groups = ["；".join(segs)]
                 break
 
     # 每组最多保留前 3 个义项，最多取 2 组，避免选项过长；
@@ -205,7 +226,7 @@ def gloss(translation: str) -> str:
 @lru_cache(maxsize=1)
 def _candidates() -> list:
     """[(rank, lemma, gloss)] 按词族 rank 升序，仅保留可作题目的词。"""
-    blacklist = _load_blacklist()
+    blacklist = _load_blacklist() | _load_transliteration_blacklist()
     rows = []
     for w in _load_rows():
         try:

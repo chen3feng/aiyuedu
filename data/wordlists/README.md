@@ -8,6 +8,8 @@
 | --- | --- |
 | `wordlist.csv` | **项目主词表**（已过滤、分带），供评测/分级/生词标注使用 |
 | `surface_lemma.json` | 词形 → 词族头映射（约 19.8 万条，提交入库），供分级阅读做词形还原 |
+| `sensitive_blacklist.json` | 少儿不宜敏感词黑名单（评测抽题时过滤） |
+| `transliteration_blacklist.json` | 低频纯音译词黑名单（人名/地名/乐器/药名等，评测抽题时过滤） |
 | `download_raw.py` | 一键下载并解压下方所有 `raw/` 数据（幂等 + SHA256 校验），全新 clone 第一步 |
 | `process_ecdict.py` | 从 raw 生成 `wordlist.csv` 的处理脚本 |
 | `build_surface_lemma.py` | 从 raw 词族表 + 词形还原表生成 `surface_lemma.json` 的脚本 |
