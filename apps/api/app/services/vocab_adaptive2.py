@@ -32,7 +32,7 @@ from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 from . import vocab_trend
 
-ALGO_VERSION = "2026-11"
+ALGO_VERSION = "2026-11b"
 NONE_OF_ABOVE = _adaptive.NONE_OF_ABOVE
 GUESS_RATE = _adaptive.GUESS_RATE
 UNKNOWN_LIKELIHOOD_POWER = _adaptive.UNKNOWN_LIKELIHOOD_POWER

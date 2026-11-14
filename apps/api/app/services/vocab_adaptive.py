@@ -59,7 +59,7 @@ PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
 MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
 PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11"
+ALGO_VERSION = "2026-11b"
 
 # —— 后验网格：0~25000 分，步长 50（501 个点）——
 GRID_STEP = 50
@@ -97,8 +97,8 @@ def _by_level() -> list:
     """[(rank, lemma, gloss, pos)] 按档位分组，复用现有词表与黑名单过滤。"""
     levels: list[list] = [[] for _ in range(MAX_LEVEL + 1)]
     for rank, lemma, g in _classic._candidates():
-        pos = g.split(" ", 1)[0] if " " in g else ""
-        levels[_level_of(rank)].append((rank, lemma, g, pos))
+        # 统一用 vocab.pos_class 解析（兼容 "n.<美俚>…" 这类词性后无空格的释义）。
+        levels[_level_of(rank)].append((rank, lemma, g, _classic.pos_class(g)))
     return levels
 
 

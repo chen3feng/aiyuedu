@@ -43,7 +43,7 @@ GUESS_RATE = 0.12
 CORRECT_PRESENT_RATE = 0.75
 NONE_OF_ABOVE = "以上都不对"
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11"
+ALGO_VERSION = "2026-11b"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -58,6 +58,84 @@ RESULT_MESSAGE = (
 _BRACKET = re.compile(r"\[[^\]]*\]")
 _FULL_BRACKET = re.compile(r"【[^】]*】")
 _WORD_OK = re.compile(r"^[a-z][a-z'\-]+$")
+
+# —— 释义泄底过滤 ——
+# ECDICT 里有一部分释义直接把答案写出来：`vt.<主英>=customize`（别名）、
+# `crow的过去式`（词形引用）、`n. (Diem)人名`（专名）、`n. haiku (Jap) 俳句`
+# （英文原词）。这类选项一眼就能选中或排除，等于送分。按「义项」粒度剔除，
+# 同一词的其他干净义项仍保留；整词都被剔除时不再作为题目候选。
+_POS_HEAD = re.compile(r"^(?:\s*[a-z]+\s*\.\s*(?:[&/]\s*)?)+", re.I)
+_POS_ANY = re.compile(
+    r"(?:^|(?<=[；，,;（(／/&\s]))(?:[a-z]+\s*\.\s*(?:[&/]\s*)?)+", re.I
+)
+_LEAK_FORM = re.compile(
+    r"的(?:过去式|过去分词|现在分词|三单形式|第三人称|复数形式|比较级|最高级|变形|简写|缩写)"
+)
+_LEAK_PROPER = re.compile(r"人名|地名|姓氏")
+_LATIN = re.compile(r"[A-Za-z][A-Za-z'\-]*")
+_PAREN = re.compile(r"[（(][^（）()]*[）)]")
+_SENSE_SPLIT = re.compile(r"[,，]")
+# 截断到 32 字时可能留下半个词性标记（"…；vi…"），去掉它避免像英文泄漏。
+_TRUNC_POS = re.compile(r"[；;]\s*[a-z]{1,5}…$")
+# 粗粒度词性：同词性干扰项能封掉「按词性排除」的盲猜。
+_POS_CLASS = {
+    "n": "n", "v": "v", "vt": "v", "vi": "v", "aux": "v", "modal": "v",
+    "a": "a", "adj": "a", "adv": "adv", "ad": "adv",
+}
+
+
+def pos_of(g: str) -> str:
+    """取释义开头的词性标记，归一化为 ``n.`` / ``vt.`` 形式；无词性返回 ""。
+
+    "n.<美俚>蹩脚货" → "n."；"vt.& vi. (使)自动化" → "vt."。
+    """
+    m = _POS_HEAD.match(g)
+    if not m:
+        return ""
+    first = re.match(r"[a-z]+", m.group(0), re.I)
+    return (first.group(0).lower() + ".") if first else ""
+
+
+def pos_class(g: str) -> str:
+    """粗粒度词性（n / v / a / adv，其余保留原标记），用于挑同词性干扰项。"""
+    p = pos_of(g).rstrip(".")
+    if not p:
+        return "other"
+    return _POS_CLASS.get(p, p)
+
+
+def _latin_leak(text: str) -> bool:
+    """释义里出现英文原词/别名（先去掉 n./vt./adv. 等词性标记）。
+
+    单字母（T字形、X线、U形物）与全大写缩写（卡拉OK、CFC、DJ）不算泄底。
+    """
+    text = _POS_ANY.sub(" ", text)
+    return any(len(tok) >= 2 and not tok.isupper() for tok in _LATIN.findall(text))
+
+
+def _leaky(sense: str) -> bool:
+    return bool(
+        "=" in sense
+        or _LEAK_FORM.search(sense)
+        or _LEAK_PROPER.search(sense)
+        or _latin_leak(sense)
+    )
+
+
+def _clean_group(g: str) -> str:
+    """去掉一组释义中的泄底片段，返回其余义项；全被剔除时返回 ""。"""
+    pos = pos_of(g)
+    head = _POS_HEAD.match(g)
+    body = g[len(head.group(0)):] if head else g
+    body = body.strip(" ,，;；")
+    # 括号里常是「(等于xxx)」「(xxx的过去式)」「(Diem)」等，整段去掉
+    body = _PAREN.sub(lambda m: "" if _leaky(m.group(0)) else m.group(0), body)
+    body = body.strip(" ,，;；")
+    senses = [s.strip() for s in _SENSE_SPLIT.split(body) if s.strip()]
+    keep = [s for s in senses if not _leaky(s)]
+    if not keep:
+        return ""
+    return (pos + " " if pos else "") + "，".join(keep[:3])
 
 
 @lru_cache(maxsize=1)
@@ -108,14 +186,18 @@ def gloss(translation: str) -> str:
                 groups = [seg]
                 break
 
-    # 每组最多保留前 3 个义项，最多取 2 组，避免选项过长
-    trimmed = []
-    for g in groups[:2]:
-        senses = [s.strip() for s in g.split(",") if s.strip()]
-        trimmed.append("，".join(senses[:3]))
-    out = "；".join(t for t in trimmed if t)
+    # 每组最多保留前 3 个义项，最多取 2 组，避免选项过长；
+    # 顺带剔除泄底义项（见 _clean_group），一组全泄底就顺延到下一组。
+    trimmed: list[str] = []
+    for g in groups:
+        c = _clean_group(g)
+        if c and c not in trimmed:
+            trimmed.append(c)
+        if len(trimmed) >= 2:
+            break
+    out = "；".join(trimmed)
     if len(out) > 32:
-        out = out[:32].rstrip(" ,，;；") + "…"
+        out = _TRUNC_POS.sub("…", out[:32].rstrip(" ,，;；") + "…")
     return out
 
 
@@ -142,6 +224,12 @@ def _candidates() -> list:
         rows.append((rank, lemma, g))
     rows.sort(key=lambda x: x[0])
     return rows
+
+
+@lru_cache(maxsize=1)
+def _pos_index() -> dict:
+    """释义 → 粗粒度词性，避免出题时对同一批候选反复解析。"""
+    return {g: pos_class(g) for _, _, g in _candidates()}
 
 
 def _band_width(i: int) -> int:
@@ -175,11 +263,23 @@ def _make_question(target) -> dict:
     want = 2 if include_correct else 3
     distractors: list[str] = []
     seen = {target[2]}
-    for _ in range(80):
+    # 干扰项优先同词性（否则「只有一项词性对得上」就能直接排除），
+    # 同词性不够再退到相邻频段，最后才用全词表兜底。
+    index = _pos_index()
+    tpos = index.get(target[2], "other")
+    pools = [
+        [c for c in pool if index.get(c[2], "other") == tpos],
+        pool,
+        cands,
+    ]
+    for src in pools:
         if len(distractors) >= want:
             break
-        c = random.choice(pool)
-        if c[2] not in seen and c[1] != target[1]:
+        picks = [c for c in src if c[2] not in seen and c[1] != target[1]]
+        random.shuffle(picks)
+        for c in picks:
+            if len(distractors) >= want:
+                break
             seen.add(c[2])
             distractors.append(c[2])
     while len(distractors) < want:
