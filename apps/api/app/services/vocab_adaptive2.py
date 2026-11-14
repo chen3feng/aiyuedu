@@ -32,7 +32,7 @@ from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 from . import vocab_trend
 
-ALGO_VERSION = "2026-11b"
+ALGO_VERSION = "2026-11c"
 NONE_OF_ABOVE = _adaptive.NONE_OF_ABOVE
 GUESS_RATE = _adaptive.GUESS_RATE
 UNKNOWN_LIKELIHOOD_POWER = _adaptive.UNKNOWN_LIKELIHOOD_POWER
@@ -71,7 +71,8 @@ def _prior_log_post(
 ) -> list[float]:
     """(θ, α) 二维先验：θ ~ N(mean, sd²)，log α ~ N(0, 0.35²)。
 
-    参数保留给离线实验；线上始终用默认先验，历史成绩只决定首题档位。
+    参数保留给离线实验与历史起点：``start_test`` 会传入以历史档位为均值、
+    ``sd ≥ HISTORY_PRIOR_MIN_SD`` 的宽先验，避免首题答完后后验掉回默认均值。
     """
     mean = _adaptive.PRIOR_MEAN if theta_mean is None else theta_mean
     sd = _adaptive.PRIOR_SD if theta_sd is None else max(300.0, theta_sd)
@@ -112,7 +113,7 @@ class Adaptive2Session:
     finished: bool = False
     user_id: Optional[str] = None
     recorded: bool = False
-    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
+    start_level: Optional[int] = None                # 历史成绩只决定起点（首题档位 + 宽先验均值）
     last_ts: float = 0.0
 
 
@@ -353,16 +354,26 @@ def _record(sess: Adaptive2Session) -> None:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    # 历史成绩只用来挑首题档位，不再作为后验先验（见 adaptive.start_test）。
+    # 历史成绩只提供「起点」：首题档位 + 一个宽先验（见 adaptive.start_test）。
+    # 若只用默认先验，首题答完后后验会掉回均值，第二题直接跌到 2–3 档。
     prior = (
         vocab_trend.history_prior(user_id, "adaptive2")
         if settings.vocab_history_prior
         else None
     )
     start_level = None
+    log_post = None
     if prior:
         start_level = max(0, min(MAX_LEVEL, int(round(prior["mean"] / LEVEL_WIDTH))))
-    sess = Adaptive2Session(id=sid, user_id=user_id, start_level=start_level)
+        mean = start_level * LEVEL_WIDTH + LEVEL_OFFSET
+        sd = max(_adaptive.HISTORY_PRIOR_MIN_SD, prior["sd"])
+        log_post = _prior_log_post(mean, sd)
+    sess = Adaptive2Session(
+        id=sid,
+        user_id=user_id,
+        start_level=start_level,
+        log_post=log_post if log_post is not None else _prior_log_post(),
+    )
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)

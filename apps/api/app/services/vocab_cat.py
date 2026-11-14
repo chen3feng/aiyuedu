@@ -39,7 +39,7 @@ CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
 DEFAULT_START = 1500.0     # 首题难度（高频词热身）
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11b"
+ALGO_VERSION = "2026-11c"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -177,7 +177,7 @@ class CatSession:
     finished: bool = False
     user_id: Optional[str] = None
     recorded: bool = False
-    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
+    start_level: Optional[int] = None                # 历史成绩只决定起点（首题档位 + 宽先验均值）
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
     stop_reason: str = ""                            # "se" / "max" / "manual"
 
@@ -282,20 +282,30 @@ def _record(sess: CatSession) -> None:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    # 历史成绩只用来挑首题难度，不再作为后验先验（见 adaptive.start_test）。
+    # 历史成绩只提供「起点」：首题难度 + 一个宽先验（见 adaptive.start_test）。
+    # 若只用默认先验，首题答完后后验会掉回均值，第二题直接跌到低档位。
     prior = (
         vocab_trend.history_prior(user_id, "cat")
         if settings.vocab_history_prior
         else None
     )
     start_level = None
+    log_post = None
     if prior:
         start_level = max(
             0,
             min(_adaptive.MAX_LEVEL,
                 int(round(prior["mean"] / _adaptive.LEVEL_WIDTH))),
         )
-    sess = CatSession(id=sid, user_id=user_id, start_level=start_level)
+        mean = start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
+        sd = max(_adaptive.HISTORY_PRIOR_MIN_SD, prior["sd"])
+        log_post = _adaptive._prior_log_post(mean, sd)
+    sess = CatSession(
+        id=sid,
+        user_id=user_id,
+        start_level=start_level,
+        log_post=log_post if log_post is not None else _adaptive._prior_log_post(),
+    )
     _sessions[sid] = sess
     sess.current = _make_question(_pick_item(sess), sess.rng)
     sess.recent.append(sess.current["word"])

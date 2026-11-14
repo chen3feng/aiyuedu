@@ -6,6 +6,7 @@ import pytest
 from app.config import settings
 from app.services import vocab_adaptive as adaptive
 from app.services import vocab_adaptive2 as adaptive2
+from app.services import vocab_cat as cat
 from app.services import vocab_tests
 from app.services import vocab_trend
 
@@ -91,18 +92,29 @@ def test_history_prior_ignores_old_and_other_algo(store):
 
 
 def test_adaptive_start_level_uses_history(store):
-    """历史成绩只决定首题档位，不再把上次分数带进后验。"""
+    """历史成绩只决定起点：首题档位 + 以历史为中心的宽先验。"""
     now = time.time()
     _add("u1", now - 86400, 12000, 12000)
     sid, question, _ = adaptive.start_test(user_id="u1")
     sess = adaptive.get_session(sid)
     assert sess.start_level == 12
     assert question["level"] == 12
-    # 后验仍是默认弱先验：首题得分不会被历史成绩抬到 12,000。
-    # （默认先验截断在 0 以上，EAP 均值约 2,800，仍远低于历史成绩。）
     adaptive._refresh_moments(sess)
-    assert sess.score < 4000
-    assert sess.log_post == pytest.approx(adaptive._prior_log_post())
+    # 先验跟着历史走（12 档 ≈ 12,100 分），但 sd ≥ 4,000，数据仍能很快主导。
+    assert 11000 < sess.score < 13000
+    assert sess.log_post == pytest.approx(
+        adaptive._prior_log_post(12100, adaptive.HISTORY_PRIOR_MIN_SD)
+    )
+
+
+def test_adaptive_second_question_keeps_history_level(store):
+    """首题答完后不应掉回默认均值档位（旧版历史只进首题，12 档会塌到 3 档）。"""
+    now = time.time()
+    _add("u1", now - 86400, 16000, 16000)
+    sid, _, _ = adaptive.start_test(user_id="u1")
+    sess = adaptive.get_session(sid)
+    adaptive.submit_answer(sess, None, True)
+    assert sess.current["level"] >= 9
 
 
 def test_adaptive2_start_level_uses_history(store):
@@ -113,8 +125,32 @@ def test_adaptive2_start_level_uses_history(store):
     assert sess.start_level == 15
     assert question["level"] == 15
     adaptive2._refresh_moments(sess)
-    assert sess.score < 4000
-    assert sess.log_post == pytest.approx(adaptive2._prior_log_post())
+    assert 13500 < sess.score < 16500
+    assert sess.log_post == pytest.approx(
+        adaptive2._prior_log_post(15100, adaptive.HISTORY_PRIOR_MIN_SD)
+    )
+
+
+def test_adaptive2_second_question_keeps_history_level(store):
+    now = time.time()
+    _add("u1", now - 86400, 16000, 16000, algo="adaptive2")
+    sid, _, _ = adaptive2.start_test(user_id="u1")
+    sess = adaptive2.get_session(sid)
+    adaptive2.submit_answer(sess, None, True)
+    assert sess.current["level"] >= 9
+
+
+def test_cat_start_level_uses_history(store):
+    now = time.time()
+    _add("u1", now - 86400, 16000, 16000, algo="cat")
+    sid, question, _ = cat.start_test(user_id="u1")
+    sess = cat.get_session(sid)
+    assert sess.start_level == 16
+    assert sess.log_post == pytest.approx(
+        adaptive._prior_log_post(16100, adaptive.HISTORY_PRIOR_MIN_SD)
+    )
+    cat.submit_answer(sess, None, True)
+    assert sess.current["rank"] >= 9000
 
 
 def test_prior_can_be_disabled(store, monkeypatch):
