@@ -327,7 +327,9 @@ def test_stability_on_spiky_profile():
 
     # 单个「尖峰模型」抽样本身波动很大（同一实现不同随机种子 15%–24%），
     # 取多个模型 realization 的平均相对标准差，避免测试被某一次抽样卡住。
-    ratios = [ratio(s) for s in range(42, 47)]
+    # 5 个 realization 的均值仍有 ±2% 的抽样波动（曾因词表增减卡在 20.7%），
+    # 取 10 个把测试自身的标准误压到 ~0.6%。
+    ratios = [ratio(s) for s in range(42, 52)]
     # 猜测校正把均值压低、相对波动略增（旧实现 14%，现在约 18%）；
     # 这里仍在防「分叉到 2 倍」的回归，20% 足够区分。
     assert statistics.mean(ratios) < 0.20
