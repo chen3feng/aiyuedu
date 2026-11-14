@@ -45,7 +45,7 @@ export default {
     algoLabel: "算法",
     algoClassic: "经典分层",
     algoAdaptive: "自适应",
-    algoClassicHint: "固定 50 题，按词频分段抽样，分数平稳。",
+    algoClassicHint: "固定 50 题，按词频分段抽样；单次波动较大，仅供对照。",
     algoAdaptiveHint: "自适应选题 + 双参数估计：同时估计水平与曲线斜率，词汇量取整条曲线的面积；连续答对会挑战更难的词。",
     alphaValue: "曲线斜率 α = {alpha}（越大越陡，越小越平缓）",
     algoCat: "CAT 词频",

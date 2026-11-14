@@ -45,7 +45,7 @@ export default {
     algoLabel: "Algorithm",
     algoClassic: "Classic",
     algoAdaptive: "Adaptive",
-    algoClassicHint: "50 fixed questions sampled across word-frequency bands. Stable score.",
+    algoClassicHint: "50 fixed questions sampled across word-frequency bands; high run-to-run variance, for comparison only.",
     algoAdaptiveHint: "Adaptive questions with a two-parameter model: estimates both level and curve steepness; vocabulary is the area under the curve. Correct streaks unlock harder words.",
     alphaValue: "Curve slope α = {alpha} (higher = steeper, lower = flatter)",
     algoCat: "CAT (frequency)",

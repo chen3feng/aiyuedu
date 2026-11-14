@@ -350,6 +350,20 @@ def test_router_answer_and_finish_dispatch_by_session():
     assert "result" in fin
 
 
+def test_router_default_algo_is_adaptive():
+    """classic 已从前端隐藏，服务端未指定 algo 时默认 adaptive。"""
+    resp = vocab_router.start(None, user_id="")
+    assert resp["algo"] == "adaptive"
+    assert adaptive.get_session(resp["session_id"]) is not None
+
+
+def test_router_accepts_classic_explicitly():
+    """classic 仍可通过接口显式使用，用于基线与历史对照。"""
+    resp = vocab_router.start(vocab_router.StartIn(algo="classic"), user_id="")
+    assert resp["algo"] == "classic"
+    assert vocab.get_session(resp["session_id"]) is not None
+
+
 def test_router_default_algo_is_classic(monkeypatch):
     monkeypatch.setattr(vocab_router.settings, "vocab_algo", "classic")
     resp = vocab_router.start(None, user_id="")
