@@ -43,8 +43,8 @@ Elo 增量更新换成 EAP）、adaptive2（双参数）和 cat。classic 保留
 
 ### 2.1 词表
 
-Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** 个可作题目的词
-（去掉无释义、非纯字母、敏感词黑名单，并按 lemma 去重）。
+Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,413** 个可作题目的词
+（去掉无释义、非纯字母、敏感词黑名单、释义全部泄底的词，并按 lemma 去重）。
 
 - classic：按 rank 切成 10 段；
 - adaptive：每 1,000 词一档，共 25 档（0–24）；
@@ -59,7 +59,24 @@ Paul Nation BNC/COCA 25,000 词族（rank 1–25000），过滤后 **23,499** �
   就是「以上都不对」；
 - 另有独立的「不认识」按钮（前端第 5 个操作），不等同于选错；
 - 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/adaptive2/cat 优先同档、同词性，
-  并避免释义互相包含。
+  并避免释义互相包含。**四种算法都优先同词性干扰项**（2026-11b 起 classic 补齐），
+  封掉「三个选项里只有一项词性对得上 → 直接排除」的盲猜通道；
+- 词性解析统一走 `vocab.pos_of` / `pos_class`，兼容 `n.<美俚>蹩脚货` 这类词性后无空格的释义
+  （旧实现按首个空格切分，约 1,700 词解析失败，会退化回混词性池）。
+
+**释义泄底清洗**（`vocab.gloss`，2026-11b 起）：ECDICT 有一部分释义直接把答案写出来，
+按义项粒度剔除、保留同一词的其他干净义项；整词全部泄底时才不作出题候选（约 90 词）：
+
+| 类型 | 例子 | 处理 |
+| --- | --- | --- |
+| 别名 | `vt.<主英>=customize` | 去掉 `=xxx` 片段 |
+| 词形引用 | `n. 丁香；cleave的过去式` | 去掉「…的过去式/三单/复数/变形」义项 |
+| 专名 | `n. (Diem)人名；(德)迪姆` | 去掉人名/地名义项，保留音译 |
+| 英文原词/括注 | `n. 大草原，热带草原（等于savanna）` | 去掉含英文的括号内容 |
+| 非泄底 | `n. T字形…`、`n. 卡拉OK`、`CFC` | 单字母与全大写缩写保留 |
+
+实测：397 条释义被裁剪、86 个词整词剔除；清洗后候选释义里不再出现 `=`、词形引用、
+专名或小写英文词。
 
 答后反馈统一为：
 
@@ -431,6 +448,10 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   `test_stability_on_spiky_profile`（相对标准差 < 20%）；
 - 公共：`test_question_format_matches_eudic` / `test_question_has_three_glosses_plus_none_of_above`
   （3 释义 +「以上都不对」固定第 4 项）；
+- 反盲猜：`test_gloss_removes_answer_leaks`（按义项清洗泄底片段）、
+  `test_candidates_have_no_leaky_gloss`（候选释义无 `=`/词形引用/专名/英文词）、
+  `test_pos_parsing`（词性后无空格也能解析）、
+  `test_distractors_prefer_same_pos`（干扰项与目标同词性）；
 - adaptive：`test_posterior_score_is_order_invariant`（顺序无关）、
   `test_interval_has_between_form_floor`（区间下限）、探顶三条规则；
 - adaptive2：`test_recovers_theta_and_alpha`（合成数据恢复 θ/α）、

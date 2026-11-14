@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Optional
 
 from ..config import settings
+from . import vocab as _classic
 from . import vocab_adaptive as _adaptive
 from . import vocab_tests
 from . import vocab_trend
@@ -38,7 +39,7 @@ CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
 DEFAULT_START = 1500.0     # 首题难度（高频词热身）
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11"
+ALGO_VERSION = "2026-11b"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -52,7 +53,8 @@ RESULT_MESSAGE = (
 
 
 def _pos_of(gloss: str) -> str:
-    return gloss.split(" ", 1)[0] if " " in gloss else ""
+    """词性标记：统一走 vocab.pos_class（兼容词性后无空格的释义）。"""
+    return _classic.pos_class(gloss)
 
 
 def _load_overrides() -> dict:
