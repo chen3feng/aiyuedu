@@ -461,7 +461,10 @@ uv run --directory apps/api python scripts/smoke_vocab.py
 - 标定：`test_clean_sessions_drops_bulk_day_bots_and_short`、
   `test_fit_recovers_synthetic_theta`；
 - 趋势：`test_trend_detects_upward_change`、`test_trend_flat_noise_not_significant`、
-  `test_adaptive_start_uses_history_prior`。
+  `test_adaptive_start_uses_history_prior`；
+- 回放：`test_load_sessions_filters_and_sorts`（会话聚合与过滤）、
+  `test_replay_classic_perfect_is_max`（分层全对 → 25,000）、
+  `test_replay_estimators_are_deterministic_and_in_range`。
 
 ## 10. 数据与标定
 
@@ -472,3 +475,25 @@ uv run --directory apps/api python scripts/smoke_vocab.py
 - 题库标定流水线：`scripts/calibrate_vocab_items.py`（清洗 → 1PL/2PL → 就绪度检查
   → 写 `data/calibration/vocab_cat_items.json`），详见 §5.3；
 - 多次测试的趋势与历史先验见 §6，数据来自 `data/vocab_tests/vocab_tests.json`。
+
+### 10.1 离线反事实回放
+
+`scripts/replay_vocab_algorithms.py` 把日志里**同一条作答序列**（rank + response）
+分别喂给四种估计器，直接比较估计量本身：
+
+```bash
+uv run --directory apps/api python scripts/replay_vocab_algorithms.py
+uv run --directory apps/api python scripts/replay_vocab_algorithms.py --include-anonymous --since 2026-11-14
+```
+
+- 默认只回放真实用户会话（`user_id` 非空、≥20 题）；模拟/匿名会话要显式加上
+  `--include-anonymous`；
+- 报告按「源算法」分组给出四种估计的均值，以及同一会话内的两两差异；
+- **classic 只适合回放分层抽样的序列**（classic 自己的会话）。把 adaptive/CAT 的
+  序列喂给 classic 会低估（它只按已作答的频段累加），这类行不能横比；
+- 回放是纯离线计算，不写历史、不写日志。
+
+2026-11-14 的实测（305 个会话，其中 301 个 classic 模拟序列）：在分层序列上
+classic / adaptive / adaptive2 / cat 的均值是 11,380 / 10,808 / 11,351 / 11,130，
+两两差 29–572，均小于单条序列 ~1,150 的差异标准差；adaptive2 的面积定义与
+classic 几乎重合，adaptive 的 θ 系统性低约 550，cat 高约 250。
