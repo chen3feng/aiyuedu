@@ -3,25 +3,21 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..deps import current_user_id
-from ..services import vocab, vocab_adaptive2, vocab_cat, vocab_tests
+from ..services import vocab, vocab_adaptive, vocab_cat, vocab_tests
 from ..services import vocab_trend
 
 router = APIRouter(prefix="/vocab", tags=["vocab"])
 
 # 算法开关：classic = 固定分层抽样，
-# adaptive / adaptive2 = 双参数自适应（θ + α，词汇量按曲线面积）；
-# 2026-11f 起 adaptive 也走二维引擎（固定斜率会把平缓曲线读成更高的 θ），
+# adaptive = 双参数自适应（θ + α，词汇量按曲线面积），
 # cat = 词频题库 CAT（精确 rank + 最大信息量选题）。
 _ALGOS = {
     "classic": vocab,
-    "adaptive": vocab_adaptive2,
-    "adaptive2": vocab_adaptive2,
+    "adaptive": vocab_adaptive,
     "cat": vocab_cat,
 }
-# 二维引擎的两个入口（用同一个模块，按算法名区分历史与日志）。
-_DUAL_ALGOS = {"adaptive", "adaptive2"}
-# 兼容旧客户端/本地缓存里的 "eudic"（算法改名前的值），归一化为 adaptive。
-_ALIASES = {"eudic": "adaptive"}
+# 兼容旧客户端/本地缓存："eudic" 是改名前的 adaptive，"adaptive2" 已并入 adaptive。
+_ALIASES = {"eudic": "adaptive", "adaptive2": "adaptive"}
 
 
 class StartIn(BaseModel):
@@ -54,10 +50,7 @@ def start(payload: StartIn | None = None, user_id: str = Depends(current_user_id
     svc = _ALGOS.get(algo)
     if svc is None:
         raise HTTPException(status_code=400, detail=f"未知算法：{algo}")
-    if algo in _DUAL_ALGOS:
-        sid, question, progress = vocab_adaptive2.start_test(user_id, algo=algo)
-    else:
-        sid, question, progress = svc.start_test(user_id)
+    sid, question, progress = svc.start_test(user_id)
     return {
         "session_id": sid,
         "algo": algo,

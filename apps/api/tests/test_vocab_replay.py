@@ -78,7 +78,7 @@ def test_replay_estimators_are_deterministic_and_in_range():
     assert first == second
     for algo in replay.ALGOS:
         assert 0 <= first[algo] <= vocab.MAX_VOCAB
-    assert 0 < first["alpha2"] < 5
+    assert 0 < first["alpha_adaptive"] < 5
 
 
 def test_replay_session_respects_algo_selection():

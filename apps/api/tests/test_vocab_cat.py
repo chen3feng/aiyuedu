@@ -231,7 +231,7 @@ def _flat_curve_score(start_level: int, seed: int) -> float:
         id=f"flat-{start_level}-{seed}",
         rng=rng,
         start_level=start_level,
-        log_post=cat._dual._prior_log_post(start_level * 1000 + 100, 4000),
+        log_post=cat._adaptive._prior_log_post(start_level * 1000 + 100, 4000),
     )
     item, is_anchor = cat._pick_item(sess)
     sess.current = cat._make_question(item, rng, anchor=is_anchor)

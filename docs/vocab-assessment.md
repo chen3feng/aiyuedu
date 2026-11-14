@@ -1,30 +1,28 @@
-# 词汇量评测：四种算法
+# 词汇量评测：三种算法
 
 > 实现：[`vocab.py`](../apps/api/app/services/vocab.py)（classic）、
 > [`vocab_adaptive.py`](../apps/api/app/services/vocab_adaptive.py)（adaptive）、
-> [`vocab_adaptive2.py`](../apps/api/app/services/vocab_adaptive2.py)（adaptive2）、
 > [`vocab_cat.py`](../apps/api/app/services/vocab_cat.py)（cat）
 > 测试：[`test_vocab.py`](../apps/api/tests/test_vocab.py)、
 > [`test_vocab_adaptive.py`](../apps/api/tests/test_vocab_adaptive.py)、
-> [`test_vocab_adaptive2.py`](../apps/api/tests/test_vocab_adaptive2.py)、
 > [`test_vocab_cat.py`](../apps/api/tests/test_vocab_cat.py)
 > 标定与趋势：[`vocab_calibration.py`](../apps/api/app/services/vocab_calibration.py)、
 > [`vocab_trend.py`](../apps/api/app/services/vocab_trend.py)
 > 诊断：[`diagnose_vocab_bands.py`](../apps/api/scripts/diagnose_vocab_bands.py)
 > 欧路原版逆向与推导细节：[eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)
 
-## 1. 四种算法一览
+## 1. 三种算法一览
 
-| | **classic 经典分层** | **adaptive 自适应** | **adaptive2 双参数** | **cat 词频 CAT** |
-| --- | --- | --- | --- | --- |
-| `algo` | `classic` | `adaptive` | `adaptive2` | `cat` |
-| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 同 adaptive | 20 题起，SE 达标即停，最多 80 |
-| 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 同 adaptive | 精确 rank ±80 内按 Fisher 信息量，每 5 题插一道跨档锚题 |
-| 模型 | 段认识率 | 二维 EAP（θ + α，2026-11f 起） | 二维 EAP（θ + α） | 二维 EAP（θ + α），难度用精确 rank |
-| 词汇量 | 段宽 × 认识率累加 | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) |
-| 区间 | 无 | 95% 估计区间 | 分数区间 + 面积区间 | 分数区间 + 面积区间 |
-| 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 | 是 |
-| 定位 | 基线 / 对照 | 默认 | 实验，看曲线斜率 | 实验，等题库标定 |
+| | **classic 经典分层** | **adaptive 自适应** | **cat 词频 CAT** |
+| --- | --- | --- | --- |
+| `algo` | `classic` | `adaptive` | `cat` |
+| 题量 | 固定 50 | 20 题起结果可用，最多 80 | 20 题起，SE 达标即停，最多 80 |
+| 选题 | 10 段各 5 题，由易到难 | 当前档位 ±1；连对 4 题探顶 | 精确 rank ±80 内按 Fisher 信息量，每 5 题插一道跨档锚题 |
+| 模型 | 段认识率 | 二维 EAP（θ + α） | 二维 EAP（θ + α），难度用精确 rank |
+| 词汇量 | 段宽 × 认识率累加 | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) |
+| 区间 | 无 | 分数区间 + 面积区间 | 分数区间 + 面积区间 |
+| 顺序无关 | 是（按段统计） | 是（似然乘积） | 是 |
+| 定位 | 基线 / 对照 | 默认 | 实验，等题库标定 |
 
 **怎么选**：
 
@@ -32,12 +30,14 @@
 2. 接口参数 `POST /vocab/test/start` body `{"algo": "cat"}`；
 3. 服务端默认值环境变量 `VOCAB_ALGO`（默认 `classic`），对未显式下发的客户端生效。
 
-未知 `algo` 返回 400（旧值 `eudic` 会自动归一化为 `adaptive`）。各算法的会话各自维护，
+未知 `algo` 返回 400；旧值 `eudic` 与已合并的 `adaptive2` 都会归一化为
+`adaptive`（仅作为旧名字保留在路由别名与历史读取里）。各算法的会话各自维护，
 `/test/answer` 与 `/test/finish` 按 `session_id` 自动分发。
 
-**历史**：classic 是最初实现，2026-09 为稳定性选定；2026-11 加入 adaptive（把
-Elo 增量更新换成 EAP）、adaptive2（双参数）和 cat。classic 保留作基线，但它的
-「面积口径」与另外三套的「阈值口径」不是同一个量，见 §7。
+**历史**：classic 是最初实现，2026-09 为稳定性选定；2026-11 加入 adaptive
+（把 Elo 增量更新换成 EAP）和 cat。adaptive 起初是一维 θ 模型，2026-11e 加入
+二维 (θ, α)，2026-11f 起旧的 `adaptive2` 并入 adaptive，只留下一个算法入口。
+classic 保留作基线。
 
 ## 2. 公共基础
 
@@ -53,14 +53,14 @@ lemma 去重）。
 
 ### 2.2 题型
 
-四种算法题面一致（classic 于 2026-11 对齐）：
+三种算法题面一致（classic 于 2026-11 对齐）：
 
 - 每题 **3 个中文释义 +「以上都不对」**，共 4 个选项；「以上都不对」固定为第 4 项（D）；
 - 正确释义按 `CORRECT_PRESENT_RATE = 0.75` 的概率出现在前 3 个选项中，否则正确答案
   就是「以上都不对」；
 - 另有独立的「不认识」按钮（前端第 5 个操作），不等同于选错；
-- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/adaptive2/cat 优先同档、同词性，
-  并避免释义互相包含。**四种算法都优先同词性干扰项**（2026-11b 起 classic 补齐），
+- 干扰项：classic 从相邻频段 `[rank/2, rank×1.5]` 抽；adaptive/cat 优先同档、同词性，
+  并避免释义互相包含。**三种算法都优先同词性干扰项**（2026-11b 起 classic 补齐），
   封掉「三个选项里只有一项词性对得上 → 直接排除」的盲猜通道；
 - 词性解析统一走 `vocab.pos_of` / `pos_class`，兼容 `n.<美俚>蹩脚货` 这类词性后无空格的释义
   （旧实现按首个空格切分，约 1,700 词解析失败，会退化回混词性池）。
@@ -117,7 +117,7 @@ include_correct, elapsed_ms
 `elapsed_ms` 是与上一题的间隔（首题为 `null`），`algo_version` 用于分版回放与标定。
 
 各算法追加：classic `band / n_samples / estimate`；adaptive `level / score / se`；
-adaptive2 再加 `alpha`；cat 再加 `b / a`（供后续题库标定）。
+adaptive / cat 还记录 `alpha`；cat 另记 `b / a`（供后续题库标定）。
 
 ## 3. classic：固定分层抽样
 
@@ -182,85 +182,13 @@ BANDS = (0, 2000, 4000, 6000, 8000, 10000, 12000, 15000, 18000, 21000, 25000)
   对应的词频位置」。对同一个人，面积通常高于阈值点。
 - 每段只有 5 题，段边界附近会在「计入 / 清零」之间跳动；单次波动约 ±1,500–2,000 词。
 - 结果页不返回区间（`score_interval` 只有 adaptive/cat 有）。
-- 适合看趋势和量级，不适合与另外三套算法逐分比较（见 §7）。
+- 适合看趋势和量级，不适合与另外两套算法逐分比较（见 §7）。
 
-## 4. adaptive：贝叶斯 EAP
+## 4. adaptive：双参数贝叶斯 EAP（θ + α）
 
 选题与估计方式参考 dict.eudic.net 的词汇量测试（逆向分析见
 [eudic-vocab-algorithm.md](eudic-vocab-algorithm.md)），但把原版的 Elo 增量更新
-换成**网格贝叶斯 EAP**。算法本身不绑定欧路，cat 也复用了同一套估计。
-
-**2026-11f 起 API 的 `adaptive` 改用 §4.5 的 (θ, α) 二维引擎**：固定斜率会把
-平缓曲线读成明显更高的 θ（同一会话一维 θ=17,191，二维面积 15,328）。下面
-§4.1–4.4 的一维实现仍是公共题面、网格、似然与选题启发式的来源，也保留为
-离线反事实回放的对照。
-
-### 4.1 模型
-
-在 0–25,000 分上取 501 个网格点（步长 50）：
-
-```text
-p(θ) = sigmoid((θ - (1000 × level + 100)) / 2500)
-posterior(θ) ∝ prior(θ) × Π likelihood(θ | 每题结果)
-```
-
-似然（3PL + 软惩罚）：
-
-| 作答 | 似然 |
-| --- | --- |
-| 答对 | `c + (1 - c) · p`，`c = 0.12` |
-| 答错 | `(1 - c) · (1 - p)` |
-| 不认识 | `(1 - p) ** 0.625` |
-
-先验 `N(1000, 3000)`，截断到 `[0, 25000]`：均值低让前几题从高频词爬升，方差大保证
-数据能主导估计。得分取后验均值，`se` 取后验标准差。
-
-**顺序无关**：后验是各题似然的乘积，给定题目与结果，交换答题顺序不改变最终得分。
-
-### 4.2 选题
-
-- 第一题：档位 1–2（高频词热身）；
-- 常规：当前档位 `round(score / 1000)` 偏移 −1 / 0 / +1，权重 0.25 / 0.60 / 0.15；
-- 探顶：连续答对 4 题后跳到当前档位上方 3–4 档，最多连续 6 题；答对继续每答一题
-  抬升 1–2 档，答错或「不认识」立即结束；最多 3 次探顶，两次之间至少间隔 8 题；
-- 最近 20 个词不重复（内部保留 40 条历史用于轮换）。
-
-### 4.3 题量与区间
-
-- `MIN_QUESTIONS = 20`：结果接口返回 `ready = true`（前端当前不强制，随时可结束）；- 50 题后 `converged = true`，提示可结束或继续；
-- `MAX_QUESTIONS = 80`，答满自动结束；
-- 95% 区间：
-
-```text
-half = 1.96 × sqrt(se² + FORM_SD²)      FORM_SD = 1200
-score_interval = [score - half, score + half]
-```
-
-`FORM_SD` 补上「换一套题」的抽样方差：后验只回答「给这些题时能力在哪」，实测
-重测波动（约 1,000–1,300）大于后验标准误（约 700–900）。
-
-### 4.4 参数
-
-| 参数 | 值 |
-| --- | --- |
-| `LEVEL_WIDTH` / `LEVEL_OFFSET` | 1000 / 100 |
-| `SCALE` | 2500 |
-| `GUESS_RATE` | 0.12 |
-| `UNKNOWN_LIKELIHOOD_POWER` | 0.625 |
-| `PRIOR_MEAN` / `PRIOR_SD` | 1000 / 3000 |
-| `GRID_STEP` / 点数 | 50 / 501 |
-| `FORM_SD` | 1200 |
-| `MIN_QUESTIONS` / `MAX_QUESTIONS` | 20 / 80 |
-| `PROBE_QUESTIONS` / `MAX_PROBES` / `PROBE_COOLDOWN` | 6 / 3 / 8 |
-
-## 4.5 adaptive2：双参数（θ + α）
-
-> 2026-11f 起 API 的 `adaptive` 也使用本节引擎，`adaptive2` 保留为同一引擎的
-> 另一个入口；两者只是历史与日志里的算法名不同。
-
-单参数模型假设所有人的「认识概率—词频」曲线斜率相同，只估计一个能力点 θ。
-现实中有人断崖式（斜率大），有人平缓地部分认识很多词（斜率小）。adaptive2 把
-能力扩展为两个参数：
+换成**网格贝叶斯 EAP**，并把能力扩展为两个参数：
 
 ```text
 p(know) = sigmoid(α × (θ - b) / 2500)
@@ -269,39 +197,87 @@ p(know) = sigmoid(α × (θ - b) / 2500)
 - **θ**：50% 认识阈值（分数尺度，0–25,000）；
 - **α**：个人区分度，相对基准斜率 `1/2500` 的倍数，`1.0` 与单参数模型相同。
 
-### 4.5.1 估计
+> 2026-11e 之前 adaptive 只估计 θ（固定斜率）。固定斜率会把平缓曲线读成明显
+> 更高的 θ：实测同一批 80 题答案一维 θ=17,191、二维 θ=15,139 / α=0.68 /
+> 面积 15,328。2026-11f 起旧的 `adaptive2` 名字也并入 adaptive，日志与历史
+> 统一写 `adaptive`，旧记录读取时按别名合并。
 
-在 `(θ, α)` 二维网格上做贝叶斯 EAP：θ 沿用 501 个网格点（步长 50），
+### 4.1 估计
+
+在 `(θ, α)` 二维网格上做贝叶斯 EAP：θ 取 0–25,000 分、501 个网格点（步长 50），
 α 取 `(0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.25, 1.6, 2.0)` 共 9 档；先验
-`θ ~ N(1000, 3000²)`、`log α ~ N(0, 0.35²)`。似然与 adaptive 相同（3PL +
-「不认识」软惩罚），只是把 `p` 换成上面的双参数形式。α 下界放宽到 0.25，
-避免曲线很平的用户把 α 顶在网格边界上。
+`θ ~ N(1000, 3000²)`、`log α ~ N(0, 0.35²)`。α 下界取 0.25，避免曲线很平的
+用户把 α 顶在网格边界上。
 
-### 4.5.2 词汇量 = 曲线下面积
+似然（3PL + 软惩罚，`p` 为上面的双参数形式）：
+
+| 作答 | 似然 |
+| --- | --- |
+| 答对 | `c + (1 - c) · p`，`c = 0.12` |
+| 答错 | `(1 - c) · (1 - p)` |
+| 不认识 | `(1 - p) ** 0.625` |
+
+θ 先验均值低让前几题从高频词爬升，方差大保证数据能主导估计。得分取 θ 的后验
+均值，`se` 取 θ 的后验标准差。**顺序无关**：后验是各题似然的乘积，给定题目与
+结果，交换答题顺序不改变最终得分。
+
+### 4.2 词汇量 = 曲线下面积
 
 ```text
 词汇量 = Σ_level 1000 × sigmoid(α × (θ - b_level) / 2500)
 ```
 
-不再只报 50% 阈值点，而是对整条「认识概率—词频」曲线积分。α 小（曲线平缓）
-时面积通常大于 θ，α 大（断崖式）时接近或低于 θ。面积区间由二维后验按面积
-加权取 2.5% / 97.5% 分位数得到。
+不把 50% 阈值点直接当词汇量，而是对整条「认识概率—词频」曲线积分。α 小
+（曲线平缓）时面积通常大于 θ，α 大（断崖式）时接近或低于 θ。面积区间由二维
+后验按面积加权取 2.5% / 97.5% 分位数得到（`vocab_interval`）。
 
-> 注意：在无限词表上，对称 logistic 的面积严格等于 θ；这里的差异来自
-> 0–25,000 的有限边界与曲线在边界附近的形状。因此 adaptive2 的主要增量是
-> **α（曲线斜率）**与面积区间，而不是把面积当成另一个独立的分数。
+> 注意：在无限词表上，对称 logistic 的面积等于 θ；这里的差异来自 0–25,000 的
+> 有限边界与曲线在边界附近的形状。因此二维模型的主要增量是 **α（曲线斜率）**
+> 与面积区间，而不是把面积当成另一个独立的分数。
 
-### 4.5.3 参数
+### 4.3 选题
+
+- 第一题：档位 1–2（高频词热身）；有历史时从上次档位起步（见 §6.2）；
+- 常规：当前档位 `round(score / 1000)` 偏移 −1 / 0 / +1，权重 0.25 / 0.60 / 0.15；
+- 探顶：连续答对 4 题后跳到当前档位上方 3–4 档，最多连续 6 题；答对继续每答一题
+  抬升 1–2 档，答错或「不认识」立即结束；最多 3 次探顶，两次之间至少间隔 8 题；
+- 最近 20 个词不重复（内部保留 40 条历史用于轮换）。
+
+### 4.4 题量与区间
+
+- `MIN_QUESTIONS = 20`：结果接口返回 `ready = true`（前端当前不强制，随时可结束）；
+- 50 题后 `converged = true`，提示可结束或继续；
+- `MAX_QUESTIONS = 80`，答满自动结束；
+- θ 的 95% 区间：
+
+```text
+half = 1.96 × sqrt(se² + FORM_SD²)      FORM_SD = 1200
+score_interval = [score - half, score + half]
+```
+
+`FORM_SD` 补上「换一套题」的抽样方差：后验只回答「给这些题时能力在哪」，实测
+重测波动（约 1,000–1,300）大于后验标准误（约 700–900）。词汇量（面积）另有
+`vocab_interval`。
+
+### 4.5 参数
 
 | 参数 | 值 |
 | --- | --- |
+| `LEVEL_WIDTH` / `LEVEL_OFFSET` | 1000 / 100 |
+| `SCALE` | 2500 |
 | `ALPHA_GRID` | 0.25 / 0.35 / 0.5 / 0.65 / 0.8 / 1.0 / 1.25 / 1.6 / 2.0 |
 | `ALPHA_PRIOR_LOG_SD` | 0.35 |
-| 其余 | 与 adaptive 相同（题量、探顶、猜测率、FORM_SD） |
+| `GUESS_RATE` | 0.12 |
+| `UNKNOWN_LIKELIHOOD_POWER` | 0.625 |
+| `PRIOR_MEAN` / `PRIOR_SD` | 1000 / 3000 |
+| `GRID_STEP` / 点数 | 50 / 501 |
+| `FORM_SD` | 1200 |
+| `MIN_QUESTIONS` / `MAX_QUESTIONS` | 20 / 80 |
+| `PROBE_QUESTIONS` / `MAX_PROBES` / `PROBE_COOLDOWN` | 6 / 3 / 8 |
 
 ## 5. cat：词频题库 CAT
 
-与 adaptive2 共用题型和 `(θ, α)` 二维 EAP 估计，替换的是选题与难度参数。
+与 adaptive 共用题型和 `(θ, α)` 二维 EAP 估计，替换的是选题与难度参数。
 2026-11e 起 CAT 也估计个人斜率 α，并周期性插入跨档锚题（见 §5.2）。
 
 ### 5.1 题库
@@ -339,11 +315,11 @@ I(θ) = [α·a·(1 - c)p(1 - p)]² / [P(1 - P)]
 
 ### 5.2.1 结果口径
 
-`vocab_size` 现在是 `(θ, α)` 曲线下面积（与 adaptive2 同口径），`score` 仍是
+`vocab_size` 是 `(θ, α)` 曲线下面积（与 adaptive 同口径），`score` 仍是
 θ（50% 认识阈值），结果里同时给出 `alpha` 与面积区间 `vocab_interval`。这修掉了
 旧版 `vocab_size` 直接等于 θ 带来的口径不一致：同一条平缓曲线，旧版把 50%
 阈值当词汇量，二维面积则更接近「实际认识多少词」。回放真实会话时 cat 与
-adaptive2 的面积差均值约 260、平均绝对差约 280（旧版 cat 报 θ，差距更大）。
+adaptive 的面积差均值约 250、平均绝对差约 280（旧版 cat 报 θ，差距更大）。
 
 ### 5.3 标定现状
 
@@ -380,7 +356,7 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 | `RECENT_LIMIT` | 40 |
 | `DEFAULT_START` | 1500 |
 | 默认 `a` | 1/2500 |
-| 后验 | `(θ, α)` 二维，网格与 adaptive2 相同 |
+| 后验 | `(θ, α)` 二维，网格与 adaptive 相同 |
 
 ## 6. 多次测试：趋势与历史成绩（issue #42）
 
@@ -403,8 +379,8 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 起点，连续测试会一路抬分（例如首题后得分直接显示 13,000+，但正确率并没有
 上升）。现在改成：
 
-- **历史只决定起点**：取最近一次同算法 `score` 换算成档位，adaptive /
-  adaptive2 / cat 从这一档开始选题，并用一个以该档位为均值、标准差
+- **历史只决定起点**：取最近一次同算法 `score` 换算成档位，adaptive / cat
+  从这一档开始选题，并用一个以该档位为均值、标准差
   `sd = max(4,000, 历史 sd)`（历史 sd 上限 4,500）的**宽先验**初始化后验。
   - sd 太紧（旧版同日 ≈1,500）会让短测试几乎照抄旧分；
   - 完全不用先验则走向另一个极端：首题答完后后验掉回默认均值（约 2,800），
@@ -434,20 +410,20 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 
 ## 7. 怎么读这个分数
 
-### 7.1 四种算法的「分」不是同一个量
+### 7.1 三种算法的「分」不是同一个量
 
-| | classic / adaptive / adaptive2 / cat |
+| | classic / adaptive / cat |
 | --- | --- |
 | `vocab_size` 定义 | 认识多少个词（classic 为分段加权，其余为 (θ, α) 曲线面积） |
-| 对同一批答案 | classic 通常略高；adaptive 系三套口径一致 |
+| 对同一批答案 | classic 通常略高；adaptive / cat 口径一致 |
 
-adaptive / adaptive2 / cat 另外返回 `score`（θ，50% 认识阈值）与 `alpha`；
-它们的 `vocab_size` 都是曲线面积，与 classic 的面积口径接近，但仍不能逐分比较。
-2026-11f 起三套 EAP 算法共用同一个二维引擎，同一批答案应给出相同的面积。
+adaptive / cat 另外返回 `score`（θ，50% 认识阈值）与 `alpha`；它们的
+`vocab_size` 都是曲线面积，与 classic 的面积口径接近，但仍不能逐分比较。
+两套 EAP 算法共用同一个二维引擎，同一批答案应给出相同的面积。
 
-实测（2026-11-13，同一批 50 题答案）：classic 15,773 / 17,227，EAP 11,451 / 13,114。
-2026-11 题面对齐后 classic 已和另外两套同题面，但估计量仍不同，**不要逐分比较**；
-历史记录不重算。
+实测（2026-11-13，同一批 50 题答案，当时 EAP 还是固定斜率）：classic 15,773 /
+17,227，EAP 11,451 / 13,114。2026-11e 改成二维并改报曲线面积后差距收窄
+（同一批答案的回放见 §10.1）；但估计量仍不同，**不要逐分比较**；历史记录不重算。
 
 ### 7.2 不确定度
 
@@ -482,17 +458,16 @@ adaptive / adaptive2 / cat 另外返回 `score`（θ，50% 认识阈值）与 `a
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"adaptive"\|"adaptive2"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度 |
+| POST | `/vocab/test/start` | body `{"algo"?: "classic"\|"adaptive"\|"cat"}`；返回 `session_id`、`algo`、`rules`、第一题、实时进度。`adaptive2` / `eudic` 作为旧名字仍可传，归一化为 `adaptive` |
 | POST | `/vocab/test/answer` | body `{session_id, choice, unknown}`；返回反馈、进度、下一题；答满或 SE 达标返回 `finished` + `result` |
 | POST | `/vocab/test/finish` | body `{session_id}`；提前结束，幂等 |
 | GET | `/vocab/tests` | 当前用户的历史记录（含 `algo`） |
 | GET | `/vocab/trend` | 同一算法的趋势（`?algo=` 可选），返回每月斜率、区间与显著性 |
 
 进度字段：`score`（classic 前 3 题为 `null`）、`total`、`correct`、`unknown`、
-`wrong`、`converged`；adaptive/adaptive2/cat 另有 `level`、`score_interval`、
+`wrong`、`converged`；adaptive/cat 另有 `level`、`score_interval`、
 `alpha` 与 `vocab_size`（曲线面积），cat 还有 `se`、`stop_reason`；结果另有
-`ready`、`vocab_interval`（面积区间）。2026-11f 起 adaptive 与 adaptive2 返回
-相同的字段与数值口径。
+`ready`、`vocab_interval`（面积区间）。adaptive 与 cat 的字段和数值口径一致。
 
 ## 9. 测试与诊断
 
@@ -503,7 +478,7 @@ uv run --directory apps/api pytest -q
 # classic 的稳定性 / 校准模拟（尖峰 & 平滑两种模型）
 uv run --directory apps/api python scripts/diagnose_vocab_bands.py
 
-# 四种极端作答的快速自检
+# 几种极端作答的快速自检
 uv run --directory apps/api python scripts/smoke_vocab.py
 ```
 
@@ -521,13 +496,14 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   `test_pos_parsing`（词性后无空格也能解析）、
   `test_distractors_prefer_same_pos`（干扰项与目标同词性）；
 - adaptive：`test_posterior_score_is_order_invariant`（顺序无关）、
-  `test_interval_has_between_form_floor`（区间下限）、探顶三条规则；
-- adaptive2：`test_recovers_theta_and_alpha`（合成数据恢复 θ/α）、
+  `test_interval_has_between_form_floor`（区间下限）、探顶三条规则、
+  `test_recovers_theta_and_alpha`（合成数据恢复 θ/α）、
   `test_flat_curve_has_larger_area_at_low_ability`、`test_vocab_interval_contains_point_estimate`；
 - cat：`test_bank_is_sorted_and_covers_all_levels`、`test_selection_follows_ability`、
   `test_se_stop_ends_before_max`（SE 停止）、`test_posterior_score_is_order_invariant`、
   `test_fifth_question_is_cross_band_anchor` / `test_anchors_rotate_across_bands`（锚题轮换）；
-- 路由：`test_router_adaptive_uses_its_own_history`（adaptive 与 adaptive2 共用引擎但历史分开）；
+- 路由：`test_adaptive_start_level_uses_history`（历史先验）、
+  `test_router_adaptive_reads_old_adaptive2_history`（旧 adaptive2 历史按别名并入 adaptive）；
 - 标定：`test_clean_sessions_drops_bulk_day_bots_and_short`、
   `test_fit_recovers_synthetic_theta`；
 - 趋势：`test_trend_detects_upward_change`、`test_trend_flat_noise_not_significant`、
@@ -551,7 +527,7 @@ uv run --directory apps/api python scripts/smoke_vocab.py
 ### 10.1 离线反事实回放
 
 `scripts/replay_vocab_algorithms.py` 把日志里**同一条作答序列**（rank + response）
-分别喂给四种估计器，直接比较估计量本身：
+分别喂给三种估计器，直接比较估计量本身：
 
 ```bash
 uv run --directory apps/api python scripts/replay_vocab_algorithms.py
@@ -560,15 +536,16 @@ uv run --directory apps/api python scripts/replay_vocab_algorithms.py --include-
 
 - 默认只回放真实用户会话（`user_id` 非空、≥20 题）；模拟/匿名会话要显式加上
   `--include-anonymous`；
-- 报告按「源算法」分组给出四种估计的均值，以及同一会话内的两两差异；
+- 报告按「源算法」分组给出三种估计的均值，以及同一会话内的两两差异；
 - **classic 只适合回放分层抽样的序列**（classic 自己的会话）。把 adaptive/CAT 的
-  序列喂给 classic 会低估（它只按已作答的频段累加），这类行不能横比；
+  序列喂给 classic 会严重低估（它只按已作答的频段累加），这类行不能横比；
 - 回放是纯离线计算，不写历史、不写日志。
 
-2026-11-14 的实测（305 个会话，其中 301 个 classic 模拟序列）：在分层序列上
-classic / adaptive / adaptive2 / cat 的均值是 11,380 / 10,808 / 11,351 / 11,130，
-两两差 29–572，均小于单条序列 ~1,150 的差异标准差；adaptive2 的面积定义与
-classic 几乎重合，adaptive 的 θ 系统性低约 550，cat 高约 250。
+2026-11-14（26 个真实会话）：adaptive 与 cat 几乎一致，`adaptive - cat` 的均值
+−244、平均绝对差 279（单条序列差异标准差约 168），差异主要来自选题与锚题，
+而不是估计量。旧 `adaptive2` 会话按 adaptive 回放，同一批序列上两者平均绝对差
+294；classic 序列只有 1 条，classic 报 13,943、adaptive 12,125、cat 12,384，
+不能与上面几行横比。
 
 ### 10.2 可控仿真
 
@@ -582,16 +559,16 @@ uv run --directory apps/api python scripts/simulate_vocab_algorithms.py --theta 
 
 - 作答模型：认识 → 选对；不认识 → 以 `--guess-prop`（默认 0.48）尝试猜，
   猜对率 25%，有效蒙对率约 12%；
-- `truth` 按各算法自己的定义：classic 是分段加权，adaptive2 是曲线面积，
-  adaptive / cat 是 θ；报告同时给出面积真值，便于看口径差；
+- `truth` 按各算法自己的定义：classic 是分段加权，adaptive / cat 是曲线面积；
+  报告同时给出面积真值，便于看口径差（例如 θ=6,000 的面积真值是 6,584，不是 6,000）；
 - 2026-11-14（每个能力点 30 次）：
 
-| θ | classic | adaptive | adaptive2 | cat |
-| --- | --- | --- | --- | --- |
-| 6,000 | 4,898（−21.4%） | 5,911（−1.5%） | 6,456（−1.9%） | 6,084（+1.4%） |
-| 12,000 | 10,427（−13.3%） | 11,598（−3.4%） | 12,003（−3.2%） | 11,678（−2.7%） |
-| 18,000 | 16,670（−6.8%） | 17,197（−4.5%） | 17,388（−4.6%） | 17,234（−4.3%） |
+| θ | classic | adaptive | cat |
+| --- | --- | --- | --- |
+| 6,000 | 5,060（−18.8%） | 6,355（−3.5%） | 6,805（+3.4%） |
+| 12,000 | 11,143（−7.4%） | 11,809（−4.8%） | 12,061（−2.7%） |
+| 18,000 | 16,770（−6.2%） | 17,407（−4.5%） | 17,324（−5.0%） |
 
-  classic 的片段门槛（Wilson 下界 ≤ 12% 计 0）导致系统性低估；adaptive2 的
-  波动最小（SD 600–700），cat 题量最少（56–76 题），adaptive 与 adaptive2 同题量
-  但 SD 略高；adaptive / cat 的高能力端偏差主要来自先验向 1,000 收缩。
+  classic 的片段门槛（Wilson 下界 ≤ 12% 计 0）导致系统性低估；adaptive 的
+  SD 最小（约 520–820）但固定答满 80 题，cat 用 SE 停止把题量压到 ~70 题、
+  SD 略大（约 720–790）；两套 EAP 的高能力端偏差主要来自先验向 1,000 收缩。

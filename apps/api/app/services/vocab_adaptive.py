@@ -1,25 +1,28 @@
-"""自适应词汇量测试：贝叶斯 EAP 能力估计。
+"""自适应词汇量测试：二维贝叶斯 EAP（θ + α）。
 
 算法参考 dict.eudic.net 的词汇量测试（逆向分析见
 ``docs/eudic-vocab-algorithm.md``），但把原版的 Elo 式增量更新换成了
-**网格贝叶斯 EAP**：
+**网格贝叶斯 EAP**，并把能力扩展为两个参数：
 
-    p(θ) = sigmoid((θ - (1000 * level + 100)) / 2500)
-    posterior(θ) ∝ prior(θ) × Π likelihood(θ | 每题结果)
+    p(know) = sigmoid(α × (θ - b) / 2500)
 
-- 答对：likelihood = c + (1 - c) * p(θ)，c 为有效猜测率
-- 答错：likelihood = (1 - c) * (1 - p(θ))
-- 不认识：likelihood = (1 - p(θ)) ** 0.625（延续原版的软惩罚）
+- **θ**：50% 认识阈值（分数尺度，0–25,000）
+- **α**：个人区分度，相对基准斜率 ``1/2500`` 的倍数，1.0 与单参数模型相同
 
-得分取后验均值，95% 区间取「后验标准误 + 换题方差下限」。
-因为后验是各题似然的乘积，**给定答过的题和结果，最终得分与作答顺序无关**，
-不再受 Elo 步长衰减和路径依赖影响。选词仍沿用原版的档位偏移与探顶启发式。
+单参数模型假设所有人的「认识概率—词频」曲线斜率相同，对曲线平缓的用户会把
+同一批答案读成明显更高的 θ；二维模型让数据同时决定水平与斜率，词汇量取曲线
+下面积：
 
-题目为「3 个中文释义 + 以上都不对」，另有独立的「不认识」按钮（前端已有的
-第五个操作）。约 75% 的题会把正确释义放进前三个选项，25% 的题三个释义全错、
-正确答案是「以上都不对」。连续答对 4 题后进入「探顶」，跳到更高词频档位。
+    词汇量 = Σ_level 1000 × sigmoid(α × (θ - b_level) / 2500)
 
-与 ``vocab.py``（固定分层抽样）保持相同的对外接口，供路由按开关切换。
+- 答对：likelihood = c + (1 - c) * p，c 为有效猜测率
+- 答错：likelihood = (1 - c) * (1 - p)
+- 不认识：likelihood = (1 - p) ** 0.625（延续原版的软惩罚）
+
+选词沿用原版的档位偏移与探顶启发式：连续答对 4 题后跳到更高档位探顶，两次
+探顶之间至少间隔 8 题。题目为「3 个中文释义 + 以上都不对」，另有独立的
+「不认识」按钮。2026-11f 起 ``adaptive2`` 合并进本算法，只作为旧名字保留在
+路由别名与历史记录里。
 """
 from __future__ import annotations
 
@@ -41,7 +44,7 @@ from . import vocab_trend
 # —— 拟合得到的算法常数（见 docs/eudic-vocab-algorithm.md §4）——
 LEVEL_WIDTH = 1000          # 每个词频档约 1000 词
 LEVEL_OFFSET = 100          # 档位难度偏移
-SCALE = 2500                # logistic 斜率（分）
+SCALE = 2500                # logistic 基准斜率（分）
 UNKNOWN_LIKELIHOOD_POWER = 0.625  # 「不认识」的软惩罚：似然取 (1-p)^0.625
 # 有效猜测率：4 选 1 的 0.25 乘以「不会时仍选择猜」的比例（观测约 0.45–0.5）。
 # 直接用 0.25 会把「不认识」的诚实作答也当成一定蒙对，导致系统性高估。
@@ -59,11 +62,15 @@ PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
 MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
 PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11c"
+ALGO_VERSION = "2026-11f"
 
-# —— 后验网格：0~25000 分，步长 50（501 个点）——
+# —— 后验网格：θ 为 0~25000 分、步长 50（501 个点）；α 为相对斜率的 9 档 ——
 GRID_STEP = 50
 GRID = tuple(float(i * GRID_STEP) for i in range(MAX_SCORE // GRID_STEP + 1))
+# 下界 0.25 避免曲线很平的用户把 α 顶在网格边界上。
+ALPHA_GRID = (0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.25, 1.6, 2.0)
+N_ALPHA = len(ALPHA_GRID)
+ALPHA_PRIOR_LOG_SD = 0.35       # log α 先验标准差：弱信息，数据可主导
 # 弱信息先验：均值 1000、标准差 3000，截断在 [0, 25000]。
 # 均值低是为了让前几题从高频词缓慢爬升，标准差大保证数据能主导估计。
 PRIOR_MEAN = 1000.0
@@ -81,9 +88,18 @@ RULES = (
     "认识就选正确意思，不认识请点「不认识」。诚实作答，测评更准。"
 )
 RESULT_MESSAGE = (
-    "词汇量按自适应 IRT（贝叶斯 EAP）估计：每答一题，根据当前分数与题目难度"
-    "更新后验，连续答对会挑战更高词频档位。最少 20 题即可查看结果，继续答会更稳。"
+    "词汇量按双参数 IRT（θ + α）估计：不仅估计你的水平，还估计你的"
+    "「认识概率—词频」曲线斜率，再对整条曲线积分得到词汇量。"
+    "最少 20 题即可查看结果，继续答会更稳。"
 )
+
+# adaptive2 / eudic 都是旧名字：日志与历史统一写 adaptive。
+_ALGO_ALIASES = {"adaptive2": "adaptive", "eudic": "adaptive"}
+
+
+def canonical_algo(algo: str) -> str:
+    """把旧算法名（adaptive2 / eudic）归一化为 adaptive。"""
+    return _ALGO_ALIASES.get(algo, algo)
 
 
 def sigmoid(x: float) -> float:
@@ -182,30 +198,38 @@ def _make_question(level: int, rng: random.Random, avoid: set) -> dict:
 
 
 def _prior_log_post(
-    mean: Optional[float] = None, sd: Optional[float] = None
+    theta_mean: Optional[float] = None, theta_sd: Optional[float] = None
 ) -> list[float]:
-    """先验的对数密度（未归一化；每次更新后会重新归一化）。
+    """(θ, α) 二维先验：θ ~ N(mean, sd²)，log α ~ N(0, 0.35²)。
 
     默认是 N(PRIOR_MEAN, PRIOR_SD)。有历史成绩时，``start_test`` 会传入一个
     以历史档位为均值、``sd ≥ HISTORY_PRIOR_MIN_SD`` 的宽先验：它只决定起点，
-    数据很快就能把它拉开，不会像旧版紧先验那样让短测试照抄旧分。
+    数据很快就能把它拉开。
     """
-    mean = PRIOR_MEAN if mean is None else mean
-    sd = PRIOR_SD if sd is None else max(300.0, sd)
-    return [-0.5 * ((g - mean) / sd) ** 2 for g in GRID]
+    mean = PRIOR_MEAN if theta_mean is None else theta_mean
+    sd = PRIOR_SD if theta_sd is None else max(300.0, theta_sd)
+    out: list[float] = []
+    for theta in GRID:
+        t_prior = -0.5 * ((theta - mean) / sd) ** 2
+        for alpha in ALPHA_GRID:
+            a_prior = -0.5 * (math.log(alpha) / ALPHA_PRIOR_LOG_SD) ** 2
+            out.append(t_prior + a_prior)
+    return out
 
 
 @dataclass
 class AdaptiveSession:
     id: str
     rng: random.Random = field(default_factory=random.Random)
-    score: float = 0.0
+    score: float = 0.0          # θ 后验均值（50% 认识阈值）
+    alpha: float = 1.0          # α 后验均值（相对基准斜率）
+    se: float = 0.0             # θ 后验标准差
+    alpha_se: float = 0.0
     total: int = 0
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    log_post: list = field(default_factory=_prior_log_post)  # 归一化后的对数后验
-    se: float = 0.0            # 后验标准差（分）
+    log_post: list = field(default_factory=_prior_log_post)  # (θ, α) 二维
     streak: int = 0
     probe_remaining: int = 0
     probe_level: int = 0
@@ -218,7 +242,7 @@ class AdaptiveSession:
     finished: bool = False
     user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
     recorded: bool = False                           # 历史只记一次
-    start_level: Optional[int] = None                # 历史成绩只决定起点（首题档位 + 宽先验均值）
+    start_level: Optional[int] = None                # 历史成绩只决定起点
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
@@ -248,14 +272,11 @@ def _select_level(sess: AdaptiveSession) -> int:
     if sess.probe_remaining > 0:
         return sess.probe_level
     # 连续答对 4 题即可再次探顶，但两次探顶之间至少间隔 PROBE_COOLDOWN 题。
-    # 旧实现只允许「首次探顶失败后 6 题内」补探，用户后程才进入状态时永远
-    # 触发不了第二次探顶，导致分数被压在低档位（实测 36/50 正确只有 8130）。
     can_probe = (
         sess.probes_used < MAX_PROBES
         and (sess.probes_used == 0 or sess.total - sess.last_probe_end_n >= PROBE_COOLDOWN)
     )
     if sess.streak >= 4 and can_probe:
-        # 连续答对 4 题后探顶：跳到当前档位上方 3~4 档，最多 6 题。
         sess.probe_remaining = PROBE_QUESTIONS
         sess.probe_level = min(
             MAX_LEVEL, _base_level(sess) + 3 + sess.rng.choice([0, 1])
@@ -274,7 +295,7 @@ def _make_next(sess: AdaptiveSession) -> dict:
 
 
 def _normalize_log_post(sess: AdaptiveSession) -> None:
-    """把对数后验归一化，并整体平移使最大值为 0，避免数值下溢。"""
+    """把二维对数后验归一化，并整体平移使最大值为 0，避免数值下溢。"""
     peak = max(sess.log_post)
     weights = [math.exp(v - peak) for v in sess.log_post]
     log_z = math.log(sum(weights))
@@ -282,39 +303,94 @@ def _normalize_log_post(sess: AdaptiveSession) -> None:
 
 
 def _refresh_moments(sess: AdaptiveSession) -> None:
-    """从后验计算均值（得分）与标准差（不确定性）。"""
+    """从二维后验计算 θ / α 的均值与标准差。"""
     weights = [math.exp(v) for v in sess.log_post]
     total = sum(weights)
-    mean = sum(g * w for g, w in zip(GRID, weights)) / total
-    var = sum(w * (g - mean) ** 2 for g, w in zip(GRID, weights)) / total
-    sess.score = max(0.0, min(float(MAX_SCORE), mean))
-    sess.se = math.sqrt(max(var, 0.0))
+    theta_mean = alpha_mean = 0.0
+    for i, theta in enumerate(GRID):
+        row = weights[i * N_ALPHA:(i + 1) * N_ALPHA]
+        row_sum = sum(row)
+        theta_mean += theta * row_sum
+        for j, alpha in enumerate(ALPHA_GRID):
+            alpha_mean += alpha * row[j]
+    theta_mean /= total
+    alpha_mean /= total
+    var = 0.0
+    alpha_var = 0.0
+    for i, theta in enumerate(GRID):
+        row = weights[i * N_ALPHA:(i + 1) * N_ALPHA]
+        var += sum(row) * (theta - theta_mean) ** 2
+        for j, alpha in enumerate(ALPHA_GRID):
+            alpha_var += row[j] * (alpha - alpha_mean) ** 2
+    sess.score = max(0.0, min(float(MAX_SCORE), theta_mean))
+    sess.alpha = alpha_mean
+    sess.se = math.sqrt(max(var / total, 0.0))
+    sess.alpha_se = math.sqrt(max(alpha_var / total, 0.0))
 
 
 def _update_score(sess: AdaptiveSession, q: dict, outcome: str) -> None:
-    """按题目难度把本次作答的事实乘进后验。
+    """按题目难度把本次作答乘进 (θ, α) 二维后验。
 
-    答对用 p(θ)，答错用 1-p(θ)，「不认识」用 (1-p(θ))^0.625（软惩罚）。
     由于后验是各题似然的乘积，最终结果与作答顺序无关。
     """
     difficulty = LEVEL_WIDTH * q["level"] + LEVEL_OFFSET
     power = UNKNOWN_LIKELIHOOD_POWER if outcome == "unknown" else 1.0
     lp = sess.log_post
     for i, theta in enumerate(GRID):
-        p = sigmoid((theta - difficulty) / SCALE)
-        if outcome == "correct":
-            # 3PL：不会时仍可能蒙对，正确选项只提供部分证据。
-            lik = GUESS_RATE + (1.0 - GUESS_RATE) * p
-            lp[i] += math.log(max(lik, PROB_FLOOR))
-        elif outcome == "unknown":
-            # 明确表示不认识：按未掌握处理，保留原版的软惩罚。
-            lp[i] += power * math.log(max(1.0 - p, PROB_FLOOR))
-        else:
-            # 猜错：未掌握且没有蒙对。
-            lp[i] += math.log(max((1.0 - GUESS_RATE) * (1.0 - p), PROB_FLOOR))
+        base = i * N_ALPHA
+        for j, alpha in enumerate(ALPHA_GRID):
+            p = sigmoid(alpha * (theta - difficulty) / SCALE)
+            if outcome == "correct":
+                # 3PL：不会时仍可能蒙对，正确选项只提供部分证据。
+                lik = GUESS_RATE + (1.0 - GUESS_RATE) * p
+                lp[base + j] += math.log(max(lik, PROB_FLOOR))
+            elif outcome == "unknown":
+                # 明确表示不认识：按未掌握处理，保留原版的软惩罚。
+                lp[base + j] += power * math.log(max(1.0 - p, PROB_FLOOR))
+            else:
+                # 猜错：未掌握且没有蒙对。
+                lp[base + j] += math.log(
+                    max((1.0 - GUESS_RATE) * (1.0 - p), PROB_FLOOR)
+                )
     _normalize_log_post(sess)
     sess.total += 1
     _refresh_moments(sess)
+
+
+def _know_prob(theta: float, alpha: float, difficulty: float) -> float:
+    return sigmoid(alpha * (theta - difficulty) / SCALE)
+
+
+def _vocab_area(theta: float, alpha: float) -> float:
+    """曲线下面积：Σ 每档 1000 词 × 该档认识概率。"""
+    total = 0.0
+    for level in range(MAX_LEVEL + 1):
+        total += LEVEL_WIDTH * _know_prob(
+            theta, alpha, LEVEL_WIDTH * level + LEVEL_OFFSET
+        )
+    return total
+
+
+def _vocab_interval(sess: AdaptiveSession) -> list:
+    """词汇量（面积）的 95% 区间：对后验按面积加权取分位数。"""
+    weights = [math.exp(v) for v in sess.log_post]
+    pairs = []
+    for i, theta in enumerate(GRID):
+        base = i * N_ALPHA
+        for j, alpha in enumerate(ALPHA_GRID):
+            pairs.append((_vocab_area(theta, alpha), weights[base + j]))
+    pairs.sort(key=lambda x: x[0])
+    total = sum(w for _, w in pairs)
+    target_lo, target_hi = total * 0.025, total * 0.975
+    cum = 0.0
+    lo = hi = pairs[0][0]
+    for area, w in pairs:
+        cum += w
+        if cum <= target_lo:
+            lo = area
+        if cum <= target_hi:
+            hi = area
+    return [max(0, int(round(lo))), min(MAX_SCORE, int(round(hi)))]
 
 
 def _score_interval(sess: AdaptiveSession) -> list:
@@ -334,6 +410,10 @@ def _progress(sess: AdaptiveSession) -> dict:
     score = int(round(sess.score))
     return {
         "score": score if sess.total >= 1 else None,
+        "vocab_size": (
+            int(round(_vocab_area(sess.score, sess.alpha))) if sess.total else None
+        ),
+        "alpha": round(sess.alpha, 2),
         "total": sess.total,
         "correct": sess.correct,
         "unknown": sess.unknown,
@@ -341,11 +421,31 @@ def _progress(sess: AdaptiveSession) -> dict:
         "converged": sess.total >= 50,
         "level": _base_level(sess),
         "score_interval": _score_interval(sess),
+        "se": int(round(sess.se)),
+    }
+
+
+def _result(sess: AdaptiveSession) -> dict:
+    score = int(round(sess.score)) if sess.total else 0
+    area = _vocab_area(sess.score, sess.alpha) if sess.total else 0.0
+    return {
+        "vocab_size": int(round(area / 10) * 10),
+        "score": score,
+        "alpha": round(sess.alpha, 2),
+        "total": sess.total,
+        "correct": sess.correct,
+        "unknown": sess.unknown,
+        "wrong": sess.wrong,
+        "ready": sess.total >= MIN_QUESTIONS,
+        "score_interval": _score_interval(sess),
+        "vocab_interval": _vocab_interval(sess) if sess.total else [0, 0],
+        "se": int(round(sess.se)),
+        "message": RESULT_MESSAGE,
     }
 
 
 def _log_answer(sess: AdaptiveSession, q: dict, response: str) -> None:
-    """追加一条评测记录（JSONL），供离线分析。日志失败不影响评测。"""
+    """追加一条评测记录（JSONL），供离线分析与题库标定。日志失败不影响评测。"""
     try:
         path = Path(settings.vocab_log_path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -368,6 +468,7 @@ def _log_answer(sess: AdaptiveSession, q: dict, response: str) -> None:
             "include_correct": q["correct_index"] != 3,
             "elapsed_ms": elapsed_ms,
             "score": int(round(sess.score)),
+            "alpha": round(sess.alpha, 3),
             "se": int(round(sess.se)),
         }
         with open(path, "a", encoding="utf-8") as f:
@@ -376,19 +477,27 @@ def _log_answer(sess: AdaptiveSession, q: dict, response: str) -> None:
         pass
 
 
-def _result(sess: AdaptiveSession) -> dict:
-    score = int(round(sess.score)) if sess.total else 0
-    return {
-        "vocab_size": int(round(sess.score / 10) * 10),
-        "score": score,
-        "total": sess.total,
-        "correct": sess.correct,
-        "unknown": sess.unknown,
-        "wrong": sess.wrong,
-        "ready": sess.total >= MIN_QUESTIONS,
-        "score_interval": _progress(sess)["score_interval"],
-        "message": RESULT_MESSAGE,
-    }
+def _record(sess: AdaptiveSession) -> None:
+    """把完成的测评写进用户历史（幂等；匿名/题量不足不记）。"""
+    if sess.recorded or not sess.user_id or sess.total < MIN_QUESTIONS:
+        return
+    sess.recorded = True
+    result = _result(sess)
+    vocab_tests.add(sess.user_id, {
+        "ts": round(time.time(), 3),
+        "algo": "adaptive",
+        "algo_version": ALGO_VERSION,
+        "score": result["score"],
+        "vocab_size": result["vocab_size"],
+        "alpha": result["alpha"],
+        "total": result["total"],
+        "correct": result["correct"],
+        "wrong": result["wrong"],
+        "unknown": result["unknown"],
+        "se": result["se"],
+        "score_interval": result["score_interval"],
+        "vocab_interval": result["vocab_interval"],
+    })
 
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
@@ -482,27 +591,6 @@ def submit_answer(sess: AdaptiveSession, choice: Optional[int], unknown: bool) -
         **progress,
         "question": _public(sess.current),
     }
-
-
-def _record(sess: AdaptiveSession) -> None:
-    """把完成的测评写进用户历史（幂等；匿名/题量不足不记）。"""
-    if sess.recorded or not sess.user_id or sess.total < MIN_QUESTIONS:
-        return
-    sess.recorded = True
-    result = _result(sess)
-    vocab_tests.add(sess.user_id, {
-        "ts": round(time.time(), 3),
-        "algo": "adaptive",
-        "algo_version": ALGO_VERSION,
-        "score": result["score"],
-        "vocab_size": result["vocab_size"],
-        "total": result["total"],
-        "correct": result["correct"],
-        "wrong": result["wrong"],
-        "unknown": result["unknown"],
-        "se": int(round(sess.se)),
-        "score_interval": result["score_interval"],
-    })
 
 
 def finish_test(sess: AdaptiveSession) -> dict:
