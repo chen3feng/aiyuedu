@@ -140,17 +140,29 @@ def test_adaptive2_second_question_keeps_history_level(store):
     assert sess.current["level"] >= 9
 
 
-def test_cat_start_level_uses_history(store):
+def test_cat_start_level_is_capped(store):
+    """CAT 历史起点封顶在 8 档，避免窄选题窗口锁死在高频段造成 runaway。"""
     now = time.time()
     _add("u1", now - 86400, 16000, 16000, algo="cat")
     sid, question, _ = cat.start_test(user_id="u1")
     sess = cat.get_session(sid)
-    assert sess.start_level == 16
+    assert cat.MAX_HISTORY_START_LEVEL == 8
+    assert sess.start_level == 8
+    assert question["level"] == 8
     assert sess.log_post == pytest.approx(
-        adaptive._prior_log_post(16100, adaptive.HISTORY_PRIOR_MIN_SD)
+        adaptive._prior_log_post(8100, adaptive.HISTORY_PRIOR_MIN_SD)
     )
     cat.submit_answer(sess, None, True)
-    assert sess.current["rank"] >= 9000
+    assert 5000 <= sess.current["rank"] <= 11000
+
+
+def test_cat_start_level_uses_lower_history(store):
+    now = time.time()
+    _add("u1", now - 86400, 5000, 5000, algo="cat")
+    sid, question, _ = cat.start_test(user_id="u1")
+    sess = cat.get_session(sid)
+    assert sess.start_level == 5
+    assert question["level"] == 5
 
 
 def test_prior_can_be_disabled(store, monkeypatch):

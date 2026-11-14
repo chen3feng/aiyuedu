@@ -168,3 +168,48 @@ def test_answer_log_records_estimation_fields(tmp_path, monkeypatch):
     assert rec["elapsed_ms"] is None
     assert isinstance(rec["se"], int)
     assert rec["b"] > 0 and rec["a"] > 0
+
+
+def _flat_curve_score(start_level: int, seed: int) -> float:
+    """模拟一条很平的知识曲线（θ=16,281、α≈0.28），返回 CAT 估计。
+
+    参数来自一个真实用户 1,682 条历史作答的二维拟合。该用户从高起点做 CAT
+    时前两场分别得到 16,928 / 16,194；封顶到 8 档后应回到 13,000–15,000。
+    """
+    import random
+
+    rng = random.Random(seed)
+    sess = cat.CatSession(
+        id=f"flat-{start_level}-{seed}",
+        rng=rng,
+        start_level=start_level,
+        log_post=cat._adaptive._prior_log_post(start_level * 1000 + 100, 4000),
+    )
+    sess.current = cat._make_question(cat._pick_item(sess), rng)
+    sess.recent.append(sess.current["word"])
+    while not sess.finished:
+        q = sess.current
+        p = cat._adaptive.sigmoid((16281.0 - q["b"]) / 8929.0)
+        if rng.random() < p:
+            choice, unknown = q["correct_index"], False
+        elif rng.random() < 0.48:
+            if rng.random() < 0.25:
+                choice = q["correct_index"]
+            else:
+                choice = (q["correct_index"] + 1 + rng.randrange(3)) % 4
+            unknown = False
+        else:
+            choice, unknown = None, True
+        cat.submit_answer(sess, choice, unknown)
+    return sess.score
+
+
+def test_low_start_avoids_flat_curve_runaway():
+    """同一条平缓曲线，8 档起步不应再被 16 档起步的固定斜率推向 16k+。"""
+    import statistics
+
+    low = [_flat_curve_score(8, seed) for seed in range(10)]
+    high = [_flat_curve_score(16, seed) for seed in range(10)]
+    assert statistics.mean(low) < 15500
+    assert statistics.mean(high) > 16000
+    assert statistics.mean(low) < statistics.mean(high) - 1500
