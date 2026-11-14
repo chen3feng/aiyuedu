@@ -386,8 +386,8 @@ score_interval = [score - half, score + half]
 | 项目 | adaptive | cat |
 | --- | --- | --- |
 | 难度 | 1000 词一档，档内同难度 | 精确词频 rank |
-| 模型 | 一维 EAP（θ） | 二维 EAP（θ, α），同 adaptive2 |
-| 词汇量 | θ（50% 阈值） | 曲线面积 Σ 1000 × P(know) |
+| 模型 | 二维 EAP（θ, α），同 adaptive2（2026-11f 起） | 二维 EAP（θ, α），同 adaptive2 |
+| 词汇量 | 曲线面积 Σ 1000 × P(know) | 曲线面积 Σ 1000 × P(know) |
 | 选题 | 档位 ±1 + 连对探顶 | 当前能力附近按 3PL Fisher 信息量选题；第 5、10、15… 题插入跨档锚题（2 / 6 / 10 / 14 / 18 / 22 档轮换） |
 | 曝光 | 档内随机 | 信息量最高的 12 题中加权随机，避免重复 |
 | 参数来源 | 固定档位映射 | 词频先验；可被 `data/calibration/vocab_cat_items.json` 覆盖 |
