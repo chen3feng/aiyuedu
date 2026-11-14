@@ -231,11 +231,9 @@ function algoLabel(algo: string) {
   const a = normalizeAlgo(algo);
   return a === "cat"
     ? t("assessment.algoCat")
-    : a === "adaptive2"
-      ? t("assessment.algoAdaptive2")
-      : a === "adaptive"
-        ? t("assessment.algoAdaptive")
-        : t("assessment.algoClassic");
+    : a === "adaptive"
+      ? t("assessment.algoAdaptive")
+      : t("assessment.algoClassic");
 }
 </script>
 
@@ -380,9 +378,6 @@ function algoLabel(algo: string) {
 .trend-bar.bar-adaptive {
   background: var(--brand);
 }
-.trend-bar.bar-adaptive2 {
-  background: #9a6bff;
-}
 .trend-bar.bar-cat {
   background: var(--success);
 }
@@ -411,9 +406,6 @@ function algoLabel(algo: string) {
 }
 .legend-dot.dot-adaptive {
   background: var(--brand);
-}
-.legend-dot.dot-adaptive2 {
-  background: #9a6bff;
 }
 .legend-dot.dot-cat {
   background: var(--success);

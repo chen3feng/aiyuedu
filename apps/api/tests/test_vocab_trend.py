@@ -5,7 +5,6 @@ import pytest
 
 from app.config import settings
 from app.services import vocab_adaptive as adaptive
-from app.services import vocab_adaptive2 as adaptive2
 from app.services import vocab_cat as cat
 from app.services import vocab_tests
 from app.services import vocab_trend
@@ -72,7 +71,7 @@ def test_trend_uses_latest_algo(store):
     _add("u1", now - 10 * 86400, 9000, 9000, algo="cat")
     _add("u1", now, 12000, 12000, algo="adaptive2")
     result = vocab_trend.trend("u1")
-    assert result["algo"] == "adaptive2"
+    assert result["algo"] == "adaptive"
     assert result["n"] == 1
 
 
@@ -144,44 +143,15 @@ def test_adaptive_second_question_keeps_history_level(store):
     assert sess.current["level"] >= 9
 
 
-def test_adaptive2_start_level_uses_history(store):
-    now = time.time()
-    _add("u1", now - 86400, 15000, 15000, algo="adaptive2")
-    sid, question, _ = adaptive2.start_test(user_id="u1")
-    sess = adaptive2.get_session(sid)
-    assert sess.start_level == 15
-    assert question["level"] == 15
-    adaptive2._refresh_moments(sess)
-    assert 13500 < sess.score < 16500
-    assert sess.log_post == pytest.approx(
-        adaptive2._prior_log_post(15100, adaptive.HISTORY_PRIOR_MIN_SD)
-    )
-
-
-def test_adaptive2_second_question_keeps_history_level(store):
-    now = time.time()
-    _add("u1", now - 86400, 16000, 16000, algo="adaptive2")
-    sid, _, _ = adaptive2.start_test(user_id="u1")
-    sess = adaptive2.get_session(sid)
-    adaptive2.submit_answer(sess, None, True)
-    assert sess.current["level"] >= 9
-
-
-def test_router_adaptive_uses_its_own_history(store):
-    """adaptive 与 adaptive2 共用二维引擎，但历史按算法名分开取。"""
+def test_router_adaptive_reads_old_adaptive2_history(store):
+    """adaptive2 并入 adaptive 后，旧记录按别名合并进 adaptive 历史。"""
     from app.routers import vocab as vocab_router
 
     now = time.time()
-    _add("u1", now - 86400, 12000, 12000, algo="adaptive")
     _add("u1", now - 86400, 18000, 18000, algo="adaptive2")
     resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="u1")
-    sess = adaptive2.get_session(resp["session_id"])
-    assert sess.algo == "adaptive"
-    assert sess.start_level == 12
-
-    resp = vocab_router.start(vocab_router.StartIn(algo="adaptive2"), user_id="u1")
-    sess = adaptive2.get_session(resp["session_id"])
-    assert sess.algo == "adaptive2"
+    assert resp["algo"] == "adaptive"
+    sess = adaptive.get_session(resp["session_id"])
     assert sess.start_level == 18
 
 
@@ -195,7 +165,7 @@ def test_cat_start_level_is_capped(store):
     assert sess.start_level == 8
     assert question["level"] == 8
     assert sess.log_post == pytest.approx(
-        cat._dual._prior_log_post(8100, adaptive.HISTORY_PRIOR_MIN_SD)
+        cat._adaptive._prior_log_post(8100, adaptive.HISTORY_PRIOR_MIN_SD)
     )
     cat.submit_answer(sess, None, True)
     assert 5000 <= sess.current["rank"] <= 11000
@@ -241,40 +211,28 @@ def _session(algo: str, total: int):
         return classic.TestSession(id="s", user_id="u1", total=total)
     if algo == "adaptive":
         return adaptive.AdaptiveSession(id="s", user_id="u1", total=total)
-    if algo == "adaptive2":
-        return adaptive2.Adaptive2Session(id="s", user_id="u1", total=total)
     return cat.CatSession(id="s", user_id="u1", total=total)
 
 
-@pytest.mark.parametrize("algo", ["classic", "adaptive", "adaptive2", "cat"])
+@pytest.mark.parametrize("algo", ["classic", "adaptive", "cat"])
 def test_short_sessions_not_recorded(store, algo):
     """不足 20 题的测试不写入历史（否则短测试会把先验原样记成一次成绩）。"""
     from app.services import vocab as classic
     from app.services import vocab_cat as cat
 
-    module = {
-        "classic": classic,
-        "adaptive": adaptive,
-        "adaptive2": adaptive2,
-        "cat": cat,
-    }[algo]
+    module = {"classic": classic, "adaptive": adaptive, "cat": cat}[algo]
     sess = _session(algo, total=19)
     module._record(sess)
     assert vocab_tests.count("u1") == 0
     assert sess.recorded is False
 
 
-@pytest.mark.parametrize("algo", ["classic", "adaptive", "adaptive2", "cat"])
+@pytest.mark.parametrize("algo", ["classic", "adaptive", "cat"])
 def test_full_sessions_recorded(store, algo):
     from app.services import vocab as classic
     from app.services import vocab_cat as cat
 
-    module = {
-        "classic": classic,
-        "adaptive": adaptive,
-        "adaptive2": adaptive2,
-        "cat": cat,
-    }[algo]
+    module = {"classic": classic, "adaptive": adaptive, "cat": cat}[algo]
     sess = _session(algo, total=20)
     module._record(sess)
     records = vocab_tests.list_tests("u1")

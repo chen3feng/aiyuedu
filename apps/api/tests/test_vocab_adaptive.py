@@ -16,7 +16,6 @@ from fastapi import HTTPException
 
 from app.routers import vocab as vocab_router
 from app.services import vocab, vocab_adaptive as adaptive
-from app.services import vocab_adaptive2 as adaptive2
 
 
 # ---------- 档位与题目 ----------
@@ -312,11 +311,8 @@ def test_router_start_adaptive_creates_adaptive_session():
     resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="")
     assert resp["algo"] == "adaptive"
     sid = resp["session_id"]
-    # 2026-11f 起 adaptive 也走 (θ, α) 二维引擎，但历史/日志口径仍是 adaptive。
-    sess = adaptive2.get_session(sid)
+    sess = adaptive.get_session(sid)
     assert sess is not None
-    assert sess.algo == "adaptive"
-    assert adaptive.get_session(sid) is None
     assert vocab.get_session(sid) is None
     assert len(resp["question"]["options"]) == 4
     assert resp["question"]["options"][3] == adaptive.NONE_OF_ABOVE
@@ -332,14 +328,14 @@ def test_router_adaptive_logs_dual_engine_under_adaptive_name(monkeypatch, tmp_p
     monkeypatch.setattr(settings, "vocab_log_path", str(log))
     resp = vocab_router.start(vocab_router.StartIn(algo="adaptive"), user_id="u1")
     sid = resp["session_id"]
-    sess = adaptive2.get_session(sid)
+    sess = adaptive.get_session(sid)
     q = sess.current
     vocab_router.answer(vocab_router.AnswerIn(
         session_id=sid, choice=q["correct_index"], unknown=False
     ))
     rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
     assert rec["algo"] == "adaptive"
-    assert rec["algo_version"] == adaptive2.ALGO_VERSION
+    assert rec["algo_version"] == adaptive.ALGO_VERSION
     assert "alpha" in rec
 
 
@@ -365,10 +361,87 @@ def test_router_accepts_legacy_eudic_alias():
     """算法改名前的客户端/本地缓存仍会传 "eudic"，路由应归一化为 adaptive。"""
     resp = vocab_router.start(vocab_router.StartIn(algo="eudic"), user_id="")
     assert resp["algo"] == "adaptive"
-    assert adaptive2.get_session(resp["session_id"]) is not None
+    assert adaptive.get_session(resp["session_id"]) is not None
 
 
 def test_router_rejects_unknown_algo():
     with pytest.raises(HTTPException) as exc:
         vocab_router.start(vocab_router.StartIn(algo="nope"))
     assert exc.value.status_code == 400
+
+
+# ---------- 二维 (θ, α) 估计 ----------
+
+def _simulate_2d(theta: float, alpha: float, n: int = 120, seed: int = 0):
+    """按已知 (θ, α) 在 θ 附近的多个档位上生成作答。"""
+    rng = random.Random(seed)
+    sess = adaptive.AdaptiveSession(id="x", rng=rng)
+    base = int(theta // adaptive.LEVEL_WIDTH)
+    for _ in range(n):
+        level = max(0, min(24, base + rng.choice([-4, -3, -2, -1, 0, 1, 2, 3, 4])))
+        b = adaptive.LEVEL_WIDTH * level + adaptive.LEVEL_OFFSET
+        p = adaptive.sigmoid(alpha * (theta - b) / adaptive.SCALE)
+        prob = adaptive.GUESS_RATE + (1 - adaptive.GUESS_RATE) * p
+        r = rng.random()
+        outcome = "correct" if r < prob else ("unknown" if r < prob + 0.08 else "wrong")
+        adaptive._update_score(
+            sess,
+            {"level": level, "rank": level * 1000 + 1, "correct_index": 0},
+            outcome,
+        )
+    return sess
+
+
+@pytest.mark.parametrize(
+    "theta,alpha",
+    [(5000, 0.5), (12000, 1.0), (18000, 1.6)],
+)
+def test_recovers_theta_and_alpha(theta, alpha):
+    sess = _simulate_2d(theta, alpha)
+    assert abs(sess.score - theta) < 1500
+    assert abs(sess.alpha - alpha) < 0.5
+
+
+def test_flat_curve_has_larger_area_at_low_ability():
+    """θ 较低时，曲线越平缓（α 小），词汇量面积越大。"""
+    flat = adaptive._vocab_area(3000, 0.5)
+    steep = adaptive._vocab_area(3000, 2.0)
+    assert flat > steep
+
+
+def test_vocab_interval_contains_point_estimate():
+    sess = _simulate_2d(10000, 1.0, n=60)
+    lo, hi = adaptive._vocab_interval(sess)
+    area = adaptive._vocab_area(sess.score, sess.alpha)
+    assert lo <= area <= hi
+    assert lo < hi
+
+
+def test_progress_exposes_alpha_and_area():
+    sess = adaptive.AdaptiveSession(id="x")
+    adaptive._update_score(
+        sess, {"level": 10, "rank": 10001, "correct_index": 0}, "correct"
+    )
+    prog = adaptive._progress(sess)
+    assert prog["alpha"] > 0
+    assert prog["vocab_size"] > 0
+    assert prog["score"] is not None
+
+
+def test_router_adaptive2_is_alias_of_adaptive():
+    """adaptive2 已并入 adaptive：路由归一化，历史与日志都写 adaptive。"""
+    resp = vocab_router.start(vocab_router.StartIn(algo="adaptive2"), user_id="")
+    assert resp["algo"] == "adaptive"
+    sess = adaptive.get_session(resp["session_id"])
+    assert sess is not None
+    assert len(resp["question"]["options"]) == 4
+
+
+def test_finish_is_idempotent_and_result_has_alpha():
+    sid, _, _ = adaptive.start_test()
+    sess = adaptive.get_session(sid)
+    adaptive.submit_answer(sess, sess.current["correct_index"], False)
+    first = adaptive.finish_test(sess)
+    second = adaptive.finish_test(sess)
+    assert first == second
+    assert "alpha" in first and "vocab_interval" in first

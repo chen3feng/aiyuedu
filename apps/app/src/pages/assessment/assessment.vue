@@ -21,11 +21,6 @@
               >{{ t("assessment.algoAdaptive") }}</text>
               <text
                 class="algo-chip"
-                :class="{ active: algo === 'adaptive2' }"
-                @click="setAlgo('adaptive2')"
-              >{{ t("assessment.algoAdaptive2") }}</text>
-              <text
-                class="algo-chip"
                 :class="{ active: algo === 'cat' }"
                 @click="setAlgo('cat')"
               >{{ t("assessment.algoCat") }}</text>
@@ -118,9 +113,8 @@ const phase = ref<Phase>("intro");
 const loading = ref(false);
 const error = ref("");
 const sessionId = ref("");
-// 算法开关：classic = 固定分层抽样，adaptive = 自适应 IRT，
-// adaptive2 = 双参数 θ+α，cat = 词频 CAT。
-// 首次进入默认用自适应，方便先测新算法；可随时切回经典。
+// 算法开关：classic = 固定分层抽样，adaptive = 双参数自适应（θ+α），
+// cat = 词频 CAT。adaptive2 已并入 adaptive，旧缓存/旧历史由 normalizeAlgo 归一化。
 const ALGO_KEY = "vocab_algo";
 const algo = ref<VocabAlgo>(normalizeAlgo(uni.getStorageSync(ALGO_KEY) as string));
 function setAlgo(v: VocabAlgo) {
@@ -134,22 +128,18 @@ const algoHint = computed(() => {
   return t(
     v === "cat"
       ? "assessment.algoCatHint"
-      : v === "adaptive2"
-        ? "assessment.algoAdaptive2Hint"
-        : v === "adaptive"
-          ? "assessment.algoAdaptiveHint"
-          : "assessment.algoClassicHint",
+      : v === "adaptive"
+        ? "assessment.algoAdaptiveHint"
+        : "assessment.algoClassicHint",
   );
 });
 function algoLabel(v: string) {
   const a = normalizeAlgo(v);
   return a === "cat"
     ? t("assessment.algoCat")
-    : a === "adaptive2"
-      ? t("assessment.algoAdaptive2")
-      : a === "adaptive"
-        ? t("assessment.algoAdaptive")
-        : t("assessment.algoClassic");
+    : a === "adaptive"
+      ? t("assessment.algoAdaptive")
+      : t("assessment.algoClassic");
 }
 // 作为 AssessmentQuiz 的初始数据（start 返回），之后状态由组件自管
 const question = ref<Question>({ word: "", options: [] });

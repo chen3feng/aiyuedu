@@ -25,9 +25,15 @@ BASE_SD = 1500.0
 PRIOR_GROWTH_PER_DAY = 15.0
 PRIOR_MAX_AGE_DAYS = 180
 PRIOR_MAX_SD = BASE_SD * 3
-# 只有这三套算法有 θ 分数；classic 是面积口径，不参与趋势/先验
-THETA_ALGOS = {"adaptive", "adaptive2", "cat"}
+# 只有这两套算法有 θ 分数；classic 是面积口径，不参与趋势/先验。
+# adaptive2 在 2026-11f 并入 adaptive，只作为历史记录里的旧名字出现在别名表。
+THETA_ALGOS = {"adaptive", "cat"}
+_ALGO_ALIASES = {"eudic": "adaptive", "adaptive2": "adaptive"}
 Z95 = 1.96
+
+
+def _canonical_algo(algo: Optional[str]) -> Optional[str]:
+    return _ALGO_ALIASES.get(algo or "", algo)
 
 
 def _normal_cdf(x: float) -> float:
@@ -37,8 +43,9 @@ def _normal_cdf(x: float) -> float:
 def _records(user_id: Optional[str], algo: Optional[str]) -> list[dict]:
     items = vocab_tests.list_tests(user_id)
     if algo:
-        items = [r for r in items if r.get("algo") == algo]
-    return [r for r in items if r.get("algo") in THETA_ALGOS]
+        algo = _canonical_algo(algo)
+        items = [r for r in items if _canonical_algo(r.get("algo")) == algo]
+    return [r for r in items if _canonical_algo(r.get("algo")) in THETA_ALGOS]
 
 
 def _sigma(rec: dict) -> float:
@@ -53,9 +60,14 @@ def trend(user_id: Optional[str], algo: Optional[str] = None) -> dict:
     all_records = vocab_tests.list_tests(user_id)
     if not algo:
         algo = next(
-            (r.get("algo") for r in all_records if r.get("algo") in THETA_ALGOS),
+            (
+                _canonical_algo(r.get("algo"))
+                for r in all_records
+                if _canonical_algo(r.get("algo")) in THETA_ALGOS
+            ),
             None,
         )
+    algo = _canonical_algo(algo)
     records = _records(user_id, algo)
     records = [r for r in records if isinstance(r.get("vocab_size"), (int, float))]
     # 口径变化后不跨版本比较：例如 adaptive 在 2026-11f 从 θ 改为曲线面积，
@@ -136,7 +148,10 @@ def trend(user_id: Optional[str], algo: Optional[str] = None) -> dict:
 
 
 def history_prior(user_id: Optional[str], algo: str) -> Optional[dict]:
-    """最近一次同算法测试的 θ 先验；无历史或过旧时返回 None。"""
+    """最近一次同算法测试的 θ 先验；无历史或过旧时返回 None。
+
+    ``adaptive2`` 是 ``adaptive`` 的旧名字，读取历史时按别名合并。
+    """
     records = _records(user_id, algo)
     if not records:
         return None

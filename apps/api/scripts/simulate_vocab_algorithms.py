@@ -8,9 +8,8 @@
   - 认识 → 选对；不认识 → 以 `--guess-prop` 的概率尝试猜（猜对率 25%），
     否则点「不认识」。有效蒙对率约 0.48 × 0.25 = 0.12，与算法的 GUESS_RATE 一致。
 
-注意四种算法报的「真值」定义不同：
-  - classic / adaptive / adaptive2 / cat 都报词汇量（classic = 分段加权，
-    其余 = 曲线面积）；2026-11f 起 adaptive 也使用 (θ, α) 二维引擎。
+注意三种算法报的「真值」定义不同：
+  - classic 报词汇量（分段加权），adaptive / cat 报曲线面积。
 报告里按各自定义给真值（`truth`），并另外列出面积真值供参考。
 
 用法：
@@ -33,11 +32,11 @@ ROOT = Path(__file__).resolve().parents[3]   # 仓库根目录
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.services import vocab  # noqa: E402
-from app.services import vocab_adaptive2 as adaptive2  # noqa: E402
+from app.services import vocab_adaptive as adaptive  # noqa: E402
 from app.services import vocab_cat as cat  # noqa: E402
 
-ALGOS = ("classic", "adaptive", "adaptive2", "cat")
-MODULES = {"classic": vocab, "adaptive": adaptive2, "adaptive2": adaptive2, "cat": cat}
+ALGOS = ("classic", "adaptive", "cat")
+MODULES = {"classic": vocab, "adaptive": adaptive, "cat": cat}
 MAX_STEPS = 200
 
 
@@ -47,7 +46,7 @@ def p_know(theta: float, rank: float, scale: float) -> float:
 
 
 def area_truth(theta: float, scale: float) -> float:
-    """词汇量真值（面积口径，与 adaptive2 一致）：25 档 × 1,000 词。"""
+    """词汇量真值（面积口径，与 adaptive/cat 一致）：25 档 × 1,000 词。"""
     return sum(1000 * p_know(theta, 1000 * lv + 100, scale) for lv in range(25))
 
 
@@ -79,10 +78,7 @@ def run_session(
 ) -> tuple[float, int]:
     """跑完一次完整测评，返回 (vocab_size, 题量)。"""
     mod = MODULES[alg]
-    if alg in ("adaptive", "adaptive2"):
-        sid, _, _ = mod.start_test(algo=alg)
-    else:
-        sid, _, _ = mod.start_test()
+    sid, _, _ = mod.start_test()
     sess = mod.get_session(sid)
     for _ in range(MAX_STEPS):
         q = sess.current
@@ -118,7 +114,6 @@ def simulate(
         truth = {
             "classic": out["classic_truth"],
             "adaptive": out["area_truth"],
-            "adaptive2": out["area_truth"],
             "cat": out["area_truth"],
         }[alg]
         mean = statistics.mean(ests)
@@ -134,7 +129,7 @@ def simulate(
 
 
 def print_report(results: list[dict], algos: tuple[str, ...]) -> None:
-    print("真值口径：classic=分段加权，adaptive/adaptive2/cat=曲线面积")
+    print("真值口径：classic=分段加权，adaptive/cat=曲线面积")
     print(f"{'theta':>6} {'alg':<10} {'mean':>7} {'sd':>6} {'q':>5} {'truth':>7} "
           f"{'bias':>7} {'bias%':>6}")
     for r in results:

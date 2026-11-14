@@ -1,14 +1,14 @@
-"""四种词汇量估计器的离线反事实回放（标定 #40 的配套分析）。
+"""三种词汇量估计器的离线反事实回放（标定 #40 的配套分析）。
 
-把日志里同一条作答序列（rank + response）分别喂给 classic / adaptive /
-adaptive2 / cat，比较四者的最终估计。这样排除了「不同天、不同状态、不同
-选题」的干扰，只剩估计量本身的差异，用来回答：
+把日志里同一条作答序列（rank + response）分别喂给 classic / adaptive / cat，
+比较三者的最终估计。这样排除了「不同天、不同状态、不同选题」的干扰，只剩
+估计量本身的差异，用来回答：
 
-1. 四种算法的结果是否一致、偏差有多大；
-2. adaptive2 的（θ, α）面积是否真的比 adaptive 多提供信息。
+1. 三种算法的结果是否一致、偏差有多大；
+2. adaptive 与 cat 的 (θ, α) 面积是否一致。
 
-2026-11f 起 API 的 adaptive 也使用 (θ, α) 二维引擎，因此这里的 adaptive 与
-adaptive2 两列应当完全一致；保留 adaptive 列是为了检查路由/历史口径没有串线。
+2026-11f 起 adaptive2 并入 adaptive：日志里旧的 adaptive2 会话仍按 adaptive
+回放，历史读取也按别名合并。
 
 用法：
     uv run --directory apps/api python scripts/replay_vocab_algorithms.py
@@ -35,11 +35,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.services import vocab  # noqa: E402
 from app.services import vocab_adaptive as adaptive  # noqa: E402
-from app.services import vocab_adaptive2 as adaptive2  # noqa: E402
 from app.services import vocab_cat as cat  # noqa: E402
 
 DEFAULT_LOG = ROOT / "data" / "logs" / "vocab_sessions.jsonl"
-ALGOS = ("classic", "adaptive", "adaptive2", "cat")
+ALGOS = ("classic", "adaptive", "cat")
 RESPONSES = {"correct", "unknown", "wrong"}
 
 
@@ -93,19 +92,11 @@ def replay_classic(seq: list[tuple], max_answers: int = 50) -> float:
 
 
 def replay_adaptive(seq: list[tuple]) -> tuple[float, float]:
-    """adaptive：2026-11f 起与 adaptive2 同一 (θ, α) 引擎，输出面积与 α。"""
-    sess = adaptive2.Adaptive2Session(id="replay", algo="adaptive")
+    """adaptive：二维 (θ, α) 后验，输出曲线面积与 α。"""
+    sess = adaptive.AdaptiveSession(id="replay")
     for rank, resp, _ in seq:
-        adaptive2._update_score(sess, {"level": adaptive._level_of(rank)}, resp)
-    return adaptive2._vocab_area(sess.score, sess.alpha), sess.alpha
-
-
-def replay_adaptive2(seq: list[tuple]) -> tuple[float, float]:
-    """adaptive2：二维 (θ, α) 后验，输出曲线面积与 α。"""
-    sess = adaptive2.Adaptive2Session(id="replay")
-    for rank, resp, _ in seq:
-        adaptive2._update_score(sess, {"level": adaptive._level_of(rank)}, resp)
-    return adaptive2._vocab_area(sess.score, sess.alpha), sess.alpha
+        adaptive._update_score(sess, {"level": adaptive._level_of(rank)}, resp)
+    return adaptive._vocab_area(sess.score, sess.alpha), sess.alpha
 
 
 _bank_cache: dict | None = None
@@ -127,7 +118,7 @@ def replay_cat(seq: list[tuple]) -> tuple[float, float]:
         b = it["b"] if it else float(rank)
         a = it["a"] if it else 1.0 / adaptive.SCALE
         cat._update_score(sess, {"b": b, "a": a}, resp)
-    return adaptive2._vocab_area(sess.score, sess.alpha), sess.alpha
+    return adaptive._vocab_area(sess.score, sess.alpha), sess.alpha
 
 
 def replay_session(
@@ -138,8 +129,6 @@ def replay_session(
         out["classic"] = replay_classic(seq, classic_max)
     if "adaptive" in algos:
         out["adaptive"], out["alpha_adaptive"] = replay_adaptive(seq)
-    if "adaptive2" in algos:
-        out["adaptive2"], out["alpha2"] = replay_adaptive2(seq)
     if "cat" in algos:
         out["cat"], out["alpha_cat"] = replay_cat(seq)
     return out

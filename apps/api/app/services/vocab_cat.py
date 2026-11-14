@@ -1,7 +1,7 @@
 """词频题库 CAT（Computerized Adaptive Testing）。
 
-与 ``vocab_adaptive`` 共用 4 选 1 + 「以上都不对」题型，估计器则与
-``vocab_adaptive2`` 相同（(θ, α) 二维贝叶斯 EAP），区别在选题：
+与 ``vocab_adaptive`` 共用 4 选 1 + 「以上都不对」题型和 (θ, α) 二维贝叶斯
+EAP 估计，区别在选题：
 
 - 难度使用单词的精确词频 rank（而不是 1000 词一档的档位）
 - 每题从当前能力附近按 Fisher 信息量选题，不再用「档位 ±1 + 连对探顶」
@@ -10,7 +10,7 @@
 - 题目参数可被 ``data/calibration/vocab_cat_items.json`` 覆盖；没有标定
   文件时以词频 rank 作为难度先验、区分度取统一的 1/2500
 
-词汇量口径与 adaptive2 一致：``vocab_size`` 取 (θ, α) 曲线下面积，``score``
+词汇量口径与 adaptive 一致：``vocab_size`` 取 (θ, α) 曲线下面积，``score``
 仍是 50% 认识阈值 θ。题库标定（2PL/MFI/SE 停止）的完整流程见 issue #40。
 """
 from __future__ import annotations
@@ -29,7 +29,6 @@ from typing import Optional
 from ..config import settings
 from . import vocab as _classic
 from . import vocab_adaptive as _adaptive
-from . import vocab_adaptive2 as _dual
 from . import vocab_tests
 from . import vocab_trend
 
@@ -232,7 +231,7 @@ class CatSession:
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    log_post: list = field(default_factory=_dual._prior_log_post)  # (θ, α) 二维
+    log_post: list = field(default_factory=_adaptive._prior_log_post)  # (θ, α) 二维
     se: float = 0.0                # θ 后验标准差
     alpha_se: float = 0.0
     current: Optional[dict] = None
@@ -262,7 +261,7 @@ def _progress(sess: CatSession) -> dict:
     return {
         "score": score if sess.total >= 1 else None,
         "vocab_size": (
-            int(round(_dual._vocab_area(sess.score, sess.alpha)))
+            int(round(_adaptive._vocab_area(sess.score, sess.alpha)))
             if sess.total else None
         ),
         "alpha": round(sess.alpha, 2),
@@ -280,7 +279,7 @@ def _progress(sess: CatSession) -> dict:
 
 def _result(sess: CatSession) -> dict:
     score = int(round(sess.score)) if sess.total else 0
-    area = _dual._vocab_area(sess.score, sess.alpha) if sess.total else 0.0
+    area = _adaptive._vocab_area(sess.score, sess.alpha) if sess.total else 0.0
     return {
         "vocab_size": int(round(area / 10) * 10),
         "score": score,
@@ -291,7 +290,7 @@ def _result(sess: CatSession) -> dict:
         "wrong": sess.wrong,
         "ready": sess.total >= MIN_QUESTIONS,
         "score_interval": _adaptive._score_interval(sess),
-        "vocab_interval": _dual._vocab_interval(sess) if sess.total else [0, 0],
+        "vocab_interval": _adaptive._vocab_interval(sess) if sess.total else [0, 0],
         "se": int(round(sess.se)),
         "stop_reason": sess.stop_reason or None,
         "message": RESULT_MESSAGE,
@@ -378,12 +377,12 @@ def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
         )
         mean = start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
         sd = max(_adaptive.HISTORY_PRIOR_MIN_SD, prior["sd"])
-        log_post = _dual._prior_log_post(mean, sd)
+        log_post = _adaptive._prior_log_post(mean, sd)
     sess = CatSession(
         id=sid,
         user_id=user_id,
         start_level=start_level,
-        log_post=log_post if log_post is not None else _dual._prior_log_post(),
+        log_post=log_post if log_post is not None else _adaptive._prior_log_post(),
     )
     _sessions[sid] = sess
     item, is_anchor = _pick_item(sess)
@@ -399,9 +398,9 @@ def _update_score(sess: CatSession, q: dict, outcome: str) -> None:
     c = _adaptive.GUESS_RATE
     power = _adaptive.UNKNOWN_LIKELIHOOD_POWER
     lp = sess.log_post
-    for i, theta in enumerate(_dual.THETA_GRID):
-        base = i * _dual.N_ALPHA
-        for j, alpha in enumerate(_dual.ALPHA_GRID):
+    for i, theta in enumerate(_adaptive.GRID):
+        base = i * _adaptive.N_ALPHA
+        for j, alpha in enumerate(_adaptive.ALPHA_GRID):
             p = _adaptive.sigmoid(alpha * a_item * (theta - b))
             if outcome == "correct":
                 lik = c + (1.0 - c) * p
@@ -414,9 +413,9 @@ def _update_score(sess: CatSession, q: dict, outcome: str) -> None:
                 lp[base + j] += math.log(
                     max((1.0 - c) * (1.0 - p), _adaptive.PROB_FLOOR)
                 )
-    _dual._normalize_log_post(sess)
+    _adaptive._normalize_log_post(sess)
     sess.total += 1
-    _dual._refresh_moments(sess)
+    _adaptive._refresh_moments(sess)
 
 
 def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dict:

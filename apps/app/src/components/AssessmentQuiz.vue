@@ -70,11 +70,9 @@ const { t } = useI18n();
 const algoLabel = computed(() =>
   props.algo === "cat"
     ? t("assessment.algoCat")
-    : props.algo === "adaptive2"
-      ? t("assessment.algoAdaptive2")
-      : props.algo === "adaptive"
-        ? t("assessment.algoAdaptive")
-        : t("assessment.algoClassic"),
+    : props.algo === "adaptive"
+      ? t("assessment.algoAdaptive")
+      : t("assessment.algoClassic"),
 );
 
 const letters = ["A", "B", "C", "D"];

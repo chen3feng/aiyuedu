@@ -58,11 +58,12 @@ export interface AnswerResp extends Progress {
   result?: Result;
 }
 
-export type VocabAlgo = "classic" | "adaptive" | "adaptive2" | "cat";
+export type VocabAlgo = "classic" | "adaptive" | "cat";
 
-/** 算法改名前的历史记录/本地缓存仍可能带 "eudic"，统一归一化为 adaptive。 */
+/** "eudic" 是改名前的 adaptive；"adaptive2" 已在 2026-11f 并入 adaptive。 */
 export function normalizeAlgo(algo?: string): VocabAlgo {
-  return algo === "eudic" ? "adaptive" : ((algo as VocabAlgo) || "classic");
+  if (algo === "eudic" || algo === "adaptive2") return "adaptive";
+  return algo === "adaptive" || algo === "cat" ? algo : "classic";
 }
 
 export const startTest = (algo?: VocabAlgo) =>
