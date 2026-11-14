@@ -128,7 +128,12 @@ def _info(item: dict, theta: float) -> float:
 
 
 def _pick_item(sess: "CatSession") -> dict:
-    theta = sess.score if sess.total else DEFAULT_START
+    if sess.total:
+        theta = sess.score
+    elif sess.start_level is not None:
+        theta = sess.start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
+    else:
+        theta = DEFAULT_START
     bank = _bank()
     ranks = _ranks()
     center = bisect.bisect_left(ranks, theta)
@@ -172,6 +177,7 @@ class CatSession:
     finished: bool = False
     user_id: Optional[str] = None
     recorded: bool = False
+    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
     stop_reason: str = ""                            # "se" / "max" / "manual"
 
@@ -255,7 +261,7 @@ def _log_answer(sess: CatSession, q: dict, response: str) -> None:
 
 
 def _record(sess: CatSession) -> None:
-    if sess.recorded or not sess.user_id or sess.total == 0:
+    if sess.recorded or not sess.user_id or sess.total < MIN_QUESTIONS:
         return
     sess.recorded = True
     result = _result(sess)
@@ -276,20 +282,20 @@ def _record(sess: CatSession) -> None:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
+    # 历史成绩只用来挑首题难度，不再作为后验先验（见 adaptive.start_test）。
     prior = (
         vocab_trend.history_prior(user_id, "cat")
         if settings.vocab_history_prior
         else None
     )
-    sess = CatSession(
-        id=sid,
-        user_id=user_id,
-        log_post=(
-            _adaptive._prior_log_post(prior["mean"], prior["sd"])
-            if prior
-            else _adaptive._prior_log_post()
-        ),
-    )
+    start_level = None
+    if prior:
+        start_level = max(
+            0,
+            min(_adaptive.MAX_LEVEL,
+                int(round(prior["mean"] / _adaptive.LEVEL_WIDTH))),
+        )
+    sess = CatSession(id=sid, user_id=user_id, start_level=start_level)
     _sessions[sid] = sess
     sess.current = _make_question(_pick_item(sess), sess.rng)
     sess.recent.append(sess.current["word"])

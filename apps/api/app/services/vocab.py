@@ -34,6 +34,7 @@ MAX_VOCAB = 25000                        # 词族上限（Nation BNC/COCA 25000 
 ROUNDS = 5                               # 每段抽词轮数 → 总题量 = N_BANDS × ROUNDS
 MAX_QUESTIONS = N_BANDS * ROUNDS         # 50
 MIN_SAMPLES = 3                          # 至少 3 词才下发估值（前端显示「测评中…」）
+MIN_HISTORY_ANSWERS = 20                 # 少于 20 题不写入历史，避免短测污染趋势/起点
 SCORE_MAX_STEP = 800                     # 显示分单次最大变动，杜绝「突变」
 # 不会时仍蒙对的概率：四选一 25% × 「不确定时仍会猜」的比例（观测约 45%–50%）。
 # 与自适应算法共用同一套题面，取值保持一致（vocab_adaptive.GUESS_RATE）。
@@ -580,8 +581,8 @@ def submit_answer(sess: TestSession, choice: Optional[int], unknown: bool) -> di
 
 
 def _record(sess: TestSession) -> None:
-    """把完成的测评写进用户历史（幂等；匿名/未作答不记）。"""
-    if sess.recorded or not sess.user_id or sess.total == 0:
+    """把完成的测评写进用户历史（幂等；匿名/未作答/题量不足不记）。"""
+    if sess.recorded or not sess.user_id or sess.total < MIN_HISTORY_ANSWERS:
         return
     sess.recorded = True
     result = _result(sess)

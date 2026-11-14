@@ -71,7 +71,7 @@ def _prior_log_post(
 ) -> list[float]:
     """(θ, α) 二维先验：θ ~ N(mean, sd²)，log α ~ N(0, 0.35²)。
 
-    传入 mean/sd 时用历史测试作弱先验（issue #42）。
+    参数保留给离线实验；线上始终用默认先验，历史成绩只决定首题档位。
     """
     mean = _adaptive.PRIOR_MEAN if theta_mean is None else theta_mean
     sd = _adaptive.PRIOR_SD if theta_sd is None else max(300.0, theta_sd)
@@ -112,6 +112,7 @@ class Adaptive2Session:
     finished: bool = False
     user_id: Optional[str] = None
     recorded: bool = False
+    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
     last_ts: float = 0.0
 
 
@@ -225,6 +226,8 @@ def _base_level(sess: Adaptive2Session) -> int:
 def _select_level(sess: Adaptive2Session) -> int:
     """选题：沿用 adaptive 的档位偏移 + 连对探顶启发式。"""
     if sess.total == 0:
+        if sess.start_level is not None:
+            return sess.start_level
         return 1 + sess.rng.choice([0, 1])
     if sess.probe_remaining > 0:
         return sess.probe_level
@@ -327,7 +330,7 @@ def _log_answer(sess: Adaptive2Session, q: dict, response: str) -> None:
 
 
 def _record(sess: Adaptive2Session) -> None:
-    if sess.recorded or not sess.user_id or sess.total == 0:
+    if sess.recorded or not sess.user_id or sess.total < MIN_QUESTIONS:
         return
     sess.recorded = True
     result = _result(sess)
@@ -350,20 +353,16 @@ def _record(sess: Adaptive2Session) -> None:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
+    # 历史成绩只用来挑首题档位，不再作为后验先验（见 adaptive.start_test）。
     prior = (
         vocab_trend.history_prior(user_id, "adaptive2")
         if settings.vocab_history_prior
         else None
     )
-    sess = Adaptive2Session(
-        id=sid,
-        user_id=user_id,
-        log_post=(
-            _prior_log_post(prior["mean"], prior["sd"])
-            if prior
-            else _prior_log_post()
-        ),
-    )
+    start_level = None
+    if prior:
+        start_level = max(0, min(MAX_LEVEL, int(round(prior["mean"] / LEVEL_WIDTH))))
+    sess = Adaptive2Session(id=sid, user_id=user_id, start_level=start_level)
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)

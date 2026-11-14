@@ -346,7 +346,7 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 | `DEFAULT_START` | 1500 |
 | 默认 `a` | 1/2500 |
 
-## 6. 多次测试：趋势与历史先验（issue #42）
+## 6. 多次测试：趋势与历史成绩（issue #42）
 
 单次测试的 95% 区间约 ±2,700 词，几百词的真实进步会被噪声淹没。`vocab_trend.py`
 提供两件事：
@@ -358,17 +358,27 @@ uv run --directory apps/api python scripts/calibrate_vocab_items.py --synthetic
 - 输出每月变化量、95% 区间、p 值与是否显著（`|斜率| > 1.96 × 标准误`，且至少 3 次测试）；
 - 接口 `GET /vocab/trend?algo=...`，前端在历史页趋势图下方显示一句话结论。
 
-### 6.2 历史先验
+### 6.2 历史成绩的作用（2026-11b 起）
 
-- 新测试开始时，取最近一次同算法测试的 `score` 作为 θ 先验均值；
-- 先验 sd = `min(4500, 1500 + 15 × 间隔天数)`，超过 180 天不用；
-- 先验很弱（sd ≥ 1,500），20–80 题的数据仍然主导；`VOCAB_HISTORY_PRIOR=false`
-  可关闭，关闭后每次测试完全独立。
+旧做法把最近一次同算法 `score` 当作新测试的 θ 先验均值。这会让多次测试
+链式相关：只答 1–4 题的短测试几乎原样记下旧的先验分，下一次又以这个分作为
+起点，连续测试会一路抬分（例如首题后得分直接显示 13,000+，但正确率并没有
+上升）。现在改成：
+
+- **历史只决定首题档位**：取最近一次同算法 `score` 换算成档位，adaptive /
+  adaptive2 / cat 从这一档开始选题；后验仍用默认弱先验 `N(1000, 3000)`，
+  数据完全主导估计。
+- 时间间隔超过 180 天的历史不参与；`VOCAB_HISTORY_PRIOR=false` 可整体关闭，
+  关闭后首题回到 1–2 档。
+- **少于 20 题的测试不写入历史**（classic `MIN_HISTORY_ANSWERS = 20`，其余
+  算法 `MIN_QUESTIONS = 20`），避免刚看几题就退出的会话污染趋势与首题档位。
 
 ### 6.3 局限
 
 - 历史记录跨算法不可比，趋势默认只看同一算法；
-- 先验会让多次测试之间产生轻微相关；如果怀疑能力在短期内有突变，可关闭先验。
+- 历史成绩只影响前几题从哪个档位起步，不再进入后验，因此不同次测试的
+  最终分数相互独立；如果怀疑能力在短期内有突变，可关闭 `VOCAB_HISTORY_PRIOR`
+  让首题也从最低档开始。
 
 ## 7. 怎么读这个分数
 
@@ -476,7 +486,7 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   重复），做标定前必须先清洗；
 - 题库标定流水线：`scripts/calibrate_vocab_items.py`（清洗 → 1PL/2PL → 就绪度检查
   → 写 `data/calibration/vocab_cat_items.json`），详见 §5.3；
-- 多次测试的趋势与历史先验见 §6，数据来自 `data/vocab_tests/vocab_tests.json`。
+- 多次测试的趋势与历史成绩用法见 §6，数据来自 `data/vocab_tests/vocab_tests.json`。
 
 ### 10.1 离线反事实回放
 
