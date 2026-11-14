@@ -59,7 +59,7 @@ PROBE_QUESTIONS = 6         # 每次探顶最多 6 题
 MAX_PROBES = 3              # 最多探顶 3 次，避免无限追高
 PROBE_COOLDOWN = 8          # 两次探顶之间至少间隔 8 题
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11b"
+ALGO_VERSION = "2026-11c"
 
 # —— 后验网格：0~25000 分，步长 50（501 个点）——
 GRID_STEP = 50
@@ -68,6 +68,10 @@ GRID = tuple(float(i * GRID_STEP) for i in range(MAX_SCORE // GRID_STEP + 1))
 # 均值低是为了让前几题从高频词缓慢爬升，标准差大保证数据能主导估计。
 PRIOR_MEAN = 1000.0
 PRIOR_SD = 3000.0
+# 历史起点先验的标准差下限。历史只提供起点：太紧（旧版同日 sd≈1,500）会让
+# 短测试照抄旧分并逐次抬高；完全不用先验又会让首题答完后后验掉回默认均值
+# （约 2,800），第二题直接跌到 2–3 档。4,000 足够宽，数据仍能很快主导。
+HISTORY_PRIOR_MIN_SD = 4000.0
 PROB_FLOOR = 1e-12          # 防止 log(0)
 
 NONE_OF_ABOVE = "以上都不对"
@@ -182,8 +186,9 @@ def _prior_log_post(
 ) -> list[float]:
     """先验的对数密度（未归一化；每次更新后会重新归一化）。
 
-    默认是 N(PRIOR_MEAN, PRIOR_SD)。参数保留给离线实验；线上不再用历史成绩
-    构造先验（现在历史只决定首题档位，见 ``start_test``）。
+    默认是 N(PRIOR_MEAN, PRIOR_SD)。有历史成绩时，``start_test`` 会传入一个
+    以历史档位为均值、``sd ≥ HISTORY_PRIOR_MIN_SD`` 的宽先验：它只决定起点，
+    数据很快就能把它拉开，不会像旧版紧先验那样让短测试照抄旧分。
     """
     mean = PRIOR_MEAN if mean is None else mean
     sd = PRIOR_SD if sd is None else max(300.0, sd)
@@ -213,7 +218,7 @@ class AdaptiveSession:
     finished: bool = False
     user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
     recorded: bool = False                           # 历史只记一次
-    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
+    start_level: Optional[int] = None                # 历史成绩只决定起点（首题档位 + 宽先验均值）
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
@@ -236,7 +241,7 @@ def _base_level(sess: AdaptiveSession) -> int:
 def _select_level(sess: AdaptiveSession) -> int:
     if sess.total == 0:
         if sess.start_level is not None:
-            # 历史成绩只决定起点：从上次档位开始，后验仍用默认弱先验。
+            # 历史成绩只决定起点：首题从上次档位开始，后验用宽的历史先验。
             return sess.start_level
         # 无历史时用高频词热身（1~2 档），避免一上来就是生僻词
         return 1 + sess.rng.choice([0, 1])
@@ -388,17 +393,28 @@ def _result(sess: AdaptiveSession) -> dict:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
-    # 历史成绩只用来挑首题档位，不再作为后验先验：否则每次测试都锚在上一次
-    # 结果上，短测试几乎照抄旧分，连续测试还会互相抬高。
+    # 历史成绩只提供「起点」：首题档位 + 一个宽先验。旧版把上次 score 当作
+    # sd≈1,500 的紧先验，短测试几乎照抄旧分；但若完全不用先验，首题答完后后验
+    # 会掉回默认均值（约 2,800），第二题直接跌到 2–3 档。sd ≥ 4,000 时起点
+    # 跟着历史走，数据仍能很快主导。
     prior = (
         vocab_trend.history_prior(user_id, "adaptive")
         if settings.vocab_history_prior
         else None
     )
     start_level = None
+    log_post = None
     if prior:
         start_level = max(0, min(MAX_LEVEL, int(round(prior["mean"] / LEVEL_WIDTH))))
-    sess = AdaptiveSession(id=sid, user_id=user_id, start_level=start_level)
+        mean = start_level * LEVEL_WIDTH + LEVEL_OFFSET
+        sd = max(HISTORY_PRIOR_MIN_SD, prior["sd"])
+        log_post = _prior_log_post(mean, sd)
+    sess = AdaptiveSession(
+        id=sid,
+        user_id=user_id,
+        start_level=start_level,
+        log_post=log_post if log_post is not None else _prior_log_post(),
+    )
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)
