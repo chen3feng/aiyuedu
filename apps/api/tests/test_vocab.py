@@ -164,6 +164,22 @@ def test_candidates_exclude_blacklisted_words():
     assert "apple" in lemmas
 
 
+def test_transliteration_blacklist_loads():
+    bl = vocab._load_transliteration_blacklist()
+    assert {"ohm", "joule", "bandoneon", "codeine", "amarna", "kowtow"} <= set(bl)
+    # 高频常用外来词是真实词汇，不应进黑名单。
+    for kept in ("coffee", "sofa", "logic", "chocolate"):
+        assert kept not in bl
+
+
+def test_candidates_exclude_transliterations_but_keep_common_loans():
+    lemmas = {c[1] for c in vocab._candidates()}
+    for banned in ("ohm", "joule", "bandoneon", "codeine", "amarna", "kowtow", "qigong"):
+        assert banned not in lemmas
+    for kept in ("coffee", "sofa", "logic", "chocolate", "tiramisu"):
+        assert kept in lemmas
+
+
 # ---------- 会话流程 ----------
 
 def _run_flow(respond):
@@ -331,6 +347,13 @@ def test_stability_on_spiky_profile():
         # 括号里的别名整段去掉，保留主义项
         ("n. 大草原，热带草原（等于savanna）", "n. 大草原，热带草原"),
         ("n. 熟食品（等于delicatessen）", "n. 熟食品"),
+        # 专名：整词都是人名/地名时不再兜底保留裸名字
+        ("[人名] 迪姆", ""),
+        ("[地名] [英国] 巴尔比", ""),
+        ("[人名] 巴比; [地名] [英国] 巴尔比", ""),
+        # 同一行里专名与普通义项混排时保留普通义项
+        ("[化] 茜素; [人名] 阿利札林", "茜素"),
+        ("柳属; [地名] [美国] 塞利克斯", "柳属"),
         # 专名：只留音译义项
         ("n. (Diem)人名；(德)迪姆", "(德)迪姆"),
         # 单字母 / 全大写缩写不算泄底

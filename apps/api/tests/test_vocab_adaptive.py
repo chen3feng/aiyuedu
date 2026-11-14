@@ -273,8 +273,13 @@ def test_feedback_exposes_real_gloss_when_answer_is_none_of_above():
 
 def test_classic_feedback_also_has_word_gloss():
     """经典算法统一带 word_gloss，前端无需按算法分支。"""
-    sid, _, _ = vocab.start_test()
-    sess = vocab.get_session(sid)
+    # 正确项可能是「以上都不对」（25%），那种情况下 word_gloss 是词的真实释义，
+    # 与 correct_gloss 不同；这里取一道正确释义在选项里的题来断言相等。
+    for _ in range(40):
+        sid, _, _ = vocab.start_test()
+        sess = vocab.get_session(sid)
+        if sess.current["correct_index"] != 3:
+            break
     ans = vocab.submit_answer(sess, sess.current["correct_index"], False)
     assert ans["feedback"]["word_gloss"] == ans["feedback"]["correct_gloss"]
 

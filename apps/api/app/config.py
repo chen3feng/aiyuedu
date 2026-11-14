@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     vocab_cat_items_path: str = str(PROJECT_ROOT / "data" / "calibration" / "vocab_cat_items.json")
     topics_path: str = str(PROJECT_ROOT / "data" / "topics" / "topics.json")
     sensitive_blacklist_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "sensitive_blacklist.json")
+    # 低频纯音译词（人名/地名/乐器/药名等）黑名单，抽题时过滤。
+    transliteration_blacklist_path: str = str(
+        PROJECT_ROOT / "data" / "wordlists" / "transliteration_blacklist.json"
+    )
     mwe_path: str = str(PROJECT_ROOT / "data" / "mwe" / "mwe.json")
     ecdict_path: str = str(PROJECT_ROOT / "data" / "wordlists" / "raw" / "stardict.db")
     ai_config_path: str = str(PROJECT_ROOT / "data" / "config" / "ai.json")
