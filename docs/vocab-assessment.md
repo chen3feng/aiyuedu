@@ -464,7 +464,9 @@ uv run --directory apps/api python scripts/smoke_vocab.py
   `test_adaptive_start_uses_history_prior`；
 - 回放：`test_load_sessions_filters_and_sorts`（会话聚合与过滤）、
   `test_replay_classic_perfect_is_max`（分层全对 → 25,000）、
-  `test_replay_estimators_are_deterministic_and_in_range`。
+  `test_replay_estimators_are_deterministic_and_in_range`；
+- 仿真：`test_p_know_is_monotonic_in_theta_and_rank`、
+  `test_classic_truth_is_close_to_area_truth`、`test_run_session_returns_bounded_estimate`。
 
 ## 10. 数据与标定
 
@@ -497,3 +499,29 @@ uv run --directory apps/api python scripts/replay_vocab_algorithms.py --include-
 classic / adaptive / adaptive2 / cat 的均值是 11,380 / 10,808 / 11,351 / 11,130，
 两两差 29–572，均小于单条序列 ~1,150 的差异标准差；adaptive2 的面积定义与
 classic 几乎重合，adaptive 的 θ 系统性低约 550，cat 高约 250。
+
+### 10.2 可控仿真
+
+回放只能看「估计器之间是否一致」，看不到「谁更接近真值」。仿真脚本按已知的
+3PL 知识曲线生成作答，因此能直接算偏差与标准差：
+
+```bash
+uv run --directory apps/api python scripts/simulate_vocab_algorithms.py
+uv run --directory apps/api python scripts/simulate_vocab_algorithms.py --theta 6000,12000,18000 --sessions 100
+```
+
+- 作答模型：认识 → 选对；不认识 → 以 `--guess-prop`（默认 0.48）尝试猜，
+  猜对率 25%，有效蒙对率约 12%；
+- `truth` 按各算法自己的定义：classic 是分段加权，adaptive2 是曲线面积，
+  adaptive / cat 是 θ；报告同时给出面积真值，便于看口径差；
+- 2026-11-14（每个能力点 30 次）：
+
+| θ | classic | adaptive | adaptive2 | cat |
+| --- | --- | --- | --- | --- |
+| 6,000 | 4,898（−21.4%） | 5,911（−1.5%） | 6,456（−1.9%） | 6,084（+1.4%） |
+| 12,000 | 10,427（−13.3%） | 11,598（−3.4%） | 12,003（−3.2%） | 11,678（−2.7%） |
+| 18,000 | 16,670（−6.8%） | 17,197（−4.5%） | 17,388（−4.6%） | 17,234（−4.3%） |
+
+  classic 的片段门槛（Wilson 下界 ≤ 12% 计 0）导致系统性低估；adaptive2 的
+  波动最小（SD 600–700），cat 题量最少（56–76 题），adaptive 与 adaptive2 同题量
+  但 SD 略高；adaptive / cat 的高能力端偏差主要来自先验向 1,000 收缩。
