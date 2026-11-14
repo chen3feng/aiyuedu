@@ -11,11 +11,6 @@
             <view class="algo-chips">
               <text
                 class="algo-chip"
-                :class="{ active: algo === 'classic' }"
-                @click="setAlgo('classic')"
-              >{{ t("assessment.algoClassic") }}</text>
-              <text
-                class="algo-chip"
                 :class="{ active: algo === 'adaptive' }"
                 @click="setAlgo('adaptive')"
               >{{ t("assessment.algoAdaptive") }}</text>
@@ -113,10 +108,13 @@ const phase = ref<Phase>("intro");
 const loading = ref(false);
 const error = ref("");
 const sessionId = ref("");
-// 算法开关：classic = 固定分层抽样，adaptive = 双参数自适应（θ+α），
-// cat = 词频 CAT。adaptive2 已并入 adaptive，旧缓存/旧历史由 normalizeAlgo 归一化。
+// 算法开关：adaptive = 双参数自适应（θ+α），cat = 词频 CAT。
+// classic 单次波动大（50 题、每段 5 题），已从选择器隐藏，仅保留接口与历史对照；
+// adaptive2 已并入 adaptive，旧缓存/旧历史由 normalizeAlgo 归一化。
 const ALGO_KEY = "vocab_algo";
-const algo = ref<VocabAlgo>(normalizeAlgo(uni.getStorageSync(ALGO_KEY) as string));
+const storedAlgo = normalizeAlgo(uni.getStorageSync(ALGO_KEY) as string);
+// 旧缓存里的 classic（以及空值）回落到 adaptive。
+const algo = ref<VocabAlgo>(storedAlgo === "cat" ? "cat" : "adaptive");
 function setAlgo(v: VocabAlgo) {
   algo.value = v;
   uni.setStorageSync(ALGO_KEY, v);

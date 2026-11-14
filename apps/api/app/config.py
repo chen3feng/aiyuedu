@@ -34,9 +34,10 @@ class Settings(BaseSettings):
     writings_path: str = str(PROJECT_ROOT / "data" / "writings" / "writings.json")
     collections_dir: str = str(PROJECT_ROOT / "data" / "collections")
     collections_index: str = str(PROJECT_ROOT / "data" / "collections" / "_index.json")
-    # 词汇量测试算法开关：classic（固定分层抽样）| adaptive（双参数 EAP）|
-    # cat（词频题库 CAT）。前端可在开始测试时用 algo 参数覆盖。
-    vocab_algo: str = "classic"
+    # 词汇量测试算法开关：adaptive（双参数 EAP，默认）| cat（词频题库 CAT）。
+    # classic（固定分层抽样）单次波动大，已从前端隐藏，仍可用 algo=classic 显式调用。
+    # 前端可在开始测试时用 algo 参数覆盖。
+    vocab_algo: str = "adaptive"
     # 用最近一次同算法测试作为下一次的弱先验（issue #42）。先验 sd ≥ 1500，
     # 数据仍然主导；关闭后每次测试完全独立。
     vocab_history_prior: bool = True
