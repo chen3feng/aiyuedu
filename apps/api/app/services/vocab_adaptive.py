@@ -182,7 +182,8 @@ def _prior_log_post(
 ) -> list[float]:
     """先验的对数密度（未归一化；每次更新后会重新归一化）。
 
-    传入 mean/sd 时用历史测试作弱先验（issue #42），否则用默认弱信息先验。
+    默认是 N(PRIOR_MEAN, PRIOR_SD)。参数保留给离线实验；线上不再用历史成绩
+    构造先验（现在历史只决定首题档位，见 ``start_test``）。
     """
     mean = PRIOR_MEAN if mean is None else mean
     sd = PRIOR_SD if sd is None else max(300.0, sd)
@@ -212,6 +213,7 @@ class AdaptiveSession:
     finished: bool = False
     user_id: Optional[str] = None                    # 归属用户；结束时落一条历史
     recorded: bool = False                           # 历史只记一次
+    start_level: Optional[int] = None                # 历史成绩只决定首题档位，不进后验
     last_ts: float = 0.0                             # 上一题作答时间（算 elapsed_ms）
 
 
@@ -233,7 +235,10 @@ def _base_level(sess: AdaptiveSession) -> int:
 
 def _select_level(sess: AdaptiveSession) -> int:
     if sess.total == 0:
-        # 第一题用高频词热身（1~2 档），避免一上来就是生僻词
+        if sess.start_level is not None:
+            # 历史成绩只决定起点：从上次档位开始，后验仍用默认弱先验。
+            return sess.start_level
+        # 无历史时用高频词热身（1~2 档），避免一上来就是生僻词
         return 1 + sess.rng.choice([0, 1])
     if sess.probe_remaining > 0:
         return sess.probe_level
@@ -383,18 +388,17 @@ def _result(sess: AdaptiveSession) -> dict:
 
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
+    # 历史成绩只用来挑首题档位，不再作为后验先验：否则每次测试都锚在上一次
+    # 结果上，短测试几乎照抄旧分，连续测试还会互相抬高。
     prior = (
         vocab_trend.history_prior(user_id, "adaptive")
         if settings.vocab_history_prior
         else None
     )
-    sess = AdaptiveSession(
-        id=sid,
-        user_id=user_id,
-        log_post=(
-            _prior_log_post(prior["mean"], prior["sd"]) if prior else _prior_log_post()
-        ),
-    )
+    start_level = None
+    if prior:
+        start_level = max(0, min(MAX_LEVEL, int(round(prior["mean"] / LEVEL_WIDTH))))
+    sess = AdaptiveSession(id=sid, user_id=user_id, start_level=start_level)
     _sessions[sid] = sess
     sess.current = _make_next(sess)
     return sid, _public(sess.current), _progress(sess)
@@ -465,8 +469,8 @@ def submit_answer(sess: AdaptiveSession, choice: Optional[int], unknown: bool) -
 
 
 def _record(sess: AdaptiveSession) -> None:
-    """把完成的测评写进用户历史（幂等；匿名/未作答不记）。"""
-    if sess.recorded or not sess.user_id or sess.total == 0:
+    """把完成的测评写进用户历史（幂等；匿名/题量不足不记）。"""
+    if sess.recorded or not sess.user_id or sess.total < MIN_QUESTIONS:
         return
     sess.recorded = True
     result = _result(sess)

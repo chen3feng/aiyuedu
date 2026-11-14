@@ -264,12 +264,12 @@ def test_api_vocab_and_notebook_use_account(client):
 
     start = client.post("/vocab/test/start", json={"algo": "adaptive"}, headers=headers)
     sid = start.json()["session_id"]
-    q = start.json()["question"]
-    client.post(
-        "/vocab/test/answer",
-        json={"session_id": sid, "choice": q["options"].index(q["options"][0])},
-        headers=headers,
-    )
+    for _ in range(20):
+        client.post(
+            "/vocab/test/answer",
+            json={"session_id": sid, "choice": 0},
+            headers=headers,
+        )
     client.post("/vocab/test/finish", json={"session_id": sid}, headers=headers)
     tests = client.get("/vocab/tests", headers=headers).json()["items"]
     assert len(tests) == 1 and tests[0]["algo"] == "adaptive"
@@ -307,13 +307,23 @@ def test_notebook_requires_word(stores):
 def test_vocab_history_recorded_once(stores):
     sid, q, _ = vocab_adaptive.start_test("u1")
     sess = vocab_adaptive.get_session(sid)
-    vocab_adaptive.submit_answer(sess, 0, False)
+    for _ in range(vocab_adaptive.MIN_QUESTIONS):
+        vocab_adaptive.submit_answer(sess, sess.current["correct_index"], False)
     vocab_adaptive.finish_test(sess)
     vocab_adaptive.finish_test(sess)  # 幂等
     items = vocab_tests.list_tests("u1")
     assert len(items) == 1
     assert items[0]["algo"] == "adaptive"
-    assert items[0]["total"] == 1
+    assert items[0]["total"] == vocab_adaptive.MIN_QUESTIONS
+
+
+def test_vocab_short_session_not_recorded(stores):
+    """不到 20 题的测试不写入历史。"""
+    sid, q, _ = vocab_adaptive.start_test("u1")
+    sess = vocab_adaptive.get_session(sid)
+    vocab_adaptive.submit_answer(sess, 0, False)
+    vocab_adaptive.finish_test(sess)
+    assert vocab_tests.list_tests("u1") == []
 
 
 def test_vocab_history_anonymous_not_recorded(stores):

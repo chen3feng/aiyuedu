@@ -142,11 +142,13 @@ def test_cat_result_records_algo(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "vocab_tests_path", str(tmp_path / "tests.json"))
     sid, _, _ = cat.start_test(user_id="u1")
     sess = cat.get_session(sid)
-    cat.submit_answer(sess, sess.current["correct_index"], False)
+    for _ in range(cat.MIN_QUESTIONS):
+        cat.submit_answer(sess, sess.current["correct_index"], False)
     cat.finish_test(sess)
     items = vocab_tests.list_tests("u1")
     assert len(items) == 1
     assert items[0]["algo"] == "cat"
+    assert items[0]["total"] >= cat.MIN_QUESTIONS
 
 
 def test_answer_log_records_estimation_fields(tmp_path, monkeypatch):

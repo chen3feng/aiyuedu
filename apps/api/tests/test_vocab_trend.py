@@ -1,4 +1,4 @@
-"""多次测试趋势与历史先验（issue #42）的测试。"""
+"""多次测试趋势与历史成绩用法（issue #42）的测试。"""
 import time
 
 import pytest
@@ -90,32 +90,43 @@ def test_history_prior_ignores_old_and_other_algo(store):
     assert vocab_trend.history_prior("u2", "adaptive") is None
 
 
-def test_adaptive_start_uses_history_prior(store):
+def test_adaptive_start_level_uses_history(store):
+    """历史成绩只决定首题档位，不再把上次分数带进后验。"""
     now = time.time()
     _add("u1", now - 86400, 12000, 12000)
-    sid, _, _ = adaptive.start_test(user_id="u1")
+    sid, question, _ = adaptive.start_test(user_id="u1")
     sess = adaptive.get_session(sid)
+    assert sess.start_level == 12
+    assert question["level"] == 12
+    # 后验仍是默认弱先验：首题得分不会被历史成绩抬到 12,000。
+    # （默认先验截断在 0 以上，EAP 均值约 2,800，仍远低于历史成绩。）
     adaptive._refresh_moments(sess)
-    assert sess.score == pytest.approx(12000, abs=1500)
+    assert sess.score < 4000
+    assert sess.log_post == pytest.approx(adaptive._prior_log_post())
 
 
-def test_adaptive2_start_uses_history_prior(store):
+def test_adaptive2_start_level_uses_history(store):
     now = time.time()
     _add("u1", now - 86400, 15000, 15000, algo="adaptive2")
-    sid, _, _ = adaptive2.start_test(user_id="u1")
+    sid, question, _ = adaptive2.start_test(user_id="u1")
     sess = adaptive2.get_session(sid)
+    assert sess.start_level == 15
+    assert question["level"] == 15
     adaptive2._refresh_moments(sess)
-    assert sess.score == pytest.approx(15000, abs=2000)
+    assert sess.score < 4000
+    assert sess.log_post == pytest.approx(adaptive2._prior_log_post())
 
 
 def test_prior_can_be_disabled(store, monkeypatch):
     now = time.time()
     _add("u1", now - 86400, 20000, 20000)
     monkeypatch.setattr(settings, "vocab_history_prior", False)
-    sid, _, _ = adaptive.start_test(user_id="u1")
+    sid, question, _ = adaptive.start_test(user_id="u1")
     sess = adaptive.get_session(sid)
+    assert sess.start_level is None
+    assert question["level"] in (1, 2)   # 默认从 1–2 档起步
     adaptive._refresh_moments(sess)
-    assert sess.score < 5000   # 回到默认先验（均值 1000）
+    assert sess.score < 5000              # 默认先验（均值 1000）
 
 
 def test_router_trend_endpoint(store):
@@ -127,3 +138,54 @@ def test_router_trend_endpoint(store):
     resp = vocab_router.trend(user_id="u1")
     assert resp["n"] == 2
     assert resp["slope_per_month"] is not None
+
+
+def _session(algo: str, total: int):
+    from app.services import vocab as classic
+    from app.services import vocab_cat as cat
+
+    if algo == "classic":
+        return classic.TestSession(id="s", user_id="u1", total=total)
+    if algo == "adaptive":
+        return adaptive.AdaptiveSession(id="s", user_id="u1", total=total)
+    if algo == "adaptive2":
+        return adaptive2.Adaptive2Session(id="s", user_id="u1", total=total)
+    return cat.CatSession(id="s", user_id="u1", total=total)
+
+
+@pytest.mark.parametrize("algo", ["classic", "adaptive", "adaptive2", "cat"])
+def test_short_sessions_not_recorded(store, algo):
+    """不足 20 题的测试不写入历史（否则短测试会把先验原样记成一次成绩）。"""
+    from app.services import vocab as classic
+    from app.services import vocab_cat as cat
+
+    module = {
+        "classic": classic,
+        "adaptive": adaptive,
+        "adaptive2": adaptive2,
+        "cat": cat,
+    }[algo]
+    sess = _session(algo, total=19)
+    module._record(sess)
+    assert vocab_tests.count("u1") == 0
+    assert sess.recorded is False
+
+
+@pytest.mark.parametrize("algo", ["classic", "adaptive", "adaptive2", "cat"])
+def test_full_sessions_recorded(store, algo):
+    from app.services import vocab as classic
+    from app.services import vocab_cat as cat
+
+    module = {
+        "classic": classic,
+        "adaptive": adaptive,
+        "adaptive2": adaptive2,
+        "cat": cat,
+    }[algo]
+    sess = _session(algo, total=20)
+    module._record(sess)
+    records = vocab_tests.list_tests("u1")
+    assert len(records) == 1
+    assert records[0]["algo"] == algo
+    assert records[0]["total"] == 20
+    assert sess.recorded is True
