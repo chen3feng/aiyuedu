@@ -38,8 +38,16 @@ RECENT_LIMIT = 40
 CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
 DEFAULT_START = 1500.0     # 首题难度（高频词热身）
+# 历史成绩给出的起点档位上限。CAT 只在当前 θ ±80 rank 内选题，起点越高，
+# 整场就锁在越高频段，模型没有机会看到低频段；对「曲线很平」的用户，高分
+# 档位的一串答对会被固定斜率解释成 θ 继续上移，形成 runaway。用同一历史
+# 曲线模拟：起点 8/14/16/17 档分别得 13,800/16,600/17,500/18,100，而三场
+# 真实 CAT 是 12,339/16,194/16,928；封顶到 8 档后与 classic/adaptive 的
+# 13,900/14,100 对齐。6k/18k/24k 真值用户均未变差（6k 段正偏从 +21% 降到
+# +11%，18k/24k 保持在 ±3% 内）。
+MAX_HISTORY_START_LEVEL = 8
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11c"
+ALGO_VERSION = "2026-11d"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -283,7 +291,8 @@ def _record(sess: CatSession) -> None:
 def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     sid = uuid.uuid4().hex
     # 历史成绩只提供「起点」：首题难度 + 一个宽先验（见 adaptive.start_test）。
-    # 若只用默认先验，首题答完后后验会掉回均值，第二题直接跌到低档位。
+    # 但 CAT 的选题窗口只有 θ ±80 rank，起点过高会让整场锁在高频段，
+    # 所以历史起点额外封顶到 MAX_HISTORY_START_LEVEL（见常量注释）。
     prior = (
         vocab_trend.history_prior(user_id, "cat")
         if settings.vocab_history_prior
@@ -294,8 +303,11 @@ def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
     if prior:
         start_level = max(
             0,
-            min(_adaptive.MAX_LEVEL,
-                int(round(prior["mean"] / _adaptive.LEVEL_WIDTH))),
+            min(
+                _adaptive.MAX_LEVEL,
+                MAX_HISTORY_START_LEVEL,
+                int(round(prior["mean"] / _adaptive.LEVEL_WIDTH)),
+            ),
         )
         mean = start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
         sd = max(_adaptive.HISTORY_PRIOR_MIN_SD, prior["sd"])
