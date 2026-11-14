@@ -115,8 +115,8 @@ def _cat_bank() -> dict:
     return _bank_cache
 
 
-def replay_cat(seq: list[tuple]) -> float:
-    """cat：按题库的 b/a 更新后验；缺参数的词退回 rank 先验。"""
+def replay_cat(seq: list[tuple]) -> tuple[float, float]:
+    """cat：按题库的 b/a 更新 (θ, α) 后验，输出曲线面积与 α。"""
     bank = _cat_bank()
     sess = cat.CatSession(id="replay")
     for rank, resp, word in seq:
@@ -124,7 +124,7 @@ def replay_cat(seq: list[tuple]) -> float:
         b = it["b"] if it else float(rank)
         a = it["a"] if it else 1.0 / adaptive.SCALE
         cat._update_score(sess, {"b": b, "a": a}, resp)
-    return sess.score
+    return adaptive2._vocab_area(sess.score, sess.alpha), sess.alpha
 
 
 def replay_session(
@@ -138,7 +138,7 @@ def replay_session(
     if "adaptive2" in algos:
         out["adaptive2"], out["alpha2"] = replay_adaptive2(seq)
     if "cat" in algos:
-        out["cat"] = replay_cat(seq)
+        out["cat"], out["alpha_cat"] = replay_cat(seq)
     return out
 
 

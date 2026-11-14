@@ -1,15 +1,17 @@
 """词频题库 CAT（Computerized Adaptive Testing）。
 
-与 ``vocab_adaptive`` 共用 4 选 1 + 「以上都不对」题型和贝叶斯 EAP 估计，
-区别在选题：
+与 ``vocab_adaptive`` 共用 4 选 1 + 「以上都不对」题型，估计器则与
+``vocab_adaptive2`` 相同（(θ, α) 二维贝叶斯 EAP），区别在选题：
 
 - 难度使用单词的精确词频 rank（而不是 1000 词一档的档位）
 - 每题从当前能力附近按 Fisher 信息量选题，不再用「档位 ±1 + 连对探顶」
+- 每 5 题插一道远离当前 θ 的跨档锚题（2/6/10/14/18/22 档轮换）：窄带选题
+  无法区分「陡曲线高 θ」与「平曲线中等 θ」，锚题提供跨档正确率来识别 α
 - 题目参数可被 ``data/calibration/vocab_cat_items.json`` 覆盖；没有标定
   文件时以词频 rank 作为难度先验、区分度取统一的 1/2500
 
-题库标定（2PL/MFI/SE 停止）的完整流程见 issue #40；当前版本先把
-「精确 rank + 最大信息量选题」的结构跑通，等真实作答数据积累后替换参数。
+词汇量口径与 adaptive2 一致：``vocab_size`` 取 (θ, α) 曲线下面积，``score``
+仍是 50% 认识阈值 θ。题库标定（2PL/MFI/SE 停止）的完整流程见 issue #40。
 """
 from __future__ import annotations
 
@@ -27,6 +29,7 @@ from typing import Optional
 from ..config import settings
 from . import vocab as _classic
 from . import vocab_adaptive as _adaptive
+from . import vocab_adaptive2 as _dual
 from . import vocab_tests
 from . import vocab_trend
 
@@ -37,17 +40,26 @@ SE_STOP = 800.0
 RECENT_LIMIT = 40
 CANDIDATE_WINDOW = 80      # 在当前能力 ±80 个 rank 内找题
 TOP_K = 12                 # 从信息量最高的 K 题中加权随机，增加曝光多样性
+# 跨档锚题：每 5 题插一道远离当前 θ 的题，固定轮换 2/6/10/14/18/22 档。
+# 没有锚题时，CAT 只在 θ ±80 rank 内采样，二维模型的 α 无法识别——同一
+# 用户从 8/14/17 档起步会得到 13.8k/16.6k/18.1k（见 MAX_HISTORY_START_LEVEL）。
+# 锚题提供跨档正确率，α 才能从窄带数据里解放出来。
+ANCHOR_EVERY = 5
+ANCHOR_LEVELS = (2, 6, 10, 14, 18, 22)
+ANCHOR_WINDOW = 30         # 锚题档位 ±30 rank 内随机选词
 DEFAULT_START = 1500.0     # 首题难度（高频词热身）
 # 历史成绩给出的起点档位上限。CAT 只在当前 θ ±80 rank 内选题，起点越高，
 # 整场就锁在越高频段，模型没有机会看到低频段；对「曲线很平」的用户，高分
 # 档位的一串答对会被固定斜率解释成 θ 继续上移，形成 runaway。用同一历史
 # 曲线模拟：起点 8/14/16/17 档分别得 13,800/16,600/17,500/18,100，而三场
 # 真实 CAT 是 12,339/16,194/16,928；封顶到 8 档后与 classic/adaptive 的
-# 13,900/14,100 对齐。6k/18k/24k 真值用户均未变差（6k 段正偏从 +21% 降到
-# +11%，18k/24k 保持在 ±3% 内）。
+# 13,900/14,100 对齐（2026-11d）。11e 的二维模型 + 锚题把同一曲线的 θ 提到
+# 约 14,900、面积约 15,100（真值 θ≈16,300、面积≈15,000）；起点仍是主要偏差
+# 来源，锚题不替代封顶。6k/18k/24k 真值用户均未变差（6k 段面积正偏约 +5%，
+# 18k/24k 在 ±6% 内）。
 MAX_HISTORY_START_LEVEL = 8
 # 日志版本号：算法口径变化时递增，便于按版本回放与标定。
-ALGO_VERSION = "2026-11d"
+ALGO_VERSION = "2026-11e"
 
 RULES = (
     "每题给出 3 个中文释义，正确意思可能不在其中（此时选「以上都不对」）；"
@@ -125,23 +137,60 @@ def reload_bank() -> None:
     _ranks.cache_clear()
 
 
-def _info(item: dict, theta: float) -> float:
-    """3PL Fisher 信息量：a²(1-c)²p²(1-p)² / (P(1-P))。"""
+def _info(item: dict, theta: float, alpha: float) -> float:
+    """3PL Fisher 信息量：a²(1-c)²p²(1-p)² / (P(1-P))。
+
+    ``a`` 是题目区分度 × 个人斜率 α：未标定词 a=α/2500，标定后
+    a=α × a_item。
+    """
     c = _adaptive.GUESS_RATE
-    p = _adaptive.sigmoid(item["a"] * (theta - item["b"]))
+    a = alpha * item["a"]
+    p = _adaptive.sigmoid(a * (theta - item["b"]))
     prob = c + (1.0 - c) * p
     if prob <= 0.0 or prob >= 1.0:
         return 0.0
-    return (item["a"] * (1.0 - c) * p * (1.0 - p)) ** 2 / (prob * (1.0 - prob))
+    return (a * (1.0 - c) * p * (1.0 - p)) ** 2 / (prob * (1.0 - prob))
 
 
-def _pick_item(sess: "CatSession") -> dict:
+def _anchor_level(sess: "CatSession") -> Optional[int]:
+    """当前题是否为锚题；是则返回目标档位。第 5、10、15… 题轮换档位。"""
+    if not sess.total or sess.total % ANCHOR_EVERY != ANCHOR_EVERY - 1:
+        return None
+    return ANCHOR_LEVELS[(sess.total // ANCHOR_EVERY) % len(ANCHOR_LEVELS)]
+
+
+def _pick_anchor(sess: "CatSession", level: int) -> Optional[dict]:
+    """在锚题档位附近随机选一道没做过的题；没有可用词时返回 None。"""
+    center_score = level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
+    bank = _bank()
+    ranks = _ranks()
+    center = bisect.bisect_left(ranks, center_score)
+    lo = max(0, center - ANCHOR_WINDOW)
+    hi = min(len(bank), center + ANCHOR_WINDOW)
+    pool = [it for it in bank[lo:hi] if it["word"] not in sess.recent]
+    return sess.rng.choice(pool) if pool else None
+
+
+def _pick_item(sess: "CatSession") -> tuple[dict, bool]:
+    """选题：锚题轮换优先，否则在 θ 附近按 Fisher 信息量加权随机。
+
+    返回 ``(item, is_anchor)``；``is_anchor`` 只在真的选中了锚题时为 True
+    （锚题池为空时会退回普通选题）。
+    """
+    alpha = sess.alpha
     if sess.total:
         theta = sess.score
     elif sess.start_level is not None:
         theta = sess.start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
     else:
         theta = DEFAULT_START
+
+    anchor_level = _anchor_level(sess)
+    if anchor_level is not None:
+        anchor = _pick_anchor(sess, anchor_level)
+        if anchor is not None:
+            return anchor, True
+
     bank = _bank()
     ranks = _ranks()
     center = bisect.bisect_left(ranks, theta)
@@ -151,20 +200,25 @@ def _pick_item(sess: "CatSession") -> dict:
     if not pool:
         pool = [it for it in bank if it["word"] not in sess.recent] or bank
 
-    scored = sorted(pool, key=lambda it: _info(it, theta), reverse=True)[:TOP_K]
-    weights = [_info(it, theta) for it in scored]
+    scored = sorted(
+        pool, key=lambda it: _info(it, theta, alpha), reverse=True
+    )[:TOP_K]
+    weights = [_info(it, theta, alpha) for it in scored]
     if sum(weights) <= 0.0:
-        return sess.rng.choice(scored)
-    return sess.rng.choices(scored, weights=weights)[0]
+        return sess.rng.choice(scored), False
+    return sess.rng.choices(scored, weights=weights)[0], False
 
 
-def _make_question(item: dict, rng: random.Random) -> dict:
+def _make_question(
+    item: dict, rng: random.Random, anchor: bool = False
+) -> dict:
     q = _adaptive._question_from_word(
         (item["rank"], item["word"], item["gloss"], item["pos"]), rng
     )
-    # 下发给前端时 _public 会丢掉这两个字段，只用于服务端计分。
+    # 下发给前端时 _public 会丢掉这些字段，只用于服务端计分与标定。
     q["b"] = item["b"]
     q["a"] = item["a"]
+    q["anchor"] = anchor
     return q
 
 
@@ -172,13 +226,15 @@ def _make_question(item: dict, rng: random.Random) -> dict:
 class CatSession:
     id: str
     rng: random.Random = field(default_factory=random.Random)
-    score: float = 0.0
+    score: float = 0.0             # θ 后验均值（50% 认识阈值）
+    alpha: float = 1.0             # α 后验均值（相对基准斜率）
     total: int = 0
     correct: int = 0
     wrong: int = 0
     unknown: int = 0
-    log_post: list = field(default_factory=_adaptive._prior_log_post)
-    se: float = 0.0
+    log_post: list = field(default_factory=_dual._prior_log_post)  # (θ, α) 二维
+    se: float = 0.0                # θ 后验标准差
+    alpha_se: float = 0.0
     current: Optional[dict] = None
     recent: list = field(default_factory=list)
     history: list = field(default_factory=list)
@@ -205,6 +261,11 @@ def _progress(sess: CatSession) -> dict:
     score = int(round(sess.score))
     return {
         "score": score if sess.total >= 1 else None,
+        "vocab_size": (
+            int(round(_dual._vocab_area(sess.score, sess.alpha)))
+            if sess.total else None
+        ),
+        "alpha": round(sess.alpha, 2),
         "total": sess.total,
         "correct": sess.correct,
         "unknown": sess.unknown,
@@ -219,15 +280,18 @@ def _progress(sess: CatSession) -> dict:
 
 def _result(sess: CatSession) -> dict:
     score = int(round(sess.score)) if sess.total else 0
+    area = _dual._vocab_area(sess.score, sess.alpha) if sess.total else 0.0
     return {
-        "vocab_size": int(round(sess.score / 10) * 10) if sess.total else 0,
+        "vocab_size": int(round(area / 10) * 10),
         "score": score,
+        "alpha": round(sess.alpha, 2),
         "total": sess.total,
         "correct": sess.correct,
         "unknown": sess.unknown,
         "wrong": sess.wrong,
         "ready": sess.total >= MIN_QUESTIONS,
-        "score_interval": _progress(sess)["score_interval"],
+        "score_interval": _adaptive._score_interval(sess),
+        "vocab_interval": _dual._vocab_interval(sess) if sess.total else [0, 0],
         "se": int(round(sess.se)),
         "stop_reason": sess.stop_reason or None,
         "message": RESULT_MESSAGE,
@@ -255,11 +319,13 @@ def _log_answer(sess: CatSession, q: dict, response: str) -> None:
             "level": q["level"],
             "b": q["b"],
             "a": q["a"],
+            "anchor": bool(q.get("anchor")),
             "word": q["word"],
             "response": response,
             "include_correct": q["correct_index"] != 3,
             "elapsed_ms": elapsed_ms,
             "score": int(round(sess.score)),
+            "alpha": round(sess.alpha, 2),
             "se": int(round(sess.se)),
         }
         with open(path, "a", encoding="utf-8") as f:
@@ -279,6 +345,7 @@ def _record(sess: CatSession) -> None:
         "algo_version": ALGO_VERSION,
         "score": result["score"],
         "vocab_size": result["vocab_size"],
+        "alpha": result["alpha"],
         "total": result["total"],
         "correct": result["correct"],
         "wrong": result["wrong"],
@@ -311,38 +378,45 @@ def start_test(user_id: Optional[str] = None) -> tuple[str, dict, dict]:
         )
         mean = start_level * _adaptive.LEVEL_WIDTH + _adaptive.LEVEL_OFFSET
         sd = max(_adaptive.HISTORY_PRIOR_MIN_SD, prior["sd"])
-        log_post = _adaptive._prior_log_post(mean, sd)
+        log_post = _dual._prior_log_post(mean, sd)
     sess = CatSession(
         id=sid,
         user_id=user_id,
         start_level=start_level,
-        log_post=log_post if log_post is not None else _adaptive._prior_log_post(),
+        log_post=log_post if log_post is not None else _dual._prior_log_post(),
     )
     _sessions[sid] = sess
-    sess.current = _make_question(_pick_item(sess), sess.rng)
+    item, is_anchor = _pick_item(sess)
+    sess.current = _make_question(item, sess.rng, anchor=is_anchor)
     sess.recent.append(sess.current["word"])
     return sid, _adaptive._public(sess.current), _progress(sess)
 
 
 def _update_score(sess: CatSession, q: dict, outcome: str) -> None:
-    """按题目自己的难度/区分度更新后验（与 adaptive 相同的 3PL 似然）。"""
+    """按题目自己的难度/区分度把一次作答乘进 (θ, α) 二维后验。"""
     b = float(q["b"])
-    a = float(q["a"])
+    a_item = float(q["a"])
     c = _adaptive.GUESS_RATE
     power = _adaptive.UNKNOWN_LIKELIHOOD_POWER
     lp = sess.log_post
-    for i, theta in enumerate(_adaptive.GRID):
-        p = _adaptive.sigmoid(a * (theta - b))
-        if outcome == "correct":
-            lik = c + (1.0 - c) * p
-            lp[i] += math.log(max(lik, _adaptive.PROB_FLOOR))
-        elif outcome == "unknown":
-            lp[i] += power * math.log(max(1.0 - p, _adaptive.PROB_FLOOR))
-        else:
-            lp[i] += math.log(max((1.0 - c) * (1.0 - p), _adaptive.PROB_FLOOR))
-    _adaptive._normalize_log_post(sess)
+    for i, theta in enumerate(_dual.THETA_GRID):
+        base = i * _dual.N_ALPHA
+        for j, alpha in enumerate(_dual.ALPHA_GRID):
+            p = _adaptive.sigmoid(alpha * a_item * (theta - b))
+            if outcome == "correct":
+                lik = c + (1.0 - c) * p
+                lp[base + j] += math.log(max(lik, _adaptive.PROB_FLOOR))
+            elif outcome == "unknown":
+                lp[base + j] += power * math.log(
+                    max(1.0 - p, _adaptive.PROB_FLOOR)
+                )
+            else:
+                lp[base + j] += math.log(
+                    max((1.0 - c) * (1.0 - p), _adaptive.PROB_FLOOR)
+                )
+    _dual._normalize_log_post(sess)
     sess.total += 1
-    _adaptive._refresh_moments(sess)
+    _dual._refresh_moments(sess)
 
 
 def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dict:
@@ -381,7 +455,8 @@ def submit_answer(sess: CatSession, choice: Optional[int], unknown: bool) -> dic
         _record(sess)
         return {"finished": True, "feedback": feedback, **progress, "result": _result(sess)}
 
-    sess.current = _make_question(_pick_item(sess), sess.rng)
+    item, is_anchor = _pick_item(sess)
+    sess.current = _make_question(item, sess.rng, anchor=is_anchor)
     sess.recent.append(sess.current["word"])
     if len(sess.recent) > RECENT_LIMIT:
         sess.recent = sess.recent[-RECENT_LIMIT:]

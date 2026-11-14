@@ -9,8 +9,8 @@
     否则点「不认识」。有效蒙对率约 0.48 × 0.25 = 0.12，与算法的 GUESS_RATE 一致。
 
 注意四种算法报的「真值」定义不同：
-  - classic / adaptive2 报词汇量（分段加权 / 曲线面积）；
-  - adaptive / cat 报 θ（曲线中点）。
+  - classic / adaptive2 / cat 报词汇量（分段加权 / 曲线面积）；
+  - adaptive 报 θ（曲线中点），其 vocab_size 也取 θ。
 报告里按各自定义给真值（`truth`），并另外列出面积真值供参考。
 
 用法：
@@ -117,7 +117,7 @@ def simulate(
             "classic": out["classic_truth"],
             "adaptive2": out["area_truth"],
             "adaptive": theta,
-            "cat": theta,
+            "cat": out["area_truth"],
         }[alg]
         mean = statistics.mean(ests)
         out["algos"][alg] = {
@@ -132,7 +132,7 @@ def simulate(
 
 
 def print_report(results: list[dict], algos: tuple[str, ...]) -> None:
-    print("真值口径：classic=分段加权，adaptive2=曲线面积，adaptive/cat=θ")
+    print("真值口径：classic=分段加权，adaptive2/cat=曲线面积，adaptive=θ")
     print(f"{'theta':>6} {'alg':<10} {'mean':>7} {'sd':>6} {'q':>5} {'truth':>7} "
           f"{'bias':>7} {'bias%':>6}")
     for r in results:
