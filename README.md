@@ -65,6 +65,17 @@ npm --prefix apps/app run dev:h5
 
 微信小程序：`npm --prefix apps/app run dev:mp-weixin`
 
+### 5. 一键启动（可选）
+
+```bash
+./scripts/dev.sh start          # api + admin + h5，已在运行的跳过
+./scripts/tunnel.sh             # 启动服务并建立 Cloudflare 临时隧道，打印公网链接
+./scripts/tunnel.sh -d          # 同上，但打印后退出（隧道留在后台）
+./scripts/tunnel.sh stop        # 只关隧道，本地服务继续运行
+```
+
+`tunnel.sh` 需要 `brew install cloudflared`；Quick Tunnel 无需账号，每次 URL 随机。
+
 ## 测试
 
 ```bash
