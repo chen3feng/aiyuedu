@@ -49,11 +49,21 @@ main ──●────────●────────●────
 
 - `main` 是唯一长期分支，所有改动走短分支 + PR，PR 打 `auto-merge` 标签，
   `backend` / `frontend` 检查通过后由 auto-merge workflow squash 合入；
+- 合并到 `main` **只跑 CI，不部署**。正式发布通过 **tag**：
+
+  ```bash
+  git checkout main && git pull
+  git tag -a v2026.11.19 -m "release 2026-11-19"
+  git push origin v2026.11.19
+  ```
+
+  推送 `v*` 标签会触发 `Deploy`；部署前会校验该 commit 的
+  `backend` / `frontend` 检查确实成功，避免从未通过 CI 的提交发布；
+- 需要重发或回滚旧版本时，在 Actions → Deploy → Run workflow 填入已有 tag
+  （如 `v2026.11.18`）；不要在 `main` 上直接改完就发；
 - `main` 已开启分支保护：必须走 PR、必须通过 `backend` / `frontend` 检查，
   禁止直推、强推和删除（仓库设置只允许 squash merge）；
-- PR 合并 → `CI` 在 `main` 上通过 → `Deploy` workflow 自动部署到 rn3；
-  也可在 Actions → Deploy → Run workflow 手动触发；
-- `Deploy` 使用 GitHub Environment `production`，部署记录会关联到对应的 commit/PR，
+- `Deploy` 使用 GitHub Environment `production`，部署记录会关联到对应的 tag，
   环境 URL 指向 `https://aiyuedu.ch3oh.top`。
 
 部署所需的仓库 Secrets：
@@ -100,9 +110,10 @@ JSON
 解包、更新依赖、重启 `aiyuedu-api`、reload nginx → `/api/health` 健康检查。
 健康检查失败会自动回滚到本次部署前的代码。
 
-**回滚**：GitHub Flow 下首选 revert 对应 PR，让 CI + Deploy 再跑一遍；
-服务器上的 `/opt/aiyuedu/backups/code-<时间戳>` 保留每次部署前的代码副本，
-用于紧急手工回滚。
+**回滚**：优先在 Actions → Deploy → Run workflow 重新部署上一个正常 tag
+（如 `v2026.11.18`），线上立即恢复；同时在 `main` 上 revert 有问题的 PR，
+修复后再打新 tag。服务器上的 `/opt/aiyuedu/backups/code-<时间戳>` 保留每次
+部署前的代码副本，用于紧急手工回滚。
 
 ## 服务管理
 

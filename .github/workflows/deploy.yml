@@ -1,16 +1,20 @@
 name: Deploy
 
-# GitHub Flow 的 CD 段：main 上的 CI 通过后自动部署到 rn3。
-# - PR 合并（squash）→ push main → CI → 本工作流
-# - 也支持手动触发（Actions → Deploy → Run workflow）
+# 正式发布：推送 v* 标签（或手动指定 tag/commit）才部署到 rn3。
+# 日常 PR 合并到 main 只跑 CI，不发布；发布走 tag，便于回滚与追溯。
+# - 发布：git tag -a v2026.11.19 -m "..." && git push origin v2026.11.19
+# - 重发/回滚：Actions → Deploy → Run workflow，填已有的 tag
 # - fork 的 CI 结果不会触发部署
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-    branches: [main]
+  push:
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "要部署的 tag（或 commit SHA）"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -42,13 +46,7 @@ jobs:
   deploy:
     name: deploy
     needs: preflight
-    # 手动触发，或 main 上 CI 成功且来源是本仓库；secrets 未配置时 preflight 会跳过
-    if: >
-      needs.preflight.outputs.ready == 'true' && (
-        github.event_name == 'workflow_dispatch' ||
-        (github.event.workflow_run.conclusion == 'success' &&
-         github.event.workflow_run.head_repository.full_name == github.repository)
-      )
+    if: needs.preflight.outputs.ready == 'true'
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -58,7 +56,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Verify CI passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          echo "deploying $sha ($(git describe --tags --always))"
+          json=$(gh api "repos/$REPO/commits/$sha/check-runs" \
+            --jq '[.check_runs[] | select(.name == "backend" or .name == "frontend") |
+                   {name: .name, conclusion: .conclusion}]')
+          echo "$json"
+          for name in backend frontend; do
+            conclusion=$(echo "$json" | jq -r --arg n "$name" \
+              '[.[] | select(.name == $n)] | .[0].conclusion // empty')
+            if [ "$conclusion" != "success" ]; then
+              echo "::error::$name 在 $sha 上没有成功记录（当前：${conclusion:-无}），请先让该 commit 的 CI 通过"
+              exit 1
+            fi
+          done
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -108,6 +128,7 @@ jobs:
         env:
           HOST: ${{ secrets.DEPLOY_HOST }}
           USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE: ${{ inputs.ref || github.ref_name }}
         run: |
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$USER@$HOST" 'bash -s' <<'REMOTE'
           set -euo pipefail
@@ -146,5 +167,5 @@ jobs:
           curl -sf http://127.0.0.1:8002/health
           curl -sf -H 'Host: aiyuedu.ch3oh.top' http://127.0.0.1/api/health
           echo
-          echo "deployed $STAMP"
+          echo "deployed ${RELEASE:-manual} at $STAMP"
           REMOTE
