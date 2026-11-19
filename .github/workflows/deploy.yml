@@ -1,0 +1,171 @@
+name: Deploy
+
+# 正式发布：推送 v* 标签（或手动指定 tag/commit）才部署到 rn3。
+# 日常 PR 合并到 main 只跑 CI，不发布；发布走 tag，便于回滚与追溯。
+# - 发布：git tag -a v2026.11.19 -m "..." && git push origin v2026.11.19
+# - 重发/回滚：Actions → Deploy → Run workflow，填已有的 tag
+# - fork 的 CI 结果不会触发部署
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "要部署的 tag（或 commit SHA）"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: preflight
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Check deploy secrets
+        id: check
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -n "$HOST" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::DEPLOY_* secrets 未配置，跳过部署"
+          fi
+
+  deploy:
+    name: deploy
+    needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://aiyuedu.ch3oh.top
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Verify CI passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          echo "deploying $sha ($(git describe --tags --always))"
+          json=$(gh api "repos/$REPO/commits/$sha/check-runs" \
+            --jq '[.check_runs[] | select(.name == "backend" or .name == "frontend") |
+                   {name: .name, conclusion: .conclusion}]')
+          echo "$json"
+          for name in backend frontend; do
+            conclusion=$(echo "$json" | jq -r --arg n "$name" \
+              '[.[] | select(.name == $n)] | .[0].conclusion // empty')
+            if [ "$conclusion" != "success" ]; then
+              echo "::error::$name 在 $sha 上没有成功记录（当前：${conclusion:-无}），请先让该 commit 的 CI 通过"
+              exit 1
+            fi
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/app/package-lock.json
+
+      - name: Build H5
+        working-directory: apps/app
+        env:
+          VITE_API_BASE: /api
+        run: |
+          npm ci
+          npm run build:h5
+
+      - name: Assemble release
+        run: |
+          set -euo pipefail
+          mkdir -p deploy/apps deploy/data deploy/web
+          rsync -a --exclude='.venv' --exclude='__pycache__' \
+            --exclude='tests' --exclude='scripts' apps/api deploy/apps/
+          rsync -a apps/app/dist/build/h5/ deploy/web/
+          # 只上传只读内容；用户、成绩、日志留在服务器上
+          for d in wordlists readings collections mwe topics; do
+            rsync -a --exclude='raw' "data/$d/" "deploy/data/$d/"
+          done
+          tar -C deploy -czf "$RUNNER_TEMP/aiyuedu.tar.gz" .
+
+      - name: Setup SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          scp -i ~/.ssh/deploy_key -o IdentitiesOnly=yes \
+            "$RUNNER_TEMP/aiyuedu.tar.gz" "$USER@$HOST:/tmp/aiyuedu-deploy.tar.gz"
+
+      - name: Apply release
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE: ${{ inputs.ref || github.ref_name }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$USER@$HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          STAMP=$(date -u +%Y%m%d-%H%M%S)
+          BK="/opt/aiyuedu/backups/code-$STAMP"
+          mkdir -p "$BK"
+          if [ -d /opt/aiyuedu/apps/api ]; then cp -a /opt/aiyuedu/apps/api "$BK/api"; fi
+          if [ -d /opt/aiyuedu/web ]; then cp -a /opt/aiyuedu/web "$BK/web"; fi
+
+          rollback() {
+            echo "!! 部署失败，回滚到 $BK"
+            rm -rf /opt/aiyuedu/apps/api /opt/aiyuedu/web
+            [ -d "$BK/api" ] && cp -a "$BK/api" /opt/aiyuedu/apps/api
+            [ -d "$BK/web" ] && cp -a "$BK/web" /opt/aiyuedu/web
+            systemctl restart aiyuedu-api || true
+          }
+          trap 'rc=$?; if [ "$rc" -ne 0 ]; then rollback; fi' EXIT
+
+          tar -C /opt/aiyuedu -xzf /tmp/aiyuedu-deploy.tar.gz
+          rm -f /tmp/aiyuedu-deploy.tar.gz
+          mkdir -p /opt/aiyuedu/data/{logs,users,writings,notebooks,vocab_tests,config}
+
+          /opt/aiyuedu/venv/bin/pip install -q --disable-pip-version-check \
+            'fastapi>=0.115' 'uvicorn[standard]>=0.30' 'pydantic-settings>=2.4' \
+            'edge-tts>=6.1' 'httpx>=0.27'
+
+          systemctl restart aiyuedu-api
+          nginx -t
+          systemctl reload nginx
+
+          for _ in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8002/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8002/health
+          curl -sf -H 'Host: aiyuedu.ch3oh.top' http://127.0.0.1/api/health
+          echo
+          echo "deployed ${RELEASE:-manual} at $STAMP"
+          REMOTE
