@@ -37,6 +37,73 @@ rn3 nginx :80
 后端 `config.py` 的 `PROJECT_ROOT` 由文件位置推导，`/opt/aiyuedu/apps/api/app/`
 上溯三级即 `/opt/aiyuedu`，所以 `data/` 等路径无需额外配置。
 
+## GitHub Flow 与自动部署
+
+分支模型采用 GitHub Flow：
+
+```text
+main ──●────────●────────●────────●──→  始终可部署
+        \      / \      /
+         ●────●   ●────●              短分支 + PR（auto-merge 标签）
+```
+
+- `main` 是唯一长期分支，所有改动走短分支 + PR，PR 打 `auto-merge` 标签，
+  `backend` / `frontend` 检查通过后由 auto-merge workflow squash 合入；
+- `main` 已开启分支保护：必须走 PR、必须通过 `backend` / `frontend` 检查，
+  禁止直推、强推和删除（仓库设置只允许 squash merge）；
+- PR 合并 → `CI` 在 `main` 上通过 → `Deploy` workflow 自动部署到 rn3；
+  也可在 Actions → Deploy → Run workflow 手动触发；
+- `Deploy` 使用 GitHub Environment `production`，部署记录会关联到对应的 commit/PR，
+  环境 URL 指向 `https://aiyuedu.ch3oh.top`。
+
+部署所需的仓库 Secrets：
+
+| Secret | 说明 |
+| --- | --- |
+| `DEPLOY_HOST` | rn3 地址 |
+| `DEPLOY_USER` | SSH 用户（root） |
+| `DEPLOY_SSH_KEY` | 专用 ed25519 私钥（只授权 rn3） |
+| `DEPLOY_KNOWN_HOSTS` | `ssh-keyscan` 得到的 rn3 主机指纹 |
+
+Secrets 未配置时，`Deploy` 的 preflight 会直接跳过，不会产生一次失败部署；
+配置好后再合并 / 手动触发即可。
+
+首次配置（仓库管理员）：
+
+```bash
+# 1. 生成只用于部署的密钥，公钥追加到 rn3 的 /root/.ssh/authorized_keys
+ssh-keygen -t ed25519 -f /tmp/aiyuedu_deploy_key -N '' -C github-actions-deploy
+ssh rn3 'cat >> /root/.ssh/authorized_keys' < /tmp/aiyuedu_deploy_key.pub
+
+# 2. 写入仓库 Secrets
+gh secret set DEPLOY_SSH_KEY -R chen3feng/aiyuedu < /tmp/aiyuedu_deploy_key
+gh secret set DEPLOY_HOST -R chen3feng/aiyuedu --body '23.94.255.173'
+gh secret set DEPLOY_USER -R chen3feng/aiyuedu --body 'root'
+ssh-keyscan -t ed25519 23.94.255.173 | gh secret set DEPLOY_KNOWN_HOSTS -R chen3feng/aiyuedu
+rm -f /tmp/aiyuedu_deploy_key
+
+# 3. main 分支保护：必须 PR + backend/frontend 检查，禁止直推/强推/删除
+gh api -X PUT repos/chen3feng/aiyuedu/branches/main/protection --input - <<'JSON'
+{
+  "required_status_checks": {"strict": false, "contexts": ["backend", "frontend"]},
+  "enforce_admins": false,
+  "required_pull_request_reviews": null,
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+JSON
+```
+
+部署流程（`.github/workflows/deploy.yml`）：runner 上构建 H5（`VITE_API_BASE=/api`）
+→ 打包代码、静态资源和只读数据 → scp 到 rn3 → 备份当前 `apps/api` 与 `web` →
+解包、更新依赖、重启 `aiyuedu-api`、reload nginx → `/api/health` 健康检查。
+健康检查失败会自动回滚到本次部署前的代码。
+
+**回滚**：GitHub Flow 下首选 revert 对应 PR，让 CI + Deploy 再跑一遍；
+服务器上的 `/opt/aiyuedu/backups/code-<时间戳>` 保留每次部署前的代码副本，
+用于紧急手工回滚。
+
 ## 服务管理
 
 ```bash
