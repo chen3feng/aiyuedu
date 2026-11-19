@@ -43,9 +43,36 @@ jobs:
             echo "::notice::DEPLOY_* secrets 未配置，跳过部署"
           fi
 
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.14"
+
+      - name: Backend tests
+        working-directory: apps/api
+        run: |
+          uv sync --frozen
+          uv run pytest tests/ -q
+
+      - name: Frontend type check
+        working-directory: apps/app
+        run: |
+          npm ci
+          npx vue-tsc --noEmit
+
   deploy:
     name: deploy
-    needs: preflight
+    needs: [preflight, test]
     if: needs.preflight.outputs.ready == 'true'
     runs-on: ubuntu-latest
     environment:
@@ -59,26 +86,9 @@ jobs:
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 
-      - name: Verify CI passed
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
+      - name: Show release
         run: |
-          set -euo pipefail
-          sha=$(git rev-parse HEAD)
-          echo "deploying $sha ($(git describe --tags --always))"
-          json=$(gh api "repos/$REPO/commits/$sha/check-runs" \
-            --jq '[.check_runs[] | select(.name == "backend" or .name == "frontend") |
-                   {name: .name, conclusion: .conclusion}]')
-          echo "$json"
-          for name in backend frontend; do
-            conclusion=$(echo "$json" | jq -r --arg n "$name" \
-              '[.[] | select(.name == $n)] | .[0].conclusion // empty')
-            if [ "$conclusion" != "success" ]; then
-              echo "::error::$name 在 $sha 上没有成功记录（当前：${conclusion:-无}），请先让该 commit 的 CI 通过"
-              exit 1
-            fi
-          done
+          echo "deploying $(git rev-parse --short HEAD) ($(git describe --tags --always))"
 
       - name: Setup Node
         uses: actions/setup-node@v4

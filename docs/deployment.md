@@ -57,8 +57,9 @@ main ──●────────●────────●────
   git push origin v2026.11.19
   ```
 
-  推送 `v*` 标签会触发 `Deploy`；部署前会校验该 commit 的
-  `backend` / `frontend` 检查确实成功，避免从未通过 CI 的提交发布；
+  推送 `v*` 标签会触发 `Deploy`；`Deploy` 会在该 tag 上重新跑后端测试和前端
+  类型检查后再构建部署（auto-merge 使用 `GITHUB_TOKEN` 合并，不会触发 `main`
+  的 push CI，所以发布流水线自带一次校验）；
 - 需要重发或回滚旧版本时，在 Actions → Deploy → Run workflow 填入已有 tag
   （如 `v2026.11.18`）；不要在 `main` 上直接改完就发；
 - `main` 已开启分支保护：必须走 PR、必须通过 `backend` / `frontend` 检查，
