@@ -44,3 +44,6 @@ tmp/
 
 # Claude Code 本地工作目录（agent/设置，不进仓库）
 .claude/
+
+# Cloudflare CLI 本地状态（含账号信息）
+.cloudflare/
