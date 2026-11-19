@@ -87,5 +87,6 @@ uv run --directory apps/api pytest -q
 - 设计文档：[design-doc.md](design-doc.md)
 - 实现计划：[implementation-plan.md](implementation-plan.md)
 - 词汇量评测算法：[docs/vocab-assessment.md](docs/vocab-assessment.md)
+- 部署（rn3 / aiyuedu.ch3oh.top）：[docs/deployment.md](docs/deployment.md)
 - 分级阅读算法：[docs/graded-reading.md](docs/graded-reading.md)
 - 词表说明：[data/wordlists/README.md](data/wordlists/README.md)
